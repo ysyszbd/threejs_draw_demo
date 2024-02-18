@@ -1,90 +1,123 @@
 <!--
- * @LastEditTime: 2024-02-04 17:55:14
- * @Description: 
--->
-<!--
- * @LastEditTime: 2024-02-04 16:54:13
+ * @LastEditTime: 2024-02-18 18:02:09
  * @Description: 
 -->
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, reactive, ref, toRefs } from "vue";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
+import Base from "@/contorls/base.js";
+import {
+  CSS3DRenderer,
+  CSS3DObject,
+} from "three/addons/renderers/CSS3DRenderer.js";
 
-var renderer, scene, camera, light;
-var width, height;
-threeExcute();
+let loadingWidth = ref(0);
+let isLoading = ref(true);
+// 渲染道路
+function setRoad() {
+  const element = document.createElement("div");
+  element.style.width = "1000px";
+  element.style.height = "2000px";
+  element.style.opacity = 1;
+  element.style.background = "#8c8a75";
+  const object = new CSS3DObject(element);
+  object.position.copy(pos);
+  object.rotation.copy(rot);
+  scene2.add(object);
 
-// width = window.innerWidth;
-// height = window.innerHeight;
-// camera = new THREE.PerspectiveCamera(70, width / height, 0.01, 10);
-// camera.position.z = 1;
-// scene = new THREE.Scene();
-// const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-// const material = new THREE.MeshNormalMaterial();
-// const mesh = new THREE.Mesh(geometry, material);
-// scene.add(mesh);
-// renderer = new THREE.WebGLRenderer({ antialias: true });
-// renderer.setSize(width, height);
-// renderer.setAnimationLoop(animation);
-// document.body.appendChild(renderer.domElement);
-// function animation(time) {
-//   mesh.rotation.x = time / 2000;
-//   mesh.rotation.y = time / 1000;
-//   renderer.render(scene, camera);
-// }
+  const geometry = new THREE.PlaneGeometry(300, 300);
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.copy(object.position);
+  mesh.rotation.copy(object.rotation);
+  scene.add(mesh);
+}
+// 渲染道路上的线条
+function setLine() {}
+let mapDOM = ref(null),
+  base = null;
 
-
-function initRenderer() {
-  width = window.innerWidth;
-  height = window.innerHeight;
-  renderer = new THREE.WebGLRenderer({
-    antialias: true,
-  });
-  renderer.setSize(width, height);
-  document.body.appendChild(renderer.domElement);
-  // renderer.setClearColor(0xffffff, 1.0);
+onMounted(() => {
+  base = new Base(mapDOM.value);
+  update();
+  window.addEventListener("resize", resize);
+});
+function update() {
+  base.update();
 }
-function initScene() {
-  scene = new THREE.Scene();
-}
-function initCamera() {
-  camera = new THREE.OrthographicCamera(-2, 2, 1.5, -1.5, 1, 10);
-  camera.position.set(4, -3, 5);
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
-  scene.add(camera);
-}
-function initLight() {
-  light = new THREE.DirectionalLight(0xff0000, 1.0, 0);
-  light.position.set(100, 100, 200);
-  scene.add(light);
-}
-function threeExcute() {
-  initRenderer();
-  initScene();
-  initCamera();
-  initLight();
-  const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-  var cube = new THREE.Mesh(
-    geometry,
-    new THREE.MeshBasicMaterial()
-  );
-  scene.add(cube);
-  renderer.render(scene, camera);
+function resize() {
+  base.resize();
 }
 </script>
 
 <template>
-  <div id="box" class="box"></div>
+  <div class="boxs">
+    <div class="sky"></div>
+    <div class="map" ref="mapDOM"></div>
+    <!-- <div class="maskLoading" v-if="isLoading">
+      <div class="loading">
+        <div :style="{ width: loadingWidth + '%' }"></div>
+      </div>
+      <div style="padding-left: 10px">{{ parseInt(loadingWidth) }}%</div>
+    </div> -->
+  </div>
 </template>
 
 <style lang="scss" scoped>
 @import "./src/style/index.scss";
-.box {
-  width: 100%;
-  height: 100vh;
+body {
+  margin: 0;
 }
+.boxs {
+  width: 100vw;
+  height: 100vh;
+  .sky {
+    width: 100%;
+    height: 20%;
+    background: linear-gradient(#fff, #adae90);
+  }
+  .map {
+    width: 100%;
+    height: 80%;
+    background: #9fb2ac;
+  }
+}
+
+.maskLoading {
+  background: #000;
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1111111;
+  color: #fff;
+}
+
+.maskLoading .loading {
+  width: 400px;
+  height: 20px;
+  border: 1px solid #fff;
+  background: #000;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.maskLoading .loading div {
+  background: #fff;
+  height: 20px;
+  width: 0;
+  transition-duration: 500ms;
+  transition-timing-function: ease-in;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  margin: auto;
+}
+
+
 </style>
