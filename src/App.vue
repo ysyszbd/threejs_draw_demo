@@ -44,6 +44,8 @@ function initWS() {
   //   console.log("Connection closed.");
   //   wsStatus.value = false;
   // };
+
+  console.log("1111111111111111111111111111111111111111");
 }
 function drawLines(data) {
   try {
