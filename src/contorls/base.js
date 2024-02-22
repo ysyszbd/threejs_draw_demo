@@ -5,7 +5,7 @@ import {
   CSS3DRenderer,
   CSS3DObject,
 } from "three/examples/jsm/renderers/CSS3DRenderer.js";
-import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
@@ -64,10 +64,9 @@ export default class Base {
     group: null,
   }; // 线框
   num = 100;
-  render3D;
+  renderObj;
   constructor(mapDOM) {
     this.mapDOM = mapDOM;
-    this.getDom();
     this.setScene();
     this.setCamera();
     this.setAmbientLight();
@@ -83,11 +82,17 @@ export default class Base {
   }
   // 获取dom元素--用来放置障碍物
   getDom() {
-    this.objs.little_car = document.getElementById("little_car");
-    this.objs.bus = document.getElementById("bus");
-    this.objs.bicycle = document.getElementById("bicycle");
-    this.objs.cone = document.getElementById("cone");
-    console.log(this.objs, "this.objs")
+    // this.objs.little_car = document.getElementById("little_car");
+    // this.objs.bus = document.getElementById("bus");
+    // this.objs.bicycle = document.getElementById("bicycle");
+    // this.objs.cone = document.getElementById("cone");
+    const element = document.createElement("div");
+    element.style.width = 10 + "px";
+    element.style.height = 10 + "px";
+    element.style.opacity = 0.75;
+    element.style.background = "#000";
+    
+    console.log(this.objs, "this.objs");
   }
   // 绘制可以改变宽度的线条   dashed：true虚线、false实线
   setWidthLine(cmd, pointsArr, dashed = false, color = "rgb(80,190,225)") {
@@ -516,14 +521,16 @@ export default class Base {
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
     });
-    this.render3D = new CSS3DRenderer();
     this.renderer.setSize(this.mapDOM.clientWidth, this.mapDOM.clientHeight);
-    this.render3D.setSize(this.mapDOM.clientWidth, this.mapDOM.clientHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio); // 设置像素比,让场景更加清晰
     // 设置电影级别的色调映射,让场景会更加好看一些，但会更耗费性能
     // this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     // 将render里面的dom添加到目标dom中
     this.mapDOM.appendChild(this.renderer.domElement);
+
+    this.renderObj = new CSS3DRenderer();
+    this.renderObj.setSize(this.mapDOM.clientWidth, this.mapDOM.clientHeight);
+    this.mapDOM.appendChild(this.renderObj.domElement);
   }
   // 添加控制器
   setControls() {
