@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-02-22 12:10:30
+ * @LastEditTime: 2024-02-22 12:21:15
  * @Description: 
 -->
 <script setup>
@@ -66,18 +66,6 @@ function drawLines(data) {
     if (data.cmd === "egoTrjs") {
       // 车头线是只有一根线，所以直接修改线坐标
       base.drawHeadLine(data.points);
-      // if (base[data.cmd].num != 0) {
-      //   base.updateDraw(data.cmd, data.points);
-      // } else {
-      //   base.egoTrjs.headline = base.setWidthLine(
-      //     data.cmd,
-      //     data.points,
-      //     false,
-      //     base.egoTrjs.color
-      //   );
-      //   base.scene.add(base.egoTrjs.headline);
-      //   base[data.cmd].num++;
-      // }
     } else if (data.cmd === "lanes") {
       base.drawLanes(data.info);
     } else if (data.cmd === "objs") {

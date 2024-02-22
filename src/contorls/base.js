@@ -105,10 +105,15 @@ export default class Base {
   // 绘制车头线egoTrjs
   drawHeadLine(points) {
     if (!this.egoTrjs.headline) {
-      this.egoTrjs.headline = this.setWidthLine("egoTrjs", points, false, this.egoTrjs.color);
+      this.egoTrjs.headline = this.setWidthLine(
+        "egoTrjs",
+        points,
+        false,
+        this.egoTrjs.color
+      );
       this.scene.add(this.egoTrjs.headline);
     } else {
-      this.egoTrjs.headline.geometry.setPositions(points);
+      this.egoTrjs.headline.geometry.setPositions(this.handlePoints(points));
     }
   }
 
@@ -307,8 +312,8 @@ export default class Base {
   // 修改
   updateDraw(cmd, data) {
     if (cmd === "egoTrjs") {
-      const points = this.handlePoints(data);
-      this.egoTrjs.headline.geometry.setPositions(points);
+      // const points = this.handlePoints(data);
+      // this.egoTrjs.headline.geometry.setPositions(points);
     } else if (cmd === "lanes") {
       // this.scene.remove(this.lanes.group);
       // this.drawLanes(data);
