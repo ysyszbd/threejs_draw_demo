@@ -4,7 +4,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import {
   CSS3DRenderer,
   CSS3DObject,
-} from "three/addons/renderers/CSS3DRenderer.js";
+} from "three/examples/jsm/renderers/CSS3DRenderer.js";
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
@@ -63,8 +64,10 @@ export default class Base {
     group: null,
   }; // 线框
   num = 100;
+  render3D;
   constructor(mapDOM) {
     this.mapDOM = mapDOM;
+    this.getDom();
     this.setScene();
     this.setCamera();
     this.setAmbientLight();
@@ -77,6 +80,14 @@ export default class Base {
     // this.load3D();
     // this.loadObjs();
     this.setMesh();
+  }
+  // 获取dom元素--用来放置障碍物
+  getDom() {
+    this.objs.little_car = document.getElementById("little_car");
+    this.objs.bus = document.getElementById("bus");
+    this.objs.bicycle = document.getElementById("bicycle");
+    this.objs.cone = document.getElementById("cone");
+    console.log(this.objs, "this.objs")
   }
   // 绘制可以改变宽度的线条   dashed：true虚线、false实线
   setWidthLine(cmd, pointsArr, dashed = false, color = "rgb(80,190,225)") {
@@ -322,7 +333,8 @@ export default class Base {
   // 加载3D模型
   async load3D() {
     const car = await this.loadFile("car_for_games_unity/scene.gltf", "主车");
-    const gltf = this.track(car.scene);
+    const gltf = car.scene;
+    console.log(car, "car");
     // 旋转模型
     // gltf.scene.rotation.y = Math.PI;
     gltf.rotation.x = Math.PI / 2;
@@ -332,8 +344,8 @@ export default class Base {
       size = box.getSize(new THREE.Vector3());
     gltf.position.y = -(size.y / 2) - center.y;
     this.scene.add(gltf);
-    // gltf.matrixAutoUpdate = false;
-    // gltf.updateMatrix();
+    gltf.matrixAutoUpdate = false;
+    gltf.updateMatrix();
   }
   // 加载障碍物模型
   async loadObjs() {
@@ -405,7 +417,6 @@ export default class Base {
       );
     });
   }
-
 
   // 绘制线框
   drawBoxs(data) {
@@ -505,7 +516,9 @@ export default class Base {
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
     });
+    this.render3D = new CSS3DRenderer();
     this.renderer.setSize(this.mapDOM.clientWidth, this.mapDOM.clientHeight);
+    this.render3D.setSize(this.mapDOM.clientWidth, this.mapDOM.clientHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio); // 设置像素比,让场景更加清晰
     // 设置电影级别的色调映射,让场景会更加好看一些，但会更耗费性能
     // this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -538,12 +551,12 @@ export default class Base {
   }
   // 更新视图
   update = () => {
-    requestAnimationFrame(this.update);
-    // this.renderer.dispose();
-    // this.resTracker.dispose();
+    // console.log(this.renderer.info, "统计信息0");
     // 清除深度缓存---很重要
     this.renderer.clearDepth();
     this.renderer.render(this.scene, this.camera);
+    requestAnimationFrame(this.update);
+    // console.log(this.renderer.info, "统计信息1");
   };
   waitSeconds(seconds = 0) {
     return new Promise((resolve) => setTimeout(resolve, seconds * 1000));

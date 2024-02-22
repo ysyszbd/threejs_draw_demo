@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-02-22 14:03:08
+ * @LastEditTime: 2024-02-22 17:26:10
  * @Description: 
 -->
 <script setup>
@@ -18,12 +18,6 @@ onMounted(() => {
   base = new Base(mapDOM.value);
   update();
   window.addEventListener("resize", resize);
-  window.addEventListener("onbeforeunload", (val) => {
-    console.log(val, "val---onbeforeunload");
-  });
-  window.addEventListener("onunload", (val) => {
-    console.log(val, "val---onunload");
-  });
 });
 onUnmounted(() => {
   base.clear();
@@ -88,6 +82,12 @@ function drawLines(data) {
         </div>
         <div style="padding-left: 10px">{{ parseInt(base?.loadingWidth ? base?.loadingWidth : 0) }}%</div>
       </div> -->
+      <div id="little_car" class="obj"></div>
+      <div id="my_car" class="obj"></div>
+      <div id="bicycle" class="obj"></div>
+      <div id="bus" class="obj"></div>
+      <div id="cone" class="obj"></div>
+      <div id="barrier" class="obj"></div>
     </div>
   </div>
 </template>
@@ -109,6 +109,17 @@ body {
     width: 100%;
     height: 80%;
     background: #9fb2ac;
+    position: relative;
+    .obj {
+      position: absolute;
+      background: #000;
+      width: 20px;
+      height: 20px;
+      z-index: 1;
+      top: 0;
+      left: 0;
+      
+    }
   }
 }
 
