@@ -8,6 +8,7 @@ import {
 import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
+import ResourceTracker from "./resourceTracker";
 
 export default class Base {
   renderer;
@@ -19,9 +20,18 @@ export default class Base {
   dhelper;
   hHelper;
   controls;
-  material;
+  box = {
+    material: null,
+    geometry: null,
+  };
+  line = {
+    material: null,
+    geometry: null,
+  };
   loadingWidth = 0;
   isLoading = true;
+  resTracker = new ResourceTracker();
+  track = this.resTracker.track.bind(this.resTracker);
   lineNum = 0; // 暂时用来控制接收数据的次数
   lineWidth = {
     egoTrjs: 2,
@@ -36,65 +46,94 @@ export default class Base {
     lanelines: [],
     num: 0,
     color: "rgb(255, 255, 255)",
-    group: null
+    group: null,
   }; // 车道线
   objs = {
     obstacles: [],
     num: 0,
-    group: new THREE.Group()
+    group: null,
+    little_car: null,
+    bus: null,
+    bicycle_p: null,
+    bicycle: null,
+    cone: null,
+    barrier: null,
   }; // 障碍物
+  box = {
+    group: null,
+  }; // 线框
+  num = 100;
   constructor(mapDOM) {
     this.mapDOM = mapDOM;
     this.setScene();
     this.setCamera();
     this.setAmbientLight();
     this.setLight();
-    this.load3D();
+    // 初始化线框所需的几何体、材质、mesh
+    this.initBoxMG();
+    this.initSetMesh();
+    // this.load3D();
+    // this.loadObjs();
     this.setMesh();
     this.setRender();
     this.setControls();
   }
 
-  // 创建场景
-  setScene() {
-    this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xf0f0f0);
-    this.scene2 = new THREE.Scene();
+  // 绘制可以改变宽度的线条   dashed：true虚线、false实线
+  setWidthLine(cmd, pointsArr, dashed = false, color = "rgb(80,190,225)") {
+    try {
+      // 处理坐标数据
+      let points = this.handlePoints(pointsArr);
+      const geometry = this.track(new LineGeometry());
+      geometry.setPositions(points);
+      const matLine = this.track(
+        new LineMaterial({
+          color: color,
+          linewidth: this.lineWidth[cmd],
+          dashed: dashed,
+          vertexColors: false,
+        })
+      );
+      matLine.resolution.set(window.innerWidth, window.innerHeight);
+      let line = new Line2(geometry, matLine);
+      line.computeLineDistances();
+      return line;
+    } catch (err) {
+      console.log(err, "err---setWidthLine");
+    }
   }
-  // 创建相机
-  setCamera() {
-    this.camera = new THREE.PerspectiveCamera(
-      75,
-      this.mapDOM.clientWidth / this.mapDOM.clientHeight,
-      0.1,
-      1200
-    );
-    this.camera.position.set(0, -38, 22);
-    this.camera.updateMatrix();
+  // 绘制车头线egoTrjs
+  drawHeadLine(points) {
+    if (!this.egoTrjs.headline) {
+      this.egoTrjs.headline = this.setWidthLine("egoTrjs", points, false, this.egoTrjs.color);
+      this.scene.add(this.egoTrjs.headline);
+    } else {
+      this.egoTrjs.headline.geometry.setPositions(points);
+    }
   }
-  // 创建环境光
-  setAmbientLight(intensity = 1, color = 0xffffff) {
-    const light = new THREE.AmbientLight(color, intensity);
-    this.scene.add(light);
+
+  // lanes
+  // 释放车道线内存
+  initLanesGroup() {
+    // 释放资源
+    // 车道线是一堆线，把之前的线清除掉后再生成新的线
+    if (this.lanes.group) {
+      this.lanes.group.children.forEach((item) => {
+        this.scene.remove(item);
+      });
+      this.scene.remove(this.lanes.group);
+    }
+    this.resTracker.dispose();
+    this.lanes.group = null;
   }
-  // 设置灯光
-  setLight() {
-    // 添加方向光
-    this.directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    this.directionalLight.position.set(0, 5, -8);
-    this.dhelper = new THREE.DirectionalLightHelper(
-      this.directionalLight,
-      5,
-      0xff0000
-    );
-    this.scene.add(this.directionalLight);
-  }
-  // 中转车道线数据方法
+  // 车道线lanes--整理线类型
   drawLanes(info) {
     try {
+      this.initLanesGroup();
       let line = [],
         color = this.lanes.color;
       this.lanes.group = new THREE.Group();
+
       for (let i = 0; i < info.length; i++) {
         if (info[i].type < 3) {
           switch (info[i].type) {
@@ -226,37 +265,14 @@ export default class Base {
         for (let j = 0; j < line.length; j++) {
           this.lanes.group.add(line[j]);
         }
+        // console.log(this.lanes.group.children, "this.lanes.group children");
         this.scene.add(this.lanes.group);
       }
     } catch (err) {
       console.log(err, "err---drawLanes");
     }
   }
-  // 绘制可以改变宽度的线条   dashed：true虚线、false实线
-  setWidthLine(cmd, pointsArr, dashed = false, color = "rgb(80,190,225)") {
-    try {
-      // 处理坐标数据
-      let points = this.handlePoints(pointsArr);
-      // console.log(points, "points");
-      const geometry = new LineGeometry();
-      geometry.setPositions(points);
-      const matLine = new LineMaterial({
-        color: color,
-        linewidth: this.lineWidth[cmd],
-        dashed: dashed,
-        vertexColors: false,
-      });
-      matLine.resolution.set(window.innerWidth, window.innerHeight);
-      let line = new Line2(geometry, matLine);
-      line.computeLineDistances();
-      // this.scene.add(line);
-      // console.log(line, "line=======");
-      return line;
-    } catch (err) {
-      console.log(err, "err---setWidthLine");
-    }
-  }
-  // 车道线--绘制线条
+  // 车道线lanes--绘制线条
   setLine(
     pointsArr,
     dashed = false, // false实线、true虚线
@@ -288,14 +304,16 @@ export default class Base {
     lineR.position.x += 0.01;
     return [lineL, lineR];
   }
-  // 修改线条坐标
-  updateLine(cmd, data) {
+  // 修改
+  updateDraw(cmd, data) {
     if (cmd === "egoTrjs") {
       const points = this.handlePoints(data);
       this.egoTrjs.headline.geometry.setPositions(points);
     } else if (cmd === "lanes") {
-      this.scene.remove(this.lanes.group);
-      this.drawLanes(data);
+      // this.scene.remove(this.lanes.group);
+      // this.drawLanes(data);
+    } else if (cmd === "objs") {
+      this.drawObjs(data);
     }
   }
   // 处理带宽度的线条坐标数据
@@ -306,6 +324,186 @@ export default class Base {
       points.push(item.x, item.y, 0);
     });
     return points;
+  }
+  // 加载3D模型
+  async load3D() {
+    const car = await this.loadFile("car_for_games_unity/scene.gltf", "主车");
+    const gltf = this.track(car.scene);
+    // 旋转模型
+    // gltf.scene.rotation.y = Math.PI;
+    gltf.rotation.x = Math.PI / 2;
+    // 3d辅助框 获取模型的大小
+    const box = new THREE.Box3().setFromObject(gltf),
+      center = box.getCenter(new THREE.Vector3()),
+      size = box.getSize(new THREE.Vector3());
+    gltf.position.y = -(size.y / 2) - center.y;
+    this.scene.add(gltf);
+  }
+  // 加载障碍物模型
+  async loadObjs() {
+    try {
+      // 小车
+      const little_car = await this.loadFile("car_for_games_unity/scene.gltf");
+      little_car.scene.rotation.x = Math.PI / 2;
+      little_car.scene.position.y = 6;
+      little_car.scene.position.x = 0;
+      this.scene.add(little_car.scene);
+      // 自行车--无人
+      const bicycle = await this.loadFile(
+        "bicycle_low-poly_minimalistic/scene.gltf"
+      );
+      bicycle.scene.rotation.x = Math.PI / 2;
+      bicycle.scene.rotation.y = Math.PI;
+      bicycle.scene.position.x = -3;
+      bicycle.scene.position.y = -4;
+      bicycle.scene.scale.set(2, 2, 2);
+      this.scene.add(bicycle.scene);
+      // bus
+      const bus = await this.loadFile("bus/scene.gltf");
+      bus.scene.rotation.x = Math.PI / 2;
+      bus.scene.rotation.y = Math.PI;
+      bus.scene.position.x = -16;
+      bus.scene.position.y = -4;
+      this.scene.add(bus.scene);
+      // cone锥桶
+      const cone = await this.loadFile("street_cone/scene.gltf");
+      cone.scene.rotation.x = Math.PI / 2;
+      cone.scene.position.x = -16;
+      cone.scene.position.y = -4;
+      this.scene.add(cone.scene);
+      // barrier栅栏
+      this.objs.barrier = await this.loadFile("barrier/scene.gltf");
+      this.objs.barrier.scene.rotation.x = Math.PI / 2;
+      this.objs.barrier.scene.position.x = 5;
+      this.objs.barrier.scene.position.y = 4;
+      this.scene.add(this.objs.barrier.scene);
+
+      // let barrier = THREE.Object3D.prototype.clone.call( this.objs.barrier );
+      // barrier.scene.position.x = -5 ;
+      // barrier.scene.position.y = 4 ;
+    } catch (err) {
+      console.log(err, "err---loadObjs");
+    }
+  }
+  // 加载3d模型文件
+  loadFile(url, type) {
+    return new Promise((resolve, reject) => {
+      new GLTFLoader().load(
+        `src/assets/car_model/${url}`,
+        (gltf) => {
+          resolve(gltf);
+        },
+        ({ loaded, total }) => {
+          let load = Math.abs((loaded / total) * 100);
+          this.loadingWidth = load;
+          if (load >= 100) {
+            setTimeout(() => {
+              this.isLoading = false;
+            }, 1000);
+          }
+          console.log((loaded / total) * 100 + "% loaded", type);
+        },
+        (err) => {
+          reject(err);
+        }
+      );
+    });
+  }
+  // 绘制障碍物
+  drawObjs(data) {
+    // 释放资源
+    if (this.objs.group) {
+      this.objs.group.children.forEach((item) => {
+        this.scene.remove(item);
+      });
+      this.scene.remove(this.objs.group);
+    }
+    this.resTracker.dispose();
+    this.objs.group = null;
+
+    this.objs.group = new THREE.Group();
+    let obj;
+    for (let i = 0; i < data.length; i++) {
+      obj = this.setObj(data[i]);
+      this.objs.group.add(obj);
+    }
+    this.scene.add(this.objs.group);
+  }
+  // 绘制 n个线框
+  initSetMesh() {
+    this.initBoxGroup();
+    this.box.group = new THREE.Group();
+    let data = {
+      fX: 0,
+      fY: 0,
+    };
+    for (let i = this.num; i > 0; i--) {
+      this.box.group.add(this.setObj(data));
+      data.fX += 5;
+      data.fY += 5;
+    }
+    this.scene.add(this.box.group);
+  }
+  // 释放box线框资源
+  initBoxGroup() {
+    if (this.box.group) {
+      this.box.group.children.forEach((item) => {
+        this.scene.remove(item);
+      });
+      this.scene.remove(this.box.group);
+    }
+    // 释放资源
+    this.resTracker.dispose();
+    this.box.group = null;
+  }
+  // 初始化 线框 几何体geometry+材质material
+  initBoxMG() {
+    this.box.geometry = this.track(new THREE.BoxGeometry(2, 4, 2, 2, 2, 2));
+    this.box.material = this.track(
+      new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+    );
+  }
+  // 绘制 单个线框
+  setObj(data) {
+    try {
+      const object = new THREE.Mesh(this.box.geometry, this.box.material);
+      object.position.set(data.fX, data.fY, 1);
+      const box = new THREE.BoxHelper(object, 0xff6100);
+      return box;
+    } catch (err) {
+      console.log(err, "err---setObj");
+    }
+  }
+
+  // 创建场景
+  setScene() {
+    this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color(0xf0f0f0);
+    this.scene2 = new THREE.Scene();
+  }
+  // 创建相机
+  setCamera() {
+    this.camera = new THREE.PerspectiveCamera(
+      75,
+      this.mapDOM.clientWidth / this.mapDOM.clientHeight,
+      0.1,
+      1200
+    );
+    this.camera.position.set(0, -38, 22);
+    this.camera.updateMatrix();
+  }
+  // 创建环境光
+  setAmbientLight(intensity = 1, color = 0xffffff) {
+    const light = new THREE.AmbientLight(color, intensity);
+    this.scene.add(light);
+  }
+  // 设置灯光
+  setLight() {
+    // 添加方向光
+    this.directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    this.directionalLight.position.set(0, 5, 0);
+    this.dhelper = new THREE.DirectionalLightHelper(this.directionalLight, 25);
+    this.scene.add(this.directionalLight);
   }
   // 创建渲染器
   setRender() {
@@ -319,55 +517,6 @@ export default class Base {
     // this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     // 将render里面的dom添加到目标dom中
     this.mapDOM.appendChild(this.renderer.domElement);
-  }
-  // 加载3D模型
-  async load3D() {
-    const gltf = await this.loadFile(
-      "src/assets/car_model/toyota_fortuner_2021/scene.gltf"
-    );
-    this.scene.add(gltf.scene);
-  }
-  // 加载3d模型文件
-  loadFile(url) {
-    return new Promise((resolve, reject) => {
-      new GLTFLoader().load(
-        url,
-        (gltf) => {
-          gltf.scene.rotation.y = Math.PI;
-          gltf.scene.rotation.x = Math.PI / 2;
-          // 获取模型的大小
-          const box = new THREE.Box3().setFromObject(gltf.scene);
-          // 3d辅助框
-          // const boxhlper = new THREE.Box3Helper(box, 0x000000);
-          // boxhlper.rotation.x = (Math.PI / 2);
-          const center = box.getCenter(new THREE.Vector3());
-          const size = box.getSize(new THREE.Vector3());
-          // console.log(size, "size");
-          // console.log(center, 'center');
-          // this.scene.add(boxhlper);
-          // console.log(gltf.scene, "gltf");
-          gltf.scene.position.y = -(size.y / 2) - center.y;
-          resolve(gltf);
-        },
-        ({ loaded, total }) => {
-          let load = Math.abs((loaded / total) * 100);
-          this.loadingWidth = load;
-          if (load >= 100) {
-            setTimeout(() => {
-              this.isLoading = false;
-            }, 1000);
-          }
-          console.log((loaded / total) * 100 + "% loaded");
-        },
-        (err) => {
-          reject(err);
-        }
-      );
-    });
-  }
-  // 绘制障碍物
-  drawObjs() {
-
   }
   // 添加控制器
   setControls() {
@@ -396,6 +545,18 @@ export default class Base {
   // 更新视图
   update = () => {
     requestAnimationFrame(this.update);
+    // this.renderer.dispose();
+    // this.resTracker.dispose();
+    // 清除深度缓存---很重要
+    this.renderer.clearDepth();
     this.renderer.render(this.scene, this.camera);
   };
+  waitSeconds(seconds = 0) {
+    return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+  }
+  clear() {
+    this.initBoxGroup();
+    this.initLanesGroup();
+    this.resTracker.dispose();
+  }
 }
