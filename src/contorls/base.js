@@ -69,16 +69,15 @@ export default class Base {
     this.setCamera();
     this.setAmbientLight();
     this.setLight();
+    this.setRender();
+    this.setControls();
     // 初始化线框所需的几何体、材质、mesh
     this.initBoxMG();
-    this.initSetMesh();
+    // this.initSetMesh();
     // this.load3D();
     // this.loadObjs();
     this.setMesh();
-    this.setRender();
-    this.setControls();
   }
-
   // 绘制可以改变宽度的线条   dashed：true虚线、false实线
   setWidthLine(cmd, pointsArr, dashed = false, color = "rgb(80,190,225)") {
     try {
@@ -102,7 +101,7 @@ export default class Base {
       console.log(err, "err---setWidthLine");
     }
   }
-  // 绘制车头线egoTrjs
+  // 绘制车头线egoTrjs--车头线逻辑是将
   drawHeadLine(points) {
     if (!this.egoTrjs.headline) {
       this.egoTrjs.headline = this.setWidthLine(
@@ -125,6 +124,8 @@ export default class Base {
     if (this.lanes.group) {
       this.lanes.group.children.forEach((item) => {
         this.scene.remove(item);
+        item.geometry.dispose();
+        item.material.dispose();
       });
       this.scene.remove(this.lanes.group);
     }
@@ -309,18 +310,6 @@ export default class Base {
     lineR.position.x += 0.01;
     return [lineL, lineR];
   }
-  // 修改
-  updateDraw(cmd, data) {
-    if (cmd === "egoTrjs") {
-      // const points = this.handlePoints(data);
-      // this.egoTrjs.headline.geometry.setPositions(points);
-    } else if (cmd === "lanes") {
-      // this.scene.remove(this.lanes.group);
-      // this.drawLanes(data);
-    } else if (cmd === "objs") {
-      this.drawObjs(data);
-    }
-  }
   // 处理带宽度的线条坐标数据
   handlePoints(pointsArr) {
     // 处理坐标数据
@@ -343,6 +332,8 @@ export default class Base {
       size = box.getSize(new THREE.Vector3());
     gltf.position.y = -(size.y / 2) - center.y;
     this.scene.add(gltf);
+    // gltf.matrixAutoUpdate = false;
+    // gltf.updateMatrix();
   }
   // 加载障碍物模型
   async loadObjs() {
@@ -414,25 +405,19 @@ export default class Base {
       );
     });
   }
-  // 绘制障碍物
-  drawObjs(data) {
-    // 释放资源
-    if (this.objs.group) {
-      this.objs.group.children.forEach((item) => {
-        this.scene.remove(item);
-      });
-      this.scene.remove(this.objs.group);
-    }
-    this.resTracker.dispose();
-    this.objs.group = null;
 
-    this.objs.group = new THREE.Group();
-    let obj;
+
+  // 绘制线框
+  drawBoxs(data) {
+    // console.log(data, "data===xiankuang");
+    this.initBoxGroup();
+    this.box.group = new THREE.Group();
+    let box;
     for (let i = 0; i < data.length; i++) {
-      obj = this.setObj(data[i]);
-      this.objs.group.add(obj);
+      box = this.setObj(data[i]);
+      this.box.group.add(box);
     }
-    this.scene.add(this.objs.group);
+    this.scene.add(this.box.group);
   }
   // 绘制 n个线框
   initSetMesh() {
@@ -452,8 +437,12 @@ export default class Base {
   // 释放box线框资源
   initBoxGroup() {
     if (this.box.group) {
+      // console.log(this.box.group.children, "this.box.group.children");
       this.box.group.children.forEach((item) => {
+        // console.log(item, "item");
         this.scene.remove(item);
+        item.geometry.dispose();
+        item.material.dispose();
       });
       this.scene.remove(this.box.group);
     }

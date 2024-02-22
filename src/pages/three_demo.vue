@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-02-22 12:21:15
+ * @LastEditTime: 2024-02-22 14:03:08
  * @Description: 
 -->
 <script setup>
@@ -45,7 +45,7 @@ function initWS() {
   };
   // 收到服务器数据后的回调---用于接收数据
   ws.value.onmessage = function (evt) {
-    if (base.lineNum > 30) return;
+    // if (base.lineNum > 30) return;
     const data = JSON.parse(evt.data);
     drawLines(data);
   };
@@ -62,19 +62,14 @@ function drawLines(data) {
       objs: "障碍物",
       lanes: "车道线",
     };
-    console.log(data, `${cmd[data.cmd]} data`);
+    // console.log(data, `${cmd[data.cmd]} data`);
     if (data.cmd === "egoTrjs") {
       // 车头线是只有一根线，所以直接修改线坐标
       base.drawHeadLine(data.points);
     } else if (data.cmd === "lanes") {
       base.drawLanes(data.info);
     } else if (data.cmd === "objs") {
-      // if (base[data.cmd].num != 0) {
-      //   base.updateDraw(data.cmd, data.info);
-      // } else {
-      //   base.drawObjs(data.cmd, data.info);
-      //   base[data.cmd].num++;
-      // }
+      base.drawBoxs(data.info);
     }
     base.lineNum++;
   } catch (err) {
