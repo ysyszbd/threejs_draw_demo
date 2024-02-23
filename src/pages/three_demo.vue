@@ -1,21 +1,23 @@
 <!--
- * @LastEditTime: 2024-02-22 17:26:10
+ * @LastEditTime: 2024-02-23 17:48:33
  * @Description: 
 -->
 <script setup>
-import { onMounted, reactive, ref, onUnmounted } from "vue";
+import { onMounted, inject, ref, onUnmounted } from "vue";
 import * as THREE from "three";
-import Base from "@/contorls/base.js";
+// import Base from "@/contorls/base.js";
 
 let loadingWidth = ref(0);
 let isLoading = ref(true);
 let mapDOM = ref(null),
-  base = null,
+base = inject("$Base"),
   ws = ref(null),
   wsStatus = ref(false);
 initWS();
 onMounted(() => {
-  base = new Base(mapDOM.value);
+  console.log(base, "base")
+  base.start(mapDOM.value);
+  // base = new Base(mapDOM.value);
   update();
   window.addEventListener("resize", resize);
 });
@@ -39,7 +41,7 @@ function initWS() {
   };
   // 收到服务器数据后的回调---用于接收数据
   ws.value.onmessage = function (evt) {
-    // if (base.lineNum > 30) return;
+    // if (base.lineNum > 100) return;
     const data = JSON.parse(evt.data);
     drawLines(data);
   };
@@ -57,12 +59,14 @@ function drawLines(data) {
       lanes: "车道线",
     };
     // console.log(data, `${cmd[data.cmd]} data`);
+    // return
     if (data.cmd === "egoTrjs") {
       // 车头线是只有一根线，所以直接修改线坐标
       base.drawHeadLine(data.points);
     } else if (data.cmd === "lanes") {
       base.drawLanes(data.info);
     } else if (data.cmd === "objs") {
+      base.handleObj(data.info);
       base.drawBoxs(data.info);
     }
     base.lineNum++;
@@ -82,12 +86,12 @@ function drawLines(data) {
         </div>
         <div style="padding-left: 10px">{{ parseInt(base?.loadingWidth ? base?.loadingWidth : 0) }}%</div>
       </div> -->
-      <div id="little_car" class="obj"></div>
-      <div id="my_car" class="obj"></div>
+      <!-- <div id="little_car" class="obj"></div> -->
+      <!-- <div id="my_car" class="obj"></div>
       <div id="bicycle" class="obj"></div>
       <div id="bus" class="obj"></div>
       <div id="cone" class="obj"></div>
-      <div id="barrier" class="obj"></div>
+      <div id="barrier" class="obj"></div> -->
     </div>
   </div>
 </template>
@@ -118,7 +122,6 @@ body {
       z-index: 1;
       top: 0;
       left: 0;
-      
     }
   }
 }

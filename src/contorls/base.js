@@ -53,6 +53,7 @@ export default class Base {
     obstacles: [],
     num: 0,
     group: null,
+    little_car_g: new THREE.Object3D(),
     little_car: null,
     bus: null,
     bicycle_p: null,
@@ -65,20 +66,20 @@ export default class Base {
   }; // 线框
   num = 100;
   renderObj;
-  constructor(mapDOM) {
-    this.mapDOM = mapDOM;
+  constructor() {
+    // constructor(mapDOM) {
+    // this.mapDOM = mapDOM;
     this.setScene();
-    this.setCamera();
+    // this.setCamera();
+    this.loadObjs();
     this.setAmbientLight();
     this.setLight();
-    this.setRender();
-    this.setControls();
+    // this.setControls();
     // 初始化线框所需的几何体、材质、mesh
     this.initBoxMG();
-    // this.initSetMesh();
-    // this.load3D();
-    // this.loadObjs();
+    // this.getDom();
     this.setMesh();
+    // this.setRender();
   }
   // 获取dom元素--用来放置障碍物
   getDom() {
@@ -87,11 +88,14 @@ export default class Base {
     // this.objs.bicycle = document.getElementById("bicycle");
     // this.objs.cone = document.getElementById("cone");
     const element = document.createElement("div");
-    element.style.width = 10 + "px";
-    element.style.height = 10 + "px";
-    element.style.opacity = 0.75;
-    element.style.background = "#000";
-    
+    element.style.width = 300 + "px";
+    element.style.height = 300 + "px";
+    element.style.opacity = 0.8;
+    element.style.background = "seagreen";
+    const object = new CSS3DObject(element);
+    object.position.copy(new THREE.Vector3(0, -50, 0));
+    object.rotation.copy(new THREE.Euler(-90 * THREE.MathUtils.DEG2RAD, 0, 0));
+    this.scene2.add(object);
     console.log(this.objs, "this.objs");
   }
   // 绘制可以改变宽度的线条   dashed：true虚线、false实线
@@ -287,7 +291,6 @@ export default class Base {
         for (let j = 0; j < line.length; j++) {
           this.lanes.group.add(line[j]);
         }
-        // console.log(this.lanes.group.children, "this.lanes.group children");
         this.scene.add(this.lanes.group);
       }
     } catch (err) {
@@ -337,9 +340,8 @@ export default class Base {
   }
   // 加载3D模型
   async load3D() {
-    const car = await this.loadFile("car_for_games_unity/scene.gltf", "主车");
+    const car = await this.loadFile("car_for_games_unity", "主车");
     const gltf = car.scene;
-    console.log(car, "car");
     // 旋转模型
     // gltf.scene.rotation.y = Math.PI;
     gltf.rotation.x = Math.PI / 2;
@@ -355,45 +357,78 @@ export default class Base {
   // 加载障碍物模型
   async loadObjs() {
     try {
+      const filesArr = [
+        "car_for_games_unity",
+        "bus",
+        "bicycle_low-poly_minimalistic",
+        "bicycle_low-poly_minimalistic",
+        "street_cone",
+        "street_cone",
+        "barrier",
+        "car_for_games_unity",
+      ];
+      const res = await Promise.all(filesArr.map(this.loadFile));
+      // debugger
+      console.log(res, "res");
+      // 主车
+      const gltf = res[7].scene;
+      gltf.rotation.x = Math.PI / 2;
+      // 3d辅助框 获取模型的大小
+      const box = new THREE.Box3().setFromObject(gltf),
+        center = box.getCenter(new THREE.Vector3()),
+        size = box.getSize(new THREE.Vector3());
+      gltf.position.y = -(size.y / 2) - center.y;
+      this.scene.add(gltf);
+      gltf.matrixAutoUpdate = false;
+      gltf.updateMatrix();
       // 小车
-      const little_car = await this.loadFile("car_for_games_unity/scene.gltf");
-      little_car.scene.rotation.x = Math.PI / 2;
-      little_car.scene.position.y = 6;
-      little_car.scene.position.x = 0;
-      this.scene.add(little_car.scene);
+      this.objs.little_car = res[0];
+      const little_car = this.objs.little_car.scene;
+      little_car.rotation.x = Math.PI / 2;
+      little_car.position.y = -10;
+      little_car.position.x = -10;
+      this.scene.add(little_car);
+      little_car.matrixAutoUpdate = false;
+      little_car.updateMatrix();
       // 自行车--无人
-      const bicycle = await this.loadFile(
-        "bicycle_low-poly_minimalistic/scene.gltf"
-      );
-      bicycle.scene.rotation.x = Math.PI / 2;
-      bicycle.scene.rotation.y = Math.PI;
-      bicycle.scene.position.x = -3;
-      bicycle.scene.position.y = -4;
-      bicycle.scene.scale.set(2, 2, 2);
-      this.scene.add(bicycle.scene);
+      this.objs.bicycle = res[3];
+      const bicycle = this.objs.bicycle.scene;
+      bicycle.rotation.x = Math.PI / 2;
+      bicycle.rotation.y = Math.PI;
+      bicycle.position.x = -3;
+      bicycle.position.y = -4;
+      bicycle.scale.set(2, 2, 2);
+      this.scene.add(bicycle);
+      bicycle.matrixAutoUpdate = false;
+      bicycle.updateMatrix();
       // bus
-      const bus = await this.loadFile("bus/scene.gltf");
-      bus.scene.rotation.x = Math.PI / 2;
-      bus.scene.rotation.y = Math.PI;
-      bus.scene.position.x = -16;
-      bus.scene.position.y = -4;
-      this.scene.add(bus.scene);
+      this.objs.bus = res[1];
+      const bus = this.objs.bus.scene;
+      bus.rotation.x = Math.PI / 2;
+      bus.rotation.y = Math.PI;
+      bus.position.x = -16;
+      bus.position.y = -4;
+      this.scene.add(bus);
+      bus.matrixAutoUpdate = false;
+      bus.updateMatrix();
       // cone锥桶
-      const cone = await this.loadFile("street_cone/scene.gltf");
-      cone.scene.rotation.x = Math.PI / 2;
-      cone.scene.position.x = -16;
-      cone.scene.position.y = -4;
-      this.scene.add(cone.scene);
+      this.objs.cone = res[5];
+      const cone = this.objs.cone.scene;
+      cone.rotation.x = Math.PI / 2;
+      cone.position.x = -16;
+      cone.position.y = -4;
+      this.scene.add(cone);
+      cone.matrixAutoUpdate = false;
+      cone.updateMatrix();
       // barrier栅栏
-      this.objs.barrier = await this.loadFile("barrier/scene.gltf");
-      this.objs.barrier.scene.rotation.x = Math.PI / 2;
-      this.objs.barrier.scene.position.x = 5;
-      this.objs.barrier.scene.position.y = 4;
-      this.scene.add(this.objs.barrier.scene);
-
-      // let barrier = THREE.Object3D.prototype.clone.call( this.objs.barrier );
-      // barrier.scene.position.x = -5 ;
-      // barrier.scene.position.y = 4 ;
+      this.objs.barrier = res[6];
+      const barrier = this.objs.barrier.scene;
+      barrier.rotation.x = Math.PI / 2;
+      barrier.position.x = 5;
+      barrier.position.y = 4;
+      this.scene.add(barrier);
+      barrier.matrixAutoUpdate = false;
+      barrier.updateMatrix();
     } catch (err) {
       console.log(err, "err---loadObjs");
     }
@@ -402,25 +437,98 @@ export default class Base {
   loadFile(url, type) {
     return new Promise((resolve, reject) => {
       new GLTFLoader().load(
-        `src/assets/car_model/${url}`,
+        `src/assets/car_model/${url}/scene.gltf`,
         (gltf) => {
           resolve(gltf);
         },
         ({ loaded, total }) => {
-          let load = Math.abs((loaded / total) * 100);
-          this.loadingWidth = load;
-          if (load >= 100) {
-            setTimeout(() => {
-              this.isLoading = false;
-            }, 1000);
-          }
-          console.log((loaded / total) * 100 + "% loaded", type);
+          // let load = Math.abs((loaded / total) * 100);
+          // this.loadingWidth = load;
+          // if (load >= 100) {
+          //   setTimeout(() => {
+          //     this.isLoading = false;
+          //   }, 1000);
+          // }
+          // console.log((loaded / total) * 100 + "% loaded", type);
         },
         (err) => {
           reject(err);
         }
       );
     });
+  }
+  // 清除障碍物group
+  initObjGroup() {
+    if (this.objs.group) {
+      this.objs.group.children.forEach((item) => {
+        // console.log(item, "item");
+        this.scene.remove(item);
+      });
+      this.scene.remove(this.objs.group);
+    }
+    // 释放资源
+    this.resTracker.dispose();
+    this.objs.group = null;
+  }
+  // 操作障碍物
+  handleObj(data) {
+    // this.initObjGroup();
+    let l_c = [];
+    data.forEach((item) => {
+      if (item.nType === 0) {
+        l_c.push(item);
+      }
+    });
+    console.log(l_c, data);
+    if (!this.objs.little_car) return;
+    if (this.objs.little_car_g.children.length <= 0) {
+      //   debugger;
+      this.objs.little_car_g.clear();
+      for (let i = 0; i < l_c.length; i++) {
+        let l_c_model = this.objs.little_car.scene.clone();
+        // this.track(l_c_model);
+        l_c_model.matrixAutoUpdate = true;
+        l_c_model.position.x = data[i].fX;
+        l_c_model.position.y = data[i].fY;
+        this.objs.little_car_g.add(l_c_model);
+      }
+      this.scene.add(this.objs.little_car_g);
+    } else {
+      if (this.objs.little_car_g.children.length >= l_c.length) {
+        for (let i = 0; i < l_c.length; i++) {
+          this.objs.little_car_g.children[i].position.x = l_c[i].fX;
+          this.objs.little_car_g.children[i].position.y = l_c[i].fY;
+        }
+        for (
+          let j = l_c.length;
+          j < this.objs.little_car_g.children.length;
+          j++
+        ) {
+          this.objs.little_car_g.children[j].position.x = 100;
+          this.objs.little_car_g.children[j].position.y = 100;
+        }
+      } else {
+        for (let i = 0; i < this.objs.little_car_g.children.length; i++) {
+          console.log(l_c[i], "l_c[i]", l_c, i, this.objs.little_car_g.children.length);
+          this.objs.little_car_g.children[i].position.x = l_c[i].fX;
+          this.objs.little_car_g.children[i].position.y = l_c[i].fY;
+        }
+
+        for (
+          let j = this.objs.little_car_g.children.length;
+          j < l_c.length;
+          j++
+        ) {
+          let l_c_model = this.objs.little_car.scene.clone();
+          // this.track(l_c_model);
+          l_c_model.matrixAutoUpdate = true;
+          l_c_model.position.x = data[j].fX;
+          l_c_model.position.y = data[j].fY;
+          this.objs.little_car_g.add(l_c_model);
+        }
+        this.scene.add(this.objs.little_car_g);
+      }
+    }
   }
 
   // 绘制线框
@@ -435,27 +543,10 @@ export default class Base {
     }
     this.scene.add(this.box.group);
   }
-  // 绘制 n个线框
-  initSetMesh() {
-    this.initBoxGroup();
-    this.box.group = new THREE.Group();
-    let data = {
-      fX: 0,
-      fY: 0,
-    };
-    for (let i = this.num; i > 0; i--) {
-      this.box.group.add(this.setObj(data));
-      data.fX += 5;
-      data.fY += 5;
-    }
-    this.scene.add(this.box.group);
-  }
   // 释放box线框资源
   initBoxGroup() {
     if (this.box.group) {
-      // console.log(this.box.group.children, "this.box.group.children");
       this.box.group.children.forEach((item) => {
-        // console.log(item, "item");
         this.scene.remove(item);
         item.geometry.dispose();
         item.material.dispose();
@@ -527,10 +618,6 @@ export default class Base {
     // this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     // 将render里面的dom添加到目标dom中
     this.mapDOM.appendChild(this.renderer.domElement);
-
-    this.renderObj = new CSS3DRenderer();
-    this.renderObj.setSize(this.mapDOM.clientWidth, this.mapDOM.clientHeight);
-    this.mapDOM.appendChild(this.renderObj.domElement);
   }
   // 添加控制器
   setControls() {
@@ -572,5 +659,11 @@ export default class Base {
     this.initBoxGroup();
     this.initLanesGroup();
     this.resTracker.dispose();
+  }
+  start(mapDOM) {
+    this.mapDOM = mapDOM;
+    this.setCamera();
+    this.setRender();
+    this.setControls();
   }
 }
