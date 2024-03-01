@@ -1,11 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import {
-  CSS3DRenderer,
-  CSS3DObject,
-} from "three/examples/jsm/renderers/CSS3DRenderer.js";
-import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
@@ -37,7 +32,13 @@ export default class Base {
   lineWidth = {
     egoTrjs: 2,
     lanes: 3,
+    road: 20,
   }; // 线段的宽度
+  road = {
+    left: null,
+    right: null,
+    group: null,
+  };
   egoTrjs = {
     headline: null,
     num: 0, // 用于判断是否第一次绘制
@@ -67,39 +68,22 @@ export default class Base {
   num = 100;
   renderObj;
   constructor() {
-    // constructor(mapDOM) {
-    // this.mapDOM = mapDOM;
     this.setScene();
-    // this.setCamera();
+    this.initBoxMG();
     this.loadObjs();
     this.setAmbientLight();
     this.setLight();
-    // this.setControls();
     // 初始化线框所需的几何体、材质、mesh
-    this.initBoxMG();
-    // this.getDom();
     this.setMesh();
-    // this.setRender();
-  }
-  // 获取dom元素--用来放置障碍物
-  getDom() {
-    // this.objs.little_car = document.getElementById("little_car");
-    // this.objs.bus = document.getElementById("bus");
-    // this.objs.bicycle = document.getElementById("bicycle");
-    // this.objs.cone = document.getElementById("cone");
-    const element = document.createElement("div");
-    element.style.width = 300 + "px";
-    element.style.height = 300 + "px";
-    element.style.opacity = 0.8;
-    element.style.background = "seagreen";
-    const object = new CSS3DObject(element);
-    object.position.copy(new THREE.Vector3(0, -50, 0));
-    object.rotation.copy(new THREE.Euler(-90 * THREE.MathUtils.DEG2RAD, 0, 0));
-    this.scene2.add(object);
-    console.log(this.objs, "this.objs");
   }
   // 绘制可以改变宽度的线条   dashed：true虚线、false实线
-  setWidthLine(cmd, pointsArr, dashed = false, color = "rgb(80,190,225)") {
+  setWidthLine(
+    cmd,
+    pointsArr,
+    dashed = false,
+    color = "rgb(80,190,225)",
+    lineW
+  ) {
     try {
       // 处理坐标数据
       let points = this.handlePoints(pointsArr);
@@ -108,7 +92,7 @@ export default class Base {
       const matLine = this.track(
         new LineMaterial({
           color: color,
-          linewidth: this.lineWidth[cmd],
+          linewidth: this.lineWidth[cmd] || lineW,
           dashed: dashed,
           vertexColors: false,
         })
@@ -155,6 +139,11 @@ export default class Base {
   // 车道线lanes--整理线类型
   drawLanes(info) {
     try {
+      let road = info.filter((res) => {
+        return res.type === 2;
+      });
+      this.drawMeshRoad(road);
+      // console.log(road, "info==========");
       this.initLanesGroup();
       let line = [],
         color = this.lanes.color;
@@ -479,7 +468,7 @@ export default class Base {
         l_c.push(item);
       }
     });
-    console.log(l_c, data);
+    // console.log(l_c, data);
     if (!this.objs.little_car) return;
     if (this.objs.little_car_g.children.length <= 0) {
       //   debugger;
@@ -509,7 +498,13 @@ export default class Base {
         }
       } else {
         for (let i = 0; i < this.objs.little_car_g.children.length; i++) {
-          console.log(l_c[i], "l_c[i]", l_c, i, this.objs.little_car_g.children.length);
+          console.log(
+            l_c[i],
+            "l_c[i]",
+            l_c,
+            i,
+            this.objs.little_car_g.children.length
+          );
           this.objs.little_car_g.children[i].position.x = l_c[i].fX;
           this.objs.little_car_g.children[i].position.y = l_c[i].fY;
         }
@@ -557,12 +552,17 @@ export default class Base {
     this.resTracker.dispose();
     this.box.group = null;
   }
-  // 初始化 线框 几何体geometry+材质material
+  // 初始化 几何体geometry、材质material
   initBoxMG() {
+    // 初始化 线框 几何体geometry+材质material
     this.box.geometry = this.track(new THREE.BoxGeometry(2, 4, 2, 2, 2, 2));
     this.box.material = this.track(
       new THREE.MeshBasicMaterial({ color: 0x00ff00 })
     );
+    // 初始化 道路 所需的材质material
+    // this.road.material = new THREE.MeshBasicMaterial({
+    //   color: "rgb(53, 52, 52)",
+    // });
   }
   // 绘制 单个线框
   setObj(data) {
@@ -622,6 +622,64 @@ export default class Base {
   // 添加控制器
   setControls() {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+  }
+  // 初始化道路元素
+  setMeshRoad(points, directoin) {
+    let x0,
+      x2,
+      x1;
+    if (directoin === "left") {
+      x0 = points[0].x - 1;
+    }
+    if (directoin === "right") {
+      x0 = points[0].x + 1;
+    }
+    
+    const shapes = this.track(new THREE.Shape());
+    shapes.moveTo(x0, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+      if (directoin === "left") x2 = points[i].x - 1;
+      if (directoin === "right") x2 = points[i].x + 1;
+      shapes.lineTo(x2, points[i].y);
+    }
+    for (let i = points.length - 1; i >= 0; i--) {
+      if (directoin === "left") x1 = points[i].x + 6;
+      if (directoin === "right") x1 = points[i].x - 8;
+      shapes.lineTo(x1, points[i].y);
+    }
+    const geometry = this.track(new THREE.ShapeGeometry(shapes));
+    const material = this.track(new THREE.MeshBasicMaterial({
+      color: "rgb(53, 52, 52)",
+    }));
+    const mesh = new THREE.Mesh(geometry, material);
+    return mesh;
+  }
+  // 释放道路占用的内存
+  initRoadGroup() {
+    if (this.road.group) {
+      this.road.group.children.forEach((item) => {
+        this.scene.remove(item);
+        item.geometry.dispose();
+        item.material.dispose();
+      });
+      this.scene.remove(this.road.group);
+    }
+    this.resTracker.dispose();
+    this.road.group = null;
+  }
+  // 线类型是2是指路沿两边
+  drawMeshRoad(data) {
+    try {
+      this.initRoadGroup();
+      this.road.group = new THREE.Object3D();
+      const l_mesh = this.setMeshRoad(data[0].points, "left");
+      this.road.group.add(l_mesh);
+      const r_mesh = this.setMeshRoad(data[1].points, "right");
+      this.road.group.add(r_mesh);
+      this.scene.add(this.road.group);
+    } catch (err) {
+      console.log(err, "err---drawMeshRoad");
+    }
   }
   // 绘制辅助网格、坐标
   setMesh() {

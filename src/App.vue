@@ -1,14 +1,16 @@
 <!--
- * @LastEditTime: 2024-02-21 16:44:01
+ * @LastEditTime: 2024-02-26 17:19:33
  * @Description: 
 -->
 <script setup>
 import threeDemo from "./pages/three_demo.vue";
+import mainPage from "./pages/main.vue"
 </script>
 
 <template>
   <div class="main_box">
-    <threeDemo />
+    <mainPage />
+    <!-- <threeDemo /> -->
   </div>
 </template>
 

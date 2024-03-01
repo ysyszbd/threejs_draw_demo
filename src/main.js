@@ -5,7 +5,7 @@
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
-import Base from "@/contorls/base.js";
+import Base from "@/controls/base.js";
 
 let base = new Base();
 const app = createApp(App);
