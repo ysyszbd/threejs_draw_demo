@@ -5,6 +5,7 @@
         ref="foresight"
         :video_id="'foresight'"
         :class="[`v_1`, 'v_box']"
+        :img_src="img1"
       />
       <div class="line_box_h">
         <div class="line"></div>
@@ -17,7 +18,7 @@
     </div>
     <div class="r_box">
       <div class="videos_box">
-        <videoYH ref="v_one" :video_id="'v_one'" :class="[`v_1`, 'v_box']" />
+        <videoYH ref="v_one" :video_id="'v_one'" :class="[`v_1`, 'v_box']"  />
         <div class="line_box_v">
           <div class="line"></div>
         </div>
@@ -36,7 +37,7 @@
         <videoYH ref="v_four" :video_id="'v_four'" :class="[`v_4`, 'v_box']" />
       </div>
       <div class="bev">
-        <!-- <threeDemo /> -->
+        <threeDemo />
         <!-- <Demo /> -->
       </div>
     </div>
@@ -51,8 +52,8 @@ import { ref, onMounted } from "vue";
 import Ws from "../controls/ws.js";
 import { decode } from "@msgpack/msgpack";
 
-let status = ref(""),
-  foresight = ref(),
+
+let foresight = ref(),
   rearview = ref(),
   v_one = ref(),
   v_two = ref(),

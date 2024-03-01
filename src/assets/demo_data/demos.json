@@ -1,0 +1,505 @@
+{
+  "lidar": [
+    {
+      "class": "car",
+      "attrs": {
+        "car_type": [
+          "civil"
+        ],
+        "occluded": [
+          "1"
+        ],
+        "whether_to_adjust": [
+          "unadjusted"
+        ],
+        "direction": [
+          "1"
+        ]
+      },
+      "id": "y4u-1",
+      "track_id": 1,
+      "point_num": 4526,
+      "no_maps": [],
+      "group_id": 0,
+      "annotation": {
+        "type": "volume",
+        "data": {
+          "position": {
+            "x": 1.6868908751601175,
+            "y": 5.990337517504243,
+            "z": -1.0948091380161777
+          },
+          "dimension": {
+            "l": 4.56223617708568,
+            "w": 2,
+            "h": 1.4770483906314005
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0.31323820455140555
+          }
+        }
+      }
+    },
+    {
+      "class": "car",
+      "attrs": {
+        "car_type": [
+          "civil"
+        ],
+        "occluded": [
+          "1"
+        ],
+        "whether_to_adjust": [
+          "unadjusted"
+        ],
+        "direction": [
+          "1"
+        ]
+      },
+      "id": "y4u-2",
+      "track_id": 2,
+      "point_num": 1620,
+      "no_maps": [],
+      "group_id": 0,
+      "annotation": {
+        "type": "volume",
+        "data": {
+          "position": {
+            "x": 15.83887450311365,
+            "y": 10.293765230402082,
+            "z": -1.1542625868041003
+          },
+          "dimension": {
+            "l": 4.5,
+            "w": 1.8918930053710954,
+            "h": 1.5
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0.316041993904134
+          }
+        }
+      }
+    },
+    {
+      "class": "car",
+      "attrs": {
+        "car_type": [
+          "civil"
+        ],
+        "occluded": [
+          "1"
+        ],
+        "whether_to_adjust": [
+          "adjusted_true"
+        ],
+        "direction": [
+          "1"
+        ]
+      },
+      "id": "y4u-3",
+      "track_id": 3,
+      "point_num": 304,
+      "no_maps": [],
+      "group_id": 0,
+      "annotation": {
+        "type": "volume",
+        "data": {
+          "position": {
+            "x": 23.04420510729494,
+            "y": -10.50483397379212,
+            "z": -1.2316925551299416
+          },
+          "dimension": {
+            "l": 4.5,
+            "w": 2,
+            "h": 1.4079108283534172
+          },
+          "rotation": {
+            "x": -0.0013559544868752954,
+            "y": -0.0002623189125812172,
+            "z": 1.7618925992691776
+          }
+        }
+      }
+    },
+    {
+      "class": "motorcycle",
+      "attrs": {
+        "Is_there_anyone_present": [
+          "unmanned"
+        ],
+        "occluded": [
+          "1"
+        ],
+        "whether_to_adjust": [
+          "adjusted_true"
+        ],
+        "direction": [
+          "1"
+        ]
+      },
+      "id": "y4u-4",
+      "track_id": 4,
+      "point_num": 548,
+      "no_maps": [],
+      "group_id": 0,
+      "annotation": {
+        "type": "volume",
+        "data": {
+          "position": {
+            "x": 14.142608800629334,
+            "y": -11.56910886891863,
+            "z": -1.1078294377507967
+          },
+          "dimension": {
+            "l": 1.9698032379150399,
+            "w": 1.1363374498155387,
+            "h": 1.6628514227125815
+          },
+          "rotation": {
+            "x": -0.0051483268718482906,
+            "y": 0.00877110350406853,
+            "z": -1.0400073995282317
+          }
+        }
+      }
+    },
+    {
+      "class": "car",
+      "attrs": {
+        "car_type": [
+          "civil"
+        ],
+        "occluded": [
+          "1"
+        ],
+        "whether_to_adjust": [
+          "adjusted_true"
+        ],
+        "direction": [
+          "1"
+        ]
+      },
+      "id": "y4u-5",
+      "track_id": 5,
+      "point_num": 2339,
+      "no_maps": [],
+      "group_id": 0,
+      "annotation": {
+        "type": "volume",
+        "data": {
+          "position": {
+            "x": 18.22938990346827,
+            "y": -6.131298474532162,
+            "z": -1.264686308749597
+          },
+          "dimension": {
+            "l": 4.522977180214714,
+            "w": 2,
+            "h": 1.5011207270398759
+          },
+          "rotation": {
+            "x": -0.0013559544868752948,
+            "y": -0.0002623189125812176,
+            "z": 1.8946424794602705
+          }
+        }
+      }
+    },
+    {
+      "class": "motorcycle",
+      "attrs": {
+        "Is_there_anyone_present": [
+          "unmanned"
+        ],
+        "occluded": [
+          "1"
+        ],
+        "whether_to_adjust": [
+          "adjusted_true"
+        ],
+        "direction": [
+          "1"
+        ]
+      },
+      "id": "y4u-6",
+      "track_id": 6,
+      "point_num": 890,
+      "no_maps": [],
+      "group_id": 0,
+      "annotation": {
+        "type": "volume",
+        "data": {
+          "position": {
+            "x": 16.76195831232165,
+            "y": 0.008271226874960383,
+            "z": -1.154652551742744
+          },
+          "dimension": {
+            "l": 2.119129321030309,
+            "w": 1.0741408831345138,
+            "h": 1.6628514227125815
+          },
+          "rotation": {
+            "x": -0.00514832687184829,
+            "y": 0.008771103504068527,
+            "z": 2.101585254061561
+          }
+        }
+      }
+    },
+    {
+      "class": "motorcycle",
+      "attrs": {
+        "Is_there_anyone_present": [
+          "unmanned"
+        ],
+        "occluded": [
+          "1"
+        ],
+        "whether_to_adjust": [
+          "adjusted_true"
+        ],
+        "direction": [
+          "1"
+        ]
+      },
+      "id": "y4u-7",
+      "track_id": 7,
+      "point_num": 777,
+      "no_maps": [],
+      "group_id": 0,
+      "annotation": {
+        "type": "volume",
+        "data": {
+          "position": {
+            "x": 7.569471932416446,
+            "y": -7.18792629574009,
+            "z": -1.2058915127940588
+          },
+          "dimension": {
+            "l": 1.8579266996616268,
+            "w": 0.9573287687678237,
+            "h": 1.5580328682340958
+          },
+          "rotation": {
+            "x": -0.005148326871848293,
+            "y": 0.008771103504068532,
+            "z": 1.7642192895027822
+          }
+        }
+      }
+    },
+    {
+      "class": "motorcycle",
+      "attrs": {
+        "Is_there_anyone_present": [
+          "unmanned"
+        ],
+        "occluded": [
+          "1"
+        ],
+        "whether_to_adjust": [
+          "adjusted_true"
+        ],
+        "direction": [
+          "1"
+        ]
+      },
+      "id": "y4u-8",
+      "track_id": 8,
+      "point_num": 663,
+      "no_maps": [],
+      "group_id": 0,
+      "annotation": {
+        "type": "volume",
+        "data": {
+          "position": {
+            "x": 7.530921859577363,
+            "y": -4.499768756473165,
+            "z": -1.240882242718889
+          },
+          "dimension": {
+            "l": 1.7774588003782934,
+            "w": 0.9144881016565705,
+            "h": 1.5077558832960318
+          },
+          "rotation": {
+            "x": -0.0001573343319114876,
+            "y": -0.022684911427632508,
+            "z": 0.15737437667232074
+          }
+        }
+      }
+    },
+    {
+      "class": "suv",
+      "attrs": {
+        "occluded": [
+          "1"
+        ],
+        "whether_to_adjust": [
+          "unadjusted"
+        ],
+        "direction": [
+          "1"
+        ]
+      },
+      "id": "y4u-9",
+      "track_id": 9,
+      "point_num": 1541,
+      "no_maps": [],
+      "group_id": 0,
+      "annotation": {
+        "type": "volume",
+        "data": {
+          "position": {
+            "x": 14.850622778798405,
+            "y": 17.16503964017016,
+            "z": -1.0409372983213683
+          },
+          "dimension": {
+            "l": 4.509301455346042,
+            "w": 2.0100574942160447,
+            "h": 1.8635628798962565
+          },
+          "rotation": {
+            "x": -0.02173405888687693,
+            "y": -0.007106411713401887,
+            "z": -2.7977619539944563
+          }
+        }
+      }
+    },
+    {
+      "class": "car",
+      "attrs": {
+        "car_type": [
+          "civil"
+        ],
+        "occluded": [
+          "1"
+        ],
+        "whether_to_adjust": [
+          "unadjusted"
+        ],
+        "direction": [
+          "1"
+        ]
+      },
+      "id": "y4u-10",
+      "track_id": 10,
+      "point_num": 1840,
+      "no_maps": [],
+      "group_id": 0,
+      "annotation": {
+        "type": "volume",
+        "data": {
+          "position": {
+            "x": -16.763360341211055,
+            "y": -0.05392800029489579,
+            "z": -0.9775804708406151
+          },
+          "dimension": {
+            "l": 4.429933425095167,
+            "w": 2,
+            "h": 1.4770483906314005
+          },
+          "rotation": {
+            "x": 5.7616833773648e-05,
+            "y": -0.0001778837004829397,
+            "z": 0.3252863948508842
+          }
+        }
+      }
+    },
+    {
+      "class": "car",
+      "attrs": {
+        "car_type": [
+          "civil"
+        ],
+        "occluded": [
+          "1"
+        ],
+        "whether_to_adjust": [
+          "unadjusted"
+        ],
+        "direction": [
+          "1"
+        ]
+      },
+      "id": "y4u-11",
+      "track_id": 11,
+      "point_num": 2691,
+      "no_maps": [],
+      "group_id": 0,
+      "annotation": {
+        "type": "volume",
+        "data": {
+          "position": {
+            "x": -12.57519076631017,
+            "y": -1.9265382831022104,
+            "z": -0.917679717479194
+          },
+          "dimension": {
+            "l": 4.429933425095167,
+            "w": 2.1057044135199665,
+            "h": 1.5916796653105494
+          },
+          "rotation": {
+            "x": 5.7616833773648e-05,
+            "y": -0.0001778837004829397,
+            "z": 0.3252863948508842
+          }
+        }
+      }
+    },
+    {
+      "class": "car",
+      "attrs": {
+        "car_type": [
+          "civil"
+        ],
+        "occluded": [
+          "1"
+        ],
+        "whether_to_adjust": [
+          "unadjusted"
+        ],
+        "direction": [
+          "1"
+        ]
+      },
+      "id": "y4u-12",
+      "track_id": 12,
+      "point_num": 1453,
+      "no_maps": [],
+      "group_id": 0,
+      "annotation": {
+        "type": "volume",
+        "data": {
+          "position": {
+            "x": -22.062138621136043,
+            "y": 4.849161761668575,
+            "z": -1.0072508650441774
+          },
+          "dimension": {
+            "l": 4.429933425095167,
+            "w": 2,
+            "h": 1.5146752682381774
+          },
+          "rotation": {
+            "x": -0.01516781762120502,
+            "y": -0.005147658652581172,
+            "z": -2.8000052272104607
+          }
+        }
+      }
+    }
+  ]
+}
