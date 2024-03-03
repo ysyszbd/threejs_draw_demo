@@ -29,7 +29,7 @@ Module.onRuntimeInitialized = function () {
 let u8Array;
 let dataArray;
 let codecId = 0;
-console.log("Worker: mission start.");
+// console.log("Worker: mission start.");
 
 function decodeArray() {
   dataArray = u8Array;

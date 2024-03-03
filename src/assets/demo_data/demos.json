@@ -501,5 +501,32 @@
         }
       }
     }
-  ]
+  ],
+  "camera": {
+    "y4u-1-left_back": 1,
+    "y4u-10-left_back": 1,
+    "y4u-12-left_back": 1,
+    "y4u-1-left_front": 1,
+    "y4u-2-left_front": 1,
+    "y4u-6-left_front": 1,
+    "y4u-9-left_front": 1,
+    "y4u-2-foresight": 1,
+    "y4u-3-foresight": 1,
+    "y4u-4-foresight": 1,
+    "y4u-5-foresight": 1,
+    "y4u-6-foresight": 1,
+    "y4u-7-foresight": 1,
+    "y4u-8-foresight": 1,
+    "y4u-9-foresight": 1,
+    "y4u-3-right_front": 1,
+    "y4u-4-right_front": 1,
+    "y4u-5-right_front": 1,
+    "y4u-6-right_front": 1,
+    "y4u-7-right_front": 1,
+    "y4u-8-right_front": 1,
+    "y4u-10-rearview": 1,
+    "y4u-11-rearview": 1,
+    "y4u-12-rearview": 1,
+    "y4u-11-right_back": 1
+  }
 }

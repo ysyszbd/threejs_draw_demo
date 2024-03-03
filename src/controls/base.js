@@ -70,7 +70,7 @@ export default class Base {
   constructor() {
     this.setScene();
     this.initBoxMG();
-    this.loadObjs();
+    // this.loadObjs();
     this.setAmbientLight();
     this.setLight();
     // 初始化线框所需的几何体、材质、mesh

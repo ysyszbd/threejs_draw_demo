@@ -3,41 +3,64 @@
     <div class="l_box">
       <videoYH
         ref="foresight"
+        id="foresight"
         :video_id="'foresight'"
         :class="[`v_1`, 'v_box']"
-        :img_src="img1"
+        :img_src="foresight_img"
       />
       <div class="line_box_h">
         <div class="line"></div>
       </div>
       <videoYH
         ref="rearview"
+        id="rearview"
         :video_id="'rearview'"
         :class="[`v_1`, 'v_box']"
+        :img_src="rearview_img"
       />
     </div>
     <div class="r_box">
-      <div class="videos_box">
-        <videoYH ref="v_one" :video_id="'v_one'" :class="[`v_1`, 'v_box']"  />
-        <div class="line_box_v">
-          <div class="line"></div>
-        </div>
-        <videoYH ref="v_two" :video_id="'v_two'" :class="[`v_2`, 'v_box']" />
-        <div class="line_box_v">
-          <div class="line"></div>
-        </div>
+      <!-- <div class="videos_box">
         <videoYH
-          ref="v_three"
-          :video_id="'v_three'"
-          :class="[`v_3`, 'v_box']"
+          ref="right_front"
+          id="right_front"
+          :video_id="'right_front'"
+          :class="[`v_1`, 'v_box']"
+          :img_src="right_front_img"
         />
         <div class="line_box_v">
           <div class="line"></div>
         </div>
-        <videoYH ref="v_four" :video_id="'v_four'" :class="[`v_4`, 'v_box']" />
-      </div>
+        <videoYH
+          ref="right_back"
+          id="right_back"
+          :video_id="'right_back'"
+          :class="[`v_2`, 'v_box']"
+          :img_src="right_back_img"
+        />
+        <div class="line_box_v">
+          <div class="line"></div>
+        </div>
+        <videoYH
+          ref="left_back"
+          id="left_back"
+          :video_id="'left_back'"
+          :class="[`v_3`, 'v_box']"
+          :img_src="left_back_img"
+        />
+        <div class="line_box_v">
+          <div class="line"></div>
+        </div>
+        <videoYH
+          ref="left_front"
+          id="left_front"
+          :video_id="'left_front'"
+          :class="[`v_4`, 'v_box']"
+          :img_src="left_front_img"
+        />
+      </div> -->
       <div class="bev">
-        <threeDemo />
+        <!-- <threeDemo /> -->
         <!-- <Demo /> -->
       </div>
     </div>
@@ -51,27 +74,32 @@ import Demo from "./demo.vue";
 import { ref, onMounted } from "vue";
 import Ws from "../controls/ws.js";
 import { decode } from "@msgpack/msgpack";
-
+import foresight_img from "../assets/demo_data/foresight.jpg";
+import rearview_img from "../assets/demo_data/rearview.jpg";
+import right_front_img from "../assets/demo_data/right_front.jpg";
+import right_back_img from "../assets/demo_data/right_back.jpg";
+import left_back_img from "../assets/demo_data/left_back.jpg";
+import left_front_img from "../assets/demo_data/left_front.jpg";
 
 let foresight = ref(),
   rearview = ref(),
-  v_one = ref(),
-  v_two = ref(),
-  v_three = ref(),
-  v_four = ref();
-const ws = new Ws("ws://192.168.30.9:12347", true, (e) => {
-  if (e.data instanceof ArrayBuffer) {
-    const object = decode(e.data);
-    if (12100 == object[0]) {
-      foresight.value.updataCode(new Uint8Array(object[2]));
-      rearview.value.updataCode(new Uint8Array(object[2]));
-      v_one.value.updataCode(new Uint8Array(object[2]));
-      v_two.value.updataCode(new Uint8Array(object[2]));
-      v_three.value.updataCode(new Uint8Array(object[2]));
-      v_four.value.updataCode(new Uint8Array(object[2]));
-    }
-  }
-});
+  right_front = ref(),
+  right_back = ref(),
+  left_back = ref(),
+  left_front = ref();
+// const ws = new Ws("ws://192.168.30.9:12347", true, (e) => {
+//   if (e.data instanceof ArrayBuffer) {
+//     const object = decode(e.data);
+//     if (12100 == object[0]) {
+//       foresight.value.updataCode(new Uint8Array(object[2]));
+//       rearview.value.updataCode(new Uint8Array(object[2]));
+//       right_front.value.updataCode(new Uint8Array(object[2]));
+//       right_back.value.updataCode(new Uint8Array(object[2]));
+//       left_back.value.updataCode(new Uint8Array(object[2]));
+//       left_front.value.updataCode(new Uint8Array(object[2]));
+//     }
+//   }
+// });
 </script>
 
 <style lang="scss" scoped>
