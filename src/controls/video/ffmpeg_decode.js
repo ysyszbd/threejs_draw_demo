@@ -33,7 +33,7 @@ let codecId = 0;
 
 function decodeArray() {
   dataArray = u8Array;
-
+  // console.log(u8Array, "u8Array");
   var ptr = Module._malloc(u8Array.length * dataArray.BYTES_PER_ELEMENT);
   Module.HEAPU8.set(dataArray, ptr);
   Module._parsePkt(ptr, u8Array.length);
@@ -63,19 +63,19 @@ function decodeArray() {
 }
 
 onmessage = function (e) {
+  if (e.data.type === "data_objs") return;
   if ("updateCodecId" == e.data.type) { 
     codecId = e.data.info;
     Module._close();
     Module._init(codecId);
     console.log(codecId);
   } else {
-    if (codecId != 27) { 
+    if (codecId != 173) { 
       Module._close();
       Module._init(codecId);
       console.log(codecId);
     }
     u8Array = e.data;
-    // console.log(u8Array);
     decodeArray();
   }
 };
@@ -1584,14 +1584,14 @@ function dbg(text) {
           }
         }},default_tty1_ops:{put_char:function(tty, val) {
           if (val === null || val === 10) {
-            err(UTF8ArrayToString(tty.output, 0));
+            // err(UTF8ArrayToString(tty.output, 0));
             tty.output = [];
           } else {
             if (val != 0) tty.output.push(val);
           }
         },fsync:function(tty) {
           if (tty.output && tty.output.length > 0) {
-            err(UTF8ArrayToString(tty.output, 0));
+            // err(UTF8ArrayToString(tty.output, 0));
             tty.output = [];
           }
         }}};

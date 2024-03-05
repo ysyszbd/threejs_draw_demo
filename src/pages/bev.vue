@@ -1,19 +1,20 @@
 <!--
- * @LastEditTime: 2024-03-01 13:37:39
+ * @LastEditTime: 2024-03-05 14:29:22
  * @Description: 
 -->
 <template>
-  <div class="rbg_demo" id="demo_box">
+  <div class="rbg_demo" id="bev_box">
     <canvas id="img_canvas" class="img_canvas"></canvas>
   </div>
 </template>
 
 <script setup>
-import demo from "../controls/demo.js";
-import { onMounted } from "vue";
-let Demo = null;
+import bevControl from "../controls/bevControl.js";
+import { onMounted, inject } from "vue";
+let Bev = null;
+let base = inject("$Base");
 onMounted(() => {
-  Demo = new demo();
+  Bev = new bevControl();
 });
 </script>
 
@@ -44,4 +45,4 @@ onMounted(() => {
 //   opacity: 0.5;
 //   z-index: 1;
 // }
-</style>
+</style>../controls/bevControl.js

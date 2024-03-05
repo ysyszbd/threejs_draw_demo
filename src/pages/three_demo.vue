@@ -1,13 +1,10 @@
 <!--
- * @LastEditTime: 2024-03-03 13:09:23
+ * @LastEditTime: 2024-03-05 14:36:59
  * @Description: 
 -->
 <script setup>
 import { onMounted, inject, ref, onUnmounted } from "vue";
-// import Base from "@/controls/base.js";
 
-let loadingWidth = ref(0);
-let isLoading = ref(true);
 let mapDOM = ref(null),
 base = inject("$Base"),
   ws = ref(null),

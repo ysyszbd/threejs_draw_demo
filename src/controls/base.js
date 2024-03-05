@@ -5,6 +5,8 @@ import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 import ResourceTracker from "./resourceTracker";
+import demo_jpg from "../assets/demo.jpg";
+// import demo_jpg from "../assets/demo0.png";
 
 export default class Base {
   renderer;
@@ -67,14 +69,88 @@ export default class Base {
   }; // 线框
   num = 100;
   renderObj;
+  bev = {
+    dom: null,
+    ctx: null,
+  };
   constructor() {
     this.setScene();
     this.initBoxMG();
-    // this.loadObjs();
+    this.loadObjs();
     this.setAmbientLight();
     this.setLight();
     // 初始化线框所需的几何体、材质、mesh
     this.setMesh();
+    this.drawBev();
+  }
+  drawBev() {
+    let c = document.createElement("canvas");
+    let ctx = c.getContext("2d");
+    c.width = 1152;
+    c.height = 648;
+    let img_ele = document.createElement("img");
+    img_ele.src = demo_jpg;
+    let _this = this;
+    img_ele.onload = function (e) {
+      ctx.drawImage(img_ele, 0, 0, 1152, 648);
+      let imgData = ctx.getImageData(0, 0, c.width, c.height);
+      console.log(imgData, "imgData");
+      let pixelData = imgData.data;
+      let rgbData = [];
+      let bev_demo = [];
+      for (let i = 0; i < pixelData.length; i += 4) {
+        let red = pixelData[i];
+        let green = pixelData[i + 1];
+        let blue = pixelData[i + 2];
+        rgbData.push([red, green, blue]);
+        let sign = -1;
+        if (red === 0 && green === 0 && blue === 0) {
+          sign = 0;
+        } else if (red === 127 && green === 127 && blue === 127) {
+          sign = 1;
+        } else if (red === 237 && green === 28 && blue === 36) {
+          sign = 2;
+        }
+        bev_demo.push(sign);
+      }
+
+      let w_i = 0,
+        h_i = 0;
+      for (let i = 0; i < bev_demo.length; i++) {
+        let c = _this.getColor(bev_demo[i]);
+        h_i = Math.floor(i / c.width);
+        w_i = i - c.width * h_i;
+        ctx.fillStyle = `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+        ctx.fillRect(w_i * 1, h_i * 1, 1, 1);
+      }
+      let mapBg = new THREE.CanvasTexture(c.dom);
+      mapBg.colorSpace = THREE.SRGBColorSpace;
+      mapBg.wrapS = mapBg.wrapT = THREE.RepeatWrapping;
+      // _this.scene.background = mapBg;
+      const materialCanvas = new THREE.MeshBasicMaterial({ map: mapBg });
+      const geometry = new THREE.PlaneGeometry(100, 100);
+      const meshCanvas = new THREE.Mesh(geometry, materialCanvas);
+      meshCanvas.rotation.x = -Math.PI / 2;
+      meshCanvas.scale.set(1000, 1000, 1000);
+      _this.scene.add(meshCanvas);
+    };
+  }
+  getColor(color) {
+    switch (color) {
+      case 0: // 路沿
+        color = [0, 0, 0];
+        break;
+      case 1: // 人行横道
+        color = [127, 127, 127];
+        break;
+      case 2: // 车道线
+        color = [237, 28, 36];
+        break;
+      case -1:
+        color = [255, 255, 255];
+        break;
+    }
+    return color;
   }
   // 绘制可以改变宽度的线条   dashed：true虚线、false实线
   setWidthLine(
@@ -582,8 +658,21 @@ export default class Base {
     this.scene.background = new THREE.Color(0xf0f0f0);
     this.scene2 = new THREE.Scene();
   }
+  drawBev() {
+    this.bev.dom = document.createElement("canvas");
+    this.bev.ctx = this.bev.dom.getContext("2d");
+    this.bev.dom.width = 1152;
+    this.bev.dom.height = 648;
+  }
   // 创建相机
   setCamera() {
+    // this.drawBev();
+    // 正投影相机案例
+    // const width = 1152; //canvas画布宽度
+    // const height = 648; //canvas画布高度
+    // const k = 1152 / 648; //canvas画布宽高比
+    // const s = 600; //控制left, right, top, bottom范围大小
+    // this.camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 1, 8000);
     this.camera = new THREE.PerspectiveCamera(
       75,
       this.mapDOM.clientWidth / this.mapDOM.clientHeight,
@@ -625,16 +714,14 @@ export default class Base {
   }
   // 初始化道路元素
   setMeshRoad(points, directoin) {
-    let x0,
-      x2,
-      x1;
+    let x0, x2, x1;
     if (directoin === "left") {
       x0 = points[0].x - 1;
     }
     if (directoin === "right") {
       x0 = points[0].x + 1;
     }
-    
+
     const shapes = this.track(new THREE.Shape());
     shapes.moveTo(x0, points[0].y);
     for (let i = 1; i < points.length; i++) {
@@ -648,9 +735,11 @@ export default class Base {
       shapes.lineTo(x1, points[i].y);
     }
     const geometry = this.track(new THREE.ShapeGeometry(shapes));
-    const material = this.track(new THREE.MeshBasicMaterial({
-      color: "rgb(53, 52, 52)",
-    }));
+    const material = this.track(
+      new THREE.MeshBasicMaterial({
+        color: "rgb(53, 52, 52)",
+      })
+    );
     const mesh = new THREE.Mesh(geometry, material);
     return mesh;
   }
@@ -690,7 +779,8 @@ export default class Base {
       // "rgb(158, 156, 153)"
     );
     gridHelper.rotation.x = -(Math.PI / 2);
-    let axesHelper = new THREE.AxesHelper(150);
+    // gridHelper.rotation.x = -(Math.PI / 2);
+    // let axesHelper = new THREE.AxesHelper(150);
     // axesHelper.setColors('rgb(0, 0, 0)', 'rgb(248, 13, 13)', 'rgb(248, 13, 142)')
     // this.scene.add( axesHelper );
     this.scene.add(gridHelper);
