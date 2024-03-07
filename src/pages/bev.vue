@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-05 14:29:22
+ * @LastEditTime: 2024-03-07 15:48:32
  * @Description: 
 -->
 <template>
@@ -10,11 +10,23 @@
 
 <script setup>
 import bevControl from "../controls/bevControl.js";
-import { onMounted, inject } from "vue";
+import { onMounted, inject, defineProps, defineExpose } from "vue";
 let Bev = null;
 let base = inject("$Base");
+let props = defineProps(["objs_data"]);
 onMounted(() => {
   Bev = new bevControl();
+});
+// 更新bev图片和bev上的障碍物
+function updataBev(img_data, objs_data) {
+  try {
+    Bev.drawObjs(objs_data);
+  } catch (err) {
+    console.log(err, "err---updataBev");
+  }
+}
+defineExpose({
+  updataBev,
 });
 </script>
 

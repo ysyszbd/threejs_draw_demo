@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-05 14:33:55
+ * @LastEditTime: 2024-03-07 17:43:10
  * @Description: 
 -->
 <script setup>
@@ -9,6 +9,8 @@ import { ObserverInstance } from "@/controls/event/observer";
 import { ref } from "vue";
 let work_init_arr = ref([]),
   work_status = ref(false),
+  model3D_status = ref(false),
+  all_status = ref(false),
   observerListenerList = [
     {
       eventName: "INIT_OK",
@@ -17,9 +19,18 @@ let work_init_arr = ref([]),
   ];
 ObserverInstance.selfAddListenerList(observerListenerList, "yh_init");
 function initAll(data) {
-  work_init_arr.value.push(data.id);
-  if (work_init_arr.value.length === 6) {
-    work_status.value = true;
+  if (data.id === "objs") {
+    model3D_status.value = true;
+  } else {
+    work_init_arr.value.push(data.id);
+    if (work_init_arr.value.length === 6) {
+      work_status.value = true;
+    }
+  }
+  if (work_status.value && model3D_status.value) {
+    all_status.value = true;
+  } else {
+    all_status.value = false;
   }
 }
 </script>
@@ -27,8 +38,8 @@ function initAll(data) {
 <template>
   <div class="main_box">
     <!-- <loading /> -->
-    <loading v-if="!work_status" class="loading_page"/>
-    <mainPage :initStatus="work_status" class="main_page"/>
+    <loading v-if="!all_status" class="loading_page"/>
+    <mainPage :initStatus="all_status" class="main_page"/>
   </div>
 </template>
 
@@ -41,6 +52,7 @@ body {
   width: 100vw;
   height: 100vh;
   position: relative;
+  overflow: hidden;
   .loading_page {
     position: absolute;
     top: 0;

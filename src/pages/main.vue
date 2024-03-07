@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-05 16:52:23
+ * @LastEditTime: 2024-03-07 17:21:41
  * @Description: init
 -->
 <template>
@@ -59,11 +59,12 @@
       </div>
       <div class="bev">
         <!-- <threeDemo /> -->
-        <Bev />
+        <Bev ref="BEV" :objs_data="demo_data" />
       </div>
     </div>
     <div class="echarts_demos" id="e_demos">
-      <echartsYH id="echarts_box"/>
+      <echartsYH id="echarts_box" />
+      <echartAxis />
       <!-- <Echarts /> -->
     </div>
   </div>
@@ -73,8 +74,9 @@
 import threeDemo from "./three_demo.vue";
 import videoYH from "./view_video.vue";
 import Bev from "./bev.vue";
-import echartsYH from "./echarts.vue"
-import { ref, onMounted, defineProps } from "vue";
+import echartsYH from "./echarts.vue";
+import echartAxis from "./echartAxis.vue";
+import { ref, watch, defineProps } from "vue";
 import Ws from "../controls/ws.js";
 import { decode } from "@msgpack/msgpack";
 import demo_data from "../assets/demo_data/demos.json";
@@ -85,14 +87,28 @@ let foresight = ref(),
   right_front = ref(),
   right_back = ref(),
   left_back = ref(),
-  left_front = ref();
-const props = defineProps(["work_status"]);
+  left_front = ref(),
+  BEV = ref(),
+  objs_data = ref();
+const props = defineProps(["initStatus"]);
+watch(
+  () => props.initStatus,
+  async (res) => {
+    if (res) {
+      await handlePoints(demo_data).then(data => {
+        BEV.value.updataBev([], data);
+      })
+    }
+  },
+  { deep: true }
+);
+handlePoints(demo_data);
 const ws = new Ws("ws://192.168.30.9:12347", true, async (e) => {
   // const ws = new Ws("ws://192.168.30.4:1234", true, async (e) => {
   try {
-    if (!props.work_status) return;
-    let arr = await handlePoints(demo_data);
-    console.log(arr, "arr");
+    if (!props.initStatus) return;
+    // console.log(arr, "arr");
+    // BEV.value.updataBev([], arr);
     // foresight.value.updataCode([], arr),
     // rearview.value.updataCode([], arr),
     // right_front.value.updataCode([], arr),
@@ -101,14 +117,14 @@ const ws = new Ws("ws://192.168.30.9:12347", true, async (e) => {
     // left_front.value.updataCode([], arr);
     if (e.data instanceof ArrayBuffer) {
       const object = decode(e.data);
-      console.log(object, "object=====");
+      // console.log(object, "object=====");
       const res = Promise.all([
-        foresight.value.updataCode(object[2], arr),
-        rearview.value.updataCode(object[2], arr),
-        right_front.value.updataCode(object[2], arr),
-        right_back.value.updataCode(object[2], arr),
-        left_back.value.updataCode(object[2], arr),
-        left_front.value.updataCode(object[2], arr),
+        foresight.value.updataCode(object[2], objs_data.value),
+        rearview.value.updataCode(object[2], objs_data.value),
+        right_front.value.updataCode(object[2], objs_data.value),
+        right_back.value.updataCode(object[2], objs_data.value),
+        left_back.value.updataCode(object[2], objs_data.value),
+        left_front.value.updataCode(object[2], objs_data.value),
         // foresight.value.updataCode(object[1][0], arr),
         // rearview.value.updataCode(object[1][0], arr),
         // right_front.value.updataCode(object[1][0], arr),
@@ -157,15 +173,16 @@ async function handlePoints(data) {
         arr[i][`right_front`].push(project_lidar2img(item, "right_front"));
         arr[i][`rearview`].push(project_lidar2img(item, "rearview"));
       });
-      // // 获取障碍物中心点坐标
-      // let p = [position.x, position.y, position.z];
+      // bev 获取障碍物中心点坐标
+      let p = [position.x, position.y, position.z];
       // arr[i][`left_back_point`] = project_lidar2img(p, "left_back");
       // arr[i][`left_front_point`] = project_lidar2img(p, "left_front");
-      // arr[i][`foresight_point`] = project_lidar2img(p, "foresight");
+      arr[i][`center_point`] = project_lidar2img(p, "foresight");
       // arr[i][`right_back_point`] = project_lidar2img(p, "right_back");
       // arr[i][`right_front_point`] = project_lidar2img(p, "right_front");
       // arr[i][`rearview_point`] = project_lidar2img(p, "rearview");
     }
+    objs_data.value = arr;
     resolve(arr);
   });
 }
@@ -310,6 +327,8 @@ async function handlePoints(data) {
   .echarts_demos {
     width: 650px;
     height: 100%;
+    display: flex;
+    flex-direction: column;
   }
 }
 </style>
