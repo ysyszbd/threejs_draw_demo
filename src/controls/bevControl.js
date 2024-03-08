@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-07 18:11:33
+ * @LastEditTime: 2024-03-08 18:42:10
  * @Description:
  */
 import demo_jpg from "../assets/road_0.png";
@@ -42,49 +42,49 @@ export default class demo {
   img_h = 564;
   constructor() {
     this.rgb_data.dom = document.getElementById("bev_box");
-    let c = document.getElementById("img_canvas");
-    c.height = this.img_h;
-    c.width = this.img_w;
-    let ctx = c.getContext("2d");
-    let img_ele = document.createElement("img");
-    img_ele.src = demo_jpg;
-    let _this = this;
-    img_ele.onload = function (e) {
-      ctx.drawImage(img_ele, 0, 0, _this.img_w, _this.img_h);
-      let imgData = ctx.getImageData(0, 0, _this.img_w, _this.img_h);
-      ctx.fillStyle = "pink";
-      ctx.fillRect(0, 0, c.width, c.height);
-      let pixelData = imgData.data;
-      let rgbData = [];
-      let bev_demo = [];
-      for (let i = 0; i < pixelData.length; i += 4) {
-        let red = pixelData[i];
-        let green = pixelData[i + 1];
-        let blue = pixelData[i + 2];
-        rgbData.push([red, green, blue]);
-        let sign = -1;
-        if (red === 255 && green === 0 && blue === 0) {
-          sign = 0;
-        } else if (green === 0 && red === 0 && blue === 0) {
-          sign = 1;
-        } else if (red === 0 && green === 255 && blue === 0) {
-          sign = 2;
-        }
-        // if (red === 0 && green === 0 && blue === 0) {
-        //   sign = 0;
-        // } else if (red === 127 && green === 127 && blue === 127) {
-        //   sign = 1;
-        // } else if (red === 237 && green === 28 && blue === 36) {
-        //   sign = 2;
-        // }
-        bev_demo.push(sign);
-      }
-      _this.initThree(bev_demo, imgData);
-    };
-  }
-  async initThree(bev_demo) {
     this.init();
-    this.drawBev();
+    // let c = document.getElementById("img_canvas");
+    // c.height = this.img_h;
+    // c.width = this.img_w;
+    // let ctx = c.getContext("2d");
+    // let img_ele = document.createElement("img");
+    // img_ele.src = demo_jpg;
+    // let _this = this;
+    // img_ele.onload = function (e) {
+    //   ctx.drawImage(img_ele, 0, 0, _this.img_w, _this.img_h);
+    //   let imgData = ctx.getImageData(0, 0, _this.img_w, _this.img_h);
+    //   ctx.fillStyle = "pink";
+    //   ctx.fillRect(0, 0, c.width, c.height);
+    //   let pixelData = imgData.data;
+    //   let rgbData = [];
+    //   let bev_demo = [];
+    //   for (let i = 0; i < pixelData.length; i += 4) {
+    //     let red = pixelData[i];
+    //     let green = pixelData[i + 1];
+    //     let blue = pixelData[i + 2];
+    //     rgbData.push([red, green, blue]);
+    //     let sign = -1;
+    //     if (red === 255 && green === 0 && blue === 0) {
+    //       sign = 0;
+    //     } else if (green === 0 && red === 0 && blue === 0) {
+    //       sign = 1;
+    //     } else if (red === 0 && green === 255 && blue === 0) {
+    //       sign = 2;
+    //     }
+    //     // if (red === 0 && green === 0 && blue === 0) {
+    //     //   sign = 0;
+    //     // } else if (red === 127 && green === 127 && blue === 127) {
+    //     //   sign = 1;
+    //     // } else if (red === 237 && green === 28 && blue === 36) {
+    //     //   sign = 2;
+    //     // }
+    //     bev_demo.push(sign);
+    //   }
+    //   _this.initThree(bev_demo, imgData);
+    // };
+  }
+  async initThree(bev_demo, bev_data) {
+    this.drawBev(bev_data[1], bev_data[2]);
     await this.handleDataCanvas(bev_demo).then((road) => {
       this.drawData(bev_demo, road);
       // 从 Canvas 上获取图像数据
@@ -195,17 +195,33 @@ export default class demo {
     try {
       return new Promise((resolve, reject) => {
         let road = [];
+        let now_h = -1;
+        let road_empty = [-1, -1];
         for (let i = 0; i < bev_demo.length; i++) {
           // 判断该像素点是否为路沿,如果该像素点为路沿，则将该像素点加入road所在的行列三维数组中
           let arr = new Array(this.bev.dom.width).fill(null);
           road.push(arr);
+          let points = [null, null];
           if (bev_demo[i] === 0) {
-            let points = this.getPoints(i, this.bev.dom.width);
+            points = this.getPoints(i, this.bev.dom.width);
+            // 找到当前行
+            if (points[0] != now_h) {
+              now_h = points[0];
+              if (road_empty[0] >= 0 && road_empty[1] < 0) {
+                road_empty[1] = now_h;
+              }
+            }
             road[points[1]][points[0]] = points;
             road[points[1]] = road[points[1]].filter((item) => item !== null);
           }
           road[i] = road[i].filter((item) => item !== null);
+          if (road[i].length === 0) {
+            if (now_h >= 0 && road_empty[0] < 0 && road_empty[1] < 0) {
+              road_empty[0] = this.getPoints(i, this.bev.dom.width)[1];
+            }
+          }
         }
+        console.log(road_empty, "road_empty");
         resolve(road);
       });
     } catch (err) {
@@ -350,9 +366,6 @@ export default class demo {
     this.scene.background = new THREE.Color(0xf0f0f0);
     var width = this.rgb_data.dom.clientWidth;
     var height = this.rgb_data.dom.clientHeight;
-    // var k = width / height;
-    // var s = 20;
-    // this.camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, -10, 10);
     this.camera = new THREE.PerspectiveCamera(48, width / height, 0.1, 1000);
     this.camera.position.set(0, -25, 42);
     this.camera.updateMatrix();
@@ -390,22 +403,26 @@ export default class demo {
   setControls() {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
   }
-  drawBev() {
-    this.bev.dom = document.createElement("canvas");
-    this.bev.ctx = this.bev.dom.getContext("2d");
-    const devicePixelRatio = window.devicePixelRatio || 1;
+  drawBev(w, h) {
+    if (!this.bev.dom) {
+      this.bev.dom = document.createElement("canvas");
+      this.bev.ctx = this.bev.dom.getContext("2d");
+      const devicePixelRatio = window.devicePixelRatio || 1;
+      this.bev.ctx.scale(devicePixelRatio, devicePixelRatio);
+      this.bev.ctx.imageSmoothingEnabled = true;
+      this.bev.ctx.imageSmoothingQuality = "high";
+    }
+    this.img_w = w;
+    this.img_h = h;
     this.bev.dom.width = this.img_w * devicePixelRatio;
     this.bev.dom.height = this.img_h * devicePixelRatio;
-    this.bev.ctx.scale(devicePixelRatio, devicePixelRatio);
-    this.bev.ctx.imageSmoothingEnabled = true;
-    this.bev.ctx.imageSmoothingQuality = "high";
     // 绘制整体背景颜色
     this.bev.ctx.fillStyle = "#50524f";
     this.bev.ctx.fillRect(0, 0, this.bev.dom.width, this.bev.dom.height);
   }
   // 操作绘制障碍物
   drawObjs(objs_data) {
-    console.log(objs_data, "objs_data");
+    // console.log(objs_data, "objs_data");
     let car = objs_data.filter((item) => item.class === "car");
     let suv = objs_data.filter((item) => item.class === "suv");
     let motorcycle = objs_data.filter((item) => item.class === "motorcycle");
@@ -468,7 +485,7 @@ export default class demo {
   // 加载3D车模型
   async load3D() {
     try {
-      const filesArr = ["car_for_games_unity", "mercedes_benz_gls_580_4matic", ];
+      const filesArr = ["car_for_games_unity", "car", ];
       const res = await Promise.all(filesArr.map(this.loadFile));
       // debugger
       console.log(res, "res");

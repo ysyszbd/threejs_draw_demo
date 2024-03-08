@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-07 15:48:32
+ * @LastEditTime: 2024-03-08 18:33:51
  * @Description: 
 -->
 <template>
@@ -10,17 +10,26 @@
 
 <script setup>
 import bevControl from "../controls/bevControl.js";
-import { onMounted, inject, defineProps, defineExpose } from "vue";
-let Bev = null;
-let base = inject("$Base");
+import bevImgControl from "../controls/bevImgContorl.js";
+import { onMounted, ref, defineProps, defineExpose } from "vue";
+let Bev = ref(null);
+// let base = inject("$Base");
 let props = defineProps(["objs_data"]);
 onMounted(() => {
-  Bev = new bevControl();
+  Bev.value = new bevImgControl();
+  // console.log(Bev.value, "Bev.value");
+  // Bev = new bevControl();
 });
-// 更新bev图片和bev上的障碍物
-function updataBev(img_data, objs_data) {
+// 更新bev图片
+function updataBev(img_arr, img_data, objs_data) {
   try {
-    Bev.drawObjs(objs_data);
+    return new Promise((resolve, reject) => {
+      // console.log(Bev.value, "img_arr", img_data);
+      Bev.value.getData(img_arr, img_data, objs_data);
+      // Bev.drawBev(img_data[1], img_data[2]);
+      // Bev.drawObjs(objs_data);
+      resolve("绘制bev完毕")
+    })
   } catch (err) {
     console.log(err, "err---updataBev");
   }

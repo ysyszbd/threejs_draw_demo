@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-05 09:58:03
+ * @LastEditTime: 2024-03-08 13:27:05
  * @Description: 
 -->
 <template>
@@ -17,6 +17,11 @@
 <script setup>
 import { defineProps, onMounted, defineExpose, onUnmounted } from "vue";
 import VIDEO from "../controls/video/video.js";
+import {
+  GetBoundingBoxPoints,
+  project_lidar2img,
+  construct2DArray,
+} from "@/controls/box2img.js";
 
 const props = defineProps(["video_id"]);
 let yh_video = null;
@@ -25,10 +30,12 @@ onMounted(() => {
 });
 
 
-function updataCode(u8Array, data) {
+function updataCode(u8Array, base, objs, bev) {
   try {
+    // console.log(base, objs, "base, objs-----");
     return new Promise(async (resolve, reject) => {
-      yh_video.setObjs(data);
+      yh_video.setObjs(objs);
+      // handleObjPoints(base, objs);
       yh_video.work.postMessage(u8Array);
       // if (yh_video.status) {
       //   // console.log(u8Array, "u8Array====");
@@ -40,6 +47,13 @@ function updataCode(u8Array, data) {
     });
   } catch (err) {
     console.log(err, "err====updataCode");
+  }
+}
+async function handleObjPoints(base, objs) {
+  try {
+    
+  } catch (err) {
+    console.log(err, "err---handleObjPoints");
   }
 }
 defineExpose({

@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-05 09:57:29
+ * @LastEditTime: 2024-03-08 16:30:24
  * @Description:./
  */
 
@@ -84,6 +84,7 @@ export default class Video {
   }
   setObjs(data) {
     this.objs_data = data;
+    // console.log(this.objs_data, "this.objs_datathis.objs_data");
     // console.log(data);
     // let _this = this;
     // this.handleBox().then(res => {
@@ -97,7 +98,7 @@ export default class Video {
   // 绘制3D线框
   handleHelper(data) {
     try {
-      console.log(data, "data");
+      // console.log(data, "data");
       
       data.forEach((item) => {
         this.drawCircle(item, "yellow");
@@ -156,7 +157,7 @@ export default class Video {
         let message = this.memoryPool.allocate(),
         //   // let message = event.data,
           info = message.info;
-        // // console.log(message, "message======================");
+        // console.log(message, "message======================");
         // if (0 == info.width || 0 == info.height) return;
         let rect = this.dom.getBoundingClientRect();
         this.canvas_dom_video.width = info.width;
@@ -189,9 +190,17 @@ export default class Video {
             imgData.data[i + 2] = data0;
           }
           this.ctx_video.putImageData(imgData, 0, 0);
-          this.objs_data.forEach(item => {
-            this.handleHelper(item[this.id]);
-          })
+          for (let i = 0; i < this.objs_data.length; i++) {
+            for (let j = 0; j < this.objs_data[i].length; j++) {
+              // this.handleHelper(this.objs_data[i][this.id]);
+              let item = this.objs_data[i][j];
+              this.handleHelper(item[item.length - 1][this.id]);
+              // console.log(item[item.length - 1][this.id], this.id);
+            }
+          }
+          // this.objs_data.forEach(item => {
+          //   this.handleHelper(item[this.id]);
+          // })
         });
       }
     };
