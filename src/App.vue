@@ -23,7 +23,8 @@ function initAll(data) {
     model3D_status.value = true;
   } else {
     work_init_arr.value.push(data.id);
-    if (work_init_arr.value.length === 6) {
+    if (work_init_arr.value.length === 2) {
+    // if (work_init_arr.value.length === 6) {
       work_status.value = true;
     }
   }

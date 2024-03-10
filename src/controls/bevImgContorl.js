@@ -362,7 +362,7 @@ export default class bevImgContorl {
   // 加载3D车模型
   async load3D() {
     try {
-      const filesArr = ["car_for_games_unity", "car"];
+      const filesArr = ["car_for_games_unity", "car_for_games_unity"];
       const res = await Promise.all(filesArr.map(this.loadFile));
       // debugger
       // console.log(res, "res");

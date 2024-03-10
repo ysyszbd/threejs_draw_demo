@@ -33,7 +33,7 @@ onMounted(() => {
   chartDom.value = document.getElementById("axis_echart");
   myChart.value = echarts.init(chartDom.value, "light", {
     width: 650,
-    height: 650,
+    height: document.getElementById("e_demos").clientHeight / 2,
   });
   myChart.value.setOption(option);
 });

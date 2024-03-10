@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-05 11:45:26
+ * @LastEditTime: 2024-03-09 13:19:18
  * @Description: 
 -->
 <template>
@@ -45,7 +45,7 @@ function initEcharts() {
   chartDom.value = document.getElementById("move_echart");
   myChart.value = echarts.init(chartDom.value, "dark", {
     width: 650,
-    height: 650
+    height: document.getElementById("e_demos").clientHeight / 2
   });
   // debugger
   run(echartsData);

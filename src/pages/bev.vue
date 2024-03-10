@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-08 18:33:51
+ * @LastEditTime: 2024-03-09 14:01:27
  * @Description: 
 -->
 <template>
@@ -16,9 +16,9 @@ let Bev = ref(null);
 // let base = inject("$Base");
 let props = defineProps(["objs_data"]);
 onMounted(() => {
-  Bev.value = new bevImgControl();
+  // Bev.value = new bevImgControl();
   // console.log(Bev.value, "Bev.value");
-  // Bev = new bevControl();
+  Bev = new bevControl();
 });
 // 更新bev图片
 function updataBev(img_arr, img_data, objs_data) {

@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-08 19:02:27
+ * @LastEditTime: 2024-03-09 15:00:17
  * @Description: init
 -->
 <template>
@@ -23,7 +23,7 @@
         />
       </div>
       <div class="bottom_box">
-        <div class="left_box">
+        <!-- <div class="left_box">
           <videoYH
             ref="right_front"
             id="right_front"
@@ -39,11 +39,11 @@
             :video_id="'right_back'"
             :class="[`v_2`, 'v_box']"
           />
-        </div>
+        </div> -->
         <div class="center_box">
           <Bev ref="BEV" :objs_data="demo_data" />
         </div>
-        <div class="right_box">
+        <!-- <div class="right_box">
           <videoYH
             ref="left_back"
             id="left_back"
@@ -59,72 +59,10 @@
             :video_id="'left_front'"
             :class="[`v_4`, 'v_box']"
           />
-        </div>
+        </div> -->
       </div>
     </div>
-    <div class="echarts_demos" id="e_demos">
-      <echartsYH id="echarts_box" />
-      <echartAxis />
-    </div>
-    <!-- <div class="l_box">
-      <videoYH
-        ref="foresight"
-        id="foresight"
-        :video_id="'foresight'"
-        :class="[`v_1`, 'v_box']"
-      />
-      <div class="line_box_h">
-        <div class="line"></div>
-      </div>
-      <videoYH
-        ref="rearview"
-        id="rearview"
-        :video_id="'rearview'"
-        :class="[`v_1`, 'v_box']"
-      />
-    </div> -->
-    <!-- <div class="r_box">
-      <div class="videos_box">
-        <videoYH
-          ref="right_front"
-          id="right_front"
-          :video_id="'right_front'"
-          :class="[`v_1`, 'v_box']"
-        />
-        <div class="line_box_v">
-          <div class="line"></div>
-        </div>
-        <videoYH
-          ref="right_back"
-          id="right_back"
-          :video_id="'right_back'"
-          :class="[`v_2`, 'v_box']"
-        />
-        <div class="line_box_v">
-          <div class="line"></div>
-        </div>
-        <videoYH
-          ref="left_back"
-          id="left_back"
-          :video_id="'left_back'"
-          :class="[`v_3`, 'v_box']"
-        />
-        <div class="line_box_v">
-          <div class="line"></div>
-        </div>
-        <videoYH
-          ref="left_front"
-          id="left_front"
-          :video_id="'left_front'"
-          :class="[`v_4`, 'v_box']"
-        />
-      </div>
-      <div class="bev">
-        <threeDemo />
-        <Bev ref="BEV" :objs_data="demo_data" />
-      </div>
-    </div>
-    <div class="echarts_demos" id="e_demos">
+    <!-- <div class="echarts_demos" id="e_demos">
       <echartsYH id="echarts_box" />
       <echartAxis />
     </div> -->
@@ -496,11 +434,13 @@ async function handlePoints(data) {
   }
 }
 .echarts_demos {
-  width: 650px;
+  width: 600px;
   height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
   // color: rgb(0, 255, 0);
 }
 .data_box {
