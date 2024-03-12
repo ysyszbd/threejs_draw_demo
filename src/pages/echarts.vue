@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-09 13:19:18
+ * @LastEditTime: 2024-03-12 17:16:24
  * @Description: 
 -->
 <template>
@@ -12,128 +12,128 @@
 import { onMounted, ref } from "vue";
 import * as echarts from "echarts/core";
 import {
-  DatasetComponent,
   TitleComponent,
+  ToolboxComponent,
   TooltipComponent,
   GridComponent,
-  TransformComponent,
+  LegendComponent,
 } from "echarts/components";
-
 import { LineChart } from "echarts/charts";
-import { LabelLayout, UniversalTransition } from "echarts/features";
+import { UniversalTransition } from "echarts/features";
 import { CanvasRenderer } from "echarts/renderers";
-import echartsData from "@/assets/demo_data/echarts_demo.json";
+
 echarts.use([
-  DatasetComponent,
   TitleComponent,
+  ToolboxComponent,
   TooltipComponent,
   GridComponent,
-  TransformComponent,
+  LegendComponent,
   LineChart,
   CanvasRenderer,
-  LabelLayout,
   UniversalTransition,
 ]);
+
 let chartDom = ref(null),
   myChart = ref(null),
-  option;
+  option = ref(null),
+  timeArr = ref([]);
 onMounted(() => {
   initEcharts();
 });
 function initEcharts() {
-  // debugger
   chartDom.value = document.getElementById("move_echart");
   myChart.value = echarts.init(chartDom.value, "dark", {
-    width: 650,
-    height: document.getElementById("e_demos").clientHeight / 2
+    width: document.getElementById("e_demos").clientWidth,
+    height: document.getElementById("e_demos").clientHeight / 2,
   });
-  // debugger
-  run(echartsData);
-
-}
-function run(_rawData) {
-  const countries = [
-    "Finland",
-    "France",
-    "Germany",
-    "Iceland",
-    "Norway",
-    "Poland",
-    "Russia",
-    "United Kingdom",
-  ];
-  const datasetWithFilters = [];
-  const seriesList = [];
-  echarts.util.each(countries, function (country) {
-    var datasetId = "dataset_" + country;
-    datasetWithFilters.push({
-      id: datasetId,
-      fromDatasetId: "dataset_raw",
-      transform: {
-        type: "filter",
-        config: {
-          and: [
-            { dimension: "Year", gte: 1950 },
-            { dimension: "Country", "=": country },
-          ],
-        },
-      },
-    });
-    seriesList.push({
-      type: "line",
-      datasetId: datasetId,
-      showSymbol: false,
-      name: country,
-      endLabel: {
-        show: true,
-        formatter: function (params) {
-          return params.value[3] + ": " + params.value[0];
-        },
-      },
-      labelLayout: {
-        moveOverlap: "shiftY",
-      },
-      emphasis: {
-        focus: "series",
-      },
-      encode: {
-        x: "Year",
-        y: "Income",
-        label: ["Country", "Income"],
-        itemName: "Year",
-        tooltip: ["Income"],
-      },
-    });
-  });
-  option = {
-    animationDuration: 10000,
-    dataset: [
-      {
-        id: "dataset_raw",
-        source: _rawData,
-      },
-      ...datasetWithFilters,
-    ],
+  option.value = {
     title: {
-      text: "Income of Germany and France since 1950",
+      text: "动态",
+      textStyle: {
+        color: "black",
+      },
     },
     tooltip: {
-      order: "valueDesc",
       trigger: "axis",
+      axisPointer: {
+        type: "cross",
+        label: {
+          backgroundColor: "#283b56",
+        },
+      },
     },
+    legend: {},
     xAxis: {
       type: "category",
-      nameLocation: "middle",
+      data: timeArr.value, // 把时间组成的数组接过来，放在x轴上
+      boundaryGap: true,
     },
     yAxis: {
-      name: "Income",
+      type: "value",
     },
-    grid: {
-      right: 140,
-    },
-    series: seriesList,
+    series: [
+      {
+        data: dataOne(),
+        type: "line",
+        name: "测试一",
+        markPoint: {
+          data: [
+            { type: "max", name: "最大值" },
+            { type: "min", name: "最小值" },
+          ],
+        },
+        markLine: {
+          data: [{ type: "average", name: "平均值" }],
+        },
+      },
+      {
+        data: dataTwo(),
+        name: "测试二",
+        type: "line",
+        markPoint: {
+          data: [
+            { type: "max", name: "最大值" },
+            { type: "min", name: "最小值" },
+          ],
+        },
+        markLine: {
+          data: [{ type: "average", name: "平均值" }],
+        },
+      },
+    ],
   };
-  myChart.value.setOption(option);
+  myChart.value.setOption(option.value);
+}
+// 定时器，定时更新数据
+function time() {
+  let now = new Date();
+  let res = [];
+  let len = 5;
+  while (len--) {
+    timeArr.value.unshift(now.toLocaleTimeString().replace(/^\D*/, "")); // 转换时间，大家可以打印出来看一下
+    now = new Date(+now - 2000); // 延迟几秒存储一次？
+  }
+}
+function dataOne() {
+  let res = [];
+  let len = 5;
+  while (len--) {
+    res.push(Math.round(Math.random() * 1000));
+  }
+  return res;
+}
+function dataTwo() {
+  let res = [];
+  let len = 5;
+  while (len--) {
+    res.push(Math.round(Math.random() * 1000));
+  }
+  return res;
+}
+// 更新图表
+function updateEcharts() {
+  let nowTime = new Date().toLocaleTimeString().replace(/^\D*/, '');
+  
 }
 </script>
 

@@ -3,7 +3,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { ObserverInstance } from "@/controls/event/observer";
 import ResourceTracker from "./resourceTracker";
-import { dispose } from "echarts";
+import { numberExcept } from "./util.js";
 
 export default class bevImgContorl {
   resTracker = new ResourceTracker();
@@ -21,14 +21,44 @@ export default class bevImgContorl {
   renderer;
   particleSystem;
   geometry;
+  scale = numberExcept(51.2 , 30);
   objs = {
     main_car: null,
     car: null,
     car_group: new THREE.Object3D(),
-    suv: null,
-    suv_group: [],
+    truck: null,
+    truck_group: [],
+    construction_vehicle: null,
+    construction_vehicle_group: [],
+    bus: null,
+    bus_group: [],
+    trailer: null,
+    trailer_group: [],
+    barrier: null,
+    barrier_group: [],
     motorcycle: null,
     motorcycle_group: [],
+    bicycle: null,
+    bicycle_group: [],
+    pedestrian: null,
+    pedestrian_group: [],
+    street_cone: null,
+    street_cone_group: [],
+  };
+  obj_index = {
+    "0-0": "car",
+    "1-0": "truck",
+    "1-1": "construction_vehicle",
+    "2-0": "bus",
+    "2-1": "trailer",
+    "3-0": "barrier",
+    "4-0": "motorcycle",
+    "4-1": "bicycle",
+    "5-0": "pedestrian",
+    "5-1": "street_cone",
+  };
+  objs_size = {
+    car: [3.8, 1.6, 1.5], // 长宽高
   };
   bevW = 0;
   bevH = 0;
@@ -36,54 +66,36 @@ export default class bevImgContorl {
   geometry = null;
   mesh = null;
   mapBg = null;
+
   constructor() {
     this.rgb_data.dom = document.getElementById("bev_box");
+    // 初始化three
     this.init();
-    this.bev.dom = document.createElement("canvas");
-    this.bev.ctx = this.bev.dom.getContext("2d");
-    this.bev.dom.height = 10;
-    this.bev.dom.width = 10;
-    const devicePixelRatio = window.devicePixelRatio || 1;
-    this.bev.ctx.scale(devicePixelRatio, devicePixelRatio);
-    this.bev.ctx.imageSmoothingEnabled = true;
-    this.bev.ctx.imageSmoothingQuality = "high";
-    // 绘制整体背景颜色
-    // this.bev.ctx.fillStyle = "pink";
-    // this.bev.ctx.fillRect(0, 0, this.bev.dom.width, this.bev.dom.height);
-
-    // this.mapBg = new THREE.CanvasTexture(this.bev.dom);
-
-    // this.mapBg.colorSpace = THREE.SRGBColorSpace;
-    // this.mapBg.wrapS = this.mapBg.wrapT = THREE.RepeatWrapping;
-    // this.material = new THREE.MeshPhongMaterial({
-    //   map: this.mapBg,
-    //   side: THREE.DoubleSide,
-    // });
-    // let plane_w = this.bev.dom.width;
-    // let plane_h = this.bev.dom.height;
-    // this.geometry = new THREE.PlaneGeometry(plane_w, plane_h);
-    // this.mesh = new THREE.Mesh(this.geometry, this.material);
-
-    // this.scene.add(this.mesh);
+    // 初始化canvas，并在three上绘制网格，将canvas贴上去
+    this.initBasicCanvas();
     this.animate();
   }
+  // 更新bev
   async getData(bev_demo, bev_data, objs_data) {
     try {
-      // console.log(bev_data, "bev_data===");
-      this.drawBev(bev_data[1], bev_data[2], bev_demo);
-      this.handleObjs(objs_data);
-      // this.drawData(bev_demo);
+      // 更新canvas图像
+      this.drawBev(bev_data[1], bev_data[2], bev_demo).then((res) => {
+        // console.log(res, "res=======");
+        // 更新障碍物
+        this.handleObjs(objs_data);
+      });
     } catch (err) {
       console.log(err, "err---getData");
     }
   }
+  // 更新障碍物
   handleObjs(objs_data) {
     for (let i = 0; i < objs_data.length; i++) {
       if (objs_data[i].length <= 0) break;
-      // console.log(objs_data[i], 'i');
       this.handle3D("car", objs_data[i]);
     }
   }
+  // 操作具体的障碍物
   async handle3D(type, data) {
     try {
       // console.log(data, "data");
@@ -97,11 +109,9 @@ export default class bevImgContorl {
           if (point[0] !== -1 && point[1] !== -1) {
             let c_model = model.scene.clone();
             c_model.matrixAutoUpdate = true;
-            c_model.position.x = point[1];
-            c_model.position.y = point[0];
-            // c_model.position.x = point[0];
-            // c_model.position.y = point[1];
-            c_model.position.z = point[2];
+            c_model.position.x = -point[1] * this.scale;
+            c_model.position.y = point[0] * this.scale;
+            c_model.position.z = point[2] * this.scale;
             c_model.rotation.y = -point[9];
 
             group.add(c_model);
@@ -111,11 +121,9 @@ export default class bevImgContorl {
       } else {
         if (group.children.length >= data.length) {
           for (let i = 0; i < data.length; i++) {
-            group.children[i].position.x = data[i][1];
-            group.children[i].position.y = data[i][0];
-            // group.children[i].position.x = data[i][0];
-            // group.children[i].position.y = data[i][1];
-            group.children[i].position.z = data[i][2];
+            group.children[i].position.x = -data[i][1] * this.scale;
+            group.children[i].position.y = data[i][0] * this.scale;
+            group.children[i].position.z = data[i][2] * this.scale;
             group.children[i].rotation.y = -data[i][9];
           }
           for (let j = data.length; j < group.children.length; j++) {
@@ -124,26 +132,18 @@ export default class bevImgContorl {
           }
         } else {
           for (let i = 0; i < group.children.length; i++) {
-            group.children[i].position.x = data[i][1];
-            group.children[i].position.y = data[i][0];
-            // group.children[i].position.x = data[i][0];
-            // group.children[i].position.y = data[i][1];
-            group.children[i].position.z = data[i][2];
+            group.children[i].position.x = -data[i][1] * this.scale;
+            group.children[i].position.y = data[i][0] * this.scale;
+            group.children[i].position.z = data[i][2] * this.scale;
             group.children[i].rotation.y = -data[i][9];
           }
 
-          for (
-            let j = group.children.length;
-            j < data.length;
-            j++
-          ) {
+          for (let j = group.children.length; j < data.length; j++) {
             let l_c_model = model.scene.clone();
             l_c_model.matrixAutoUpdate = true;
-            l_c_model.position.x = data[j][1];
-            l_c_model.position.y = data[j][0];
-            // l_c_model.position.x = data[j][0];
-            // l_c_model.position.y = data[j][1];
-            l_c_model.position.z = data[j][2];
+            l_c_model.position.x = -data[j][1] * this.scale;
+            l_c_model.position.y = data[j][0] * this.scale;
+            l_c_model.position.z = data[j][2] * this.scale;
             l_c_model.rotation.y = -data[j][9];
             group.add(l_c_model);
           }
@@ -210,13 +210,6 @@ export default class bevImgContorl {
     // this.bev.ctx.closePath();
     // this.bev.ctx.stroke();
     // this.bev.ctx.fill();
-    for (let i = 0; i < bev_demo.length; i++) {
-      let c = this.getColor(bev_demo[i]);
-      let points = this.getPoints(i, this.bev.dom.width);
-      this.bev.ctx.fillStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${c[3]})`;
-      this.bev.ctx.fillRect(points[0], points[1], 1, 1);
-    }
-    // this.scene.background = this.bev.dom;
   }
   // 处理语义分割的数据，拿到所有路沿的位置坐标，按行列存储
   handleDataCanvas(bev_demo) {
@@ -265,6 +258,7 @@ export default class bevImgContorl {
     w_i = i - w * h_i;
     return [w_i, h_i];
   }
+  // 获取语义分割类型对应的颜色
   getColor(color) {
     switch (color) {
       case 0:
@@ -288,60 +282,36 @@ export default class bevImgContorl {
   // 绘制出bev所需的canvas
   drawBev(w, h, bev_demo) {
     try {
-      this.img_w = w;
-      this.img_h = h;
-      this.bev.dom.width = this.img_w;
-      this.bev.dom.height = this.img_h;
-      this.drawData(bev_demo);
-      // this.bev.ctx.fillStyle = "yellow";
-      // this.bev.ctx.fillRect(0, 0, this.bev.dom.width, this.bev.dom.height);
-      // 更新 CanvasTexture
-      // this.mapBg.needsUpdate = true;
-      this.scene.remove(this.mapBg);
-      this.scene.remove(this.material);
-      this.scene.remove(this.geometry);
-      this.mapBg?.dispose();
-      this.material?.dispose();
-      this.geometry?.dispose();
-      this.resTracker.dispose();
-
-      this.mapBg = this.track(new THREE.CanvasTexture(this.bev.dom));
-      
-      this.mapBg.colorSpace = THREE.SRGBColorSpace;
-      this.mapBg.wrapS = this.mapBg.wrapT = THREE.RepeatWrapping;
-      this.material = this.track(new THREE.MeshPhongMaterial({
-        map: this.mapBg,
-        side: THREE.DoubleSide,
-      }));
-      let plane_w = 60;
-      let plane_h = 60;
-      this.geometry = this.track(new THREE.PlaneGeometry(plane_w, plane_h));
-      this.mesh = new THREE.Mesh(this.geometry, this.material);
-      this.mesh.rotation.x = Math.PI;
-      this.mesh.rotation.z =- Math.PI / 2;
-      // this.mesh.
-
-      this.scene.add(this.mesh);
+      return new Promise((resolve, reject) => {
+        this.bev.ctx.clearRect(0, 0, this.bev.dom.width, this.bev.dom.height);
+        if (this.img_w != w || this.img_h != h) {
+          this.img_w = w;
+          this.img_h = h;
+          this.bev.dom.width = this.img_w;
+          this.bev.dom.height = this.img_h;
+        }
+        for (let i = 0; i < bev_demo.length; i++) {
+          let c = this.getColor(bev_demo[i]);
+          let points = this.getPoints(i, this.bev.dom.width);
+          this.bev.ctx.fillStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${c[3]})`;
+          this.bev.ctx.fillRect(points[0], points[1], 1, 1);
+        }
+        // 更新 CanvasTexture
+        this.mapBg.needsUpdate = true;
+        resolve("canvas更新成功");
+      });
     } catch (err) {
       console.log(err, "err==drawBev");
     }
-    // 标记顶点位置已更改，以便 Three.js 更新几何体
-    // this.geometry.verticesNeedUpdate = true;
-    // console.log(this.geometry, "this.geometry===");
-    // this.geometry.set(w, h);
-    // 更新顶点坐标
-    // this.geometry.vertices[0].set(-w / 2, h / 2, 0); // 左上角顶点
-    // this.geometry.vertices[1].set(w / 2, h / 2, 0); // 右上角顶点
-    // this.geometry.vertices[2].set(-w / 2, -h / 2, 0); // 左下角顶点
-    // this.geometry.vertices[3].set(w / 2, -h / 2, 0); // 右下角顶点
   }
+  // 初始化threejs
   init() {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xf0f0f0);
     var width = this.rgb_data.dom.clientWidth;
     var height = this.rgb_data.dom.clientHeight;
     this.camera = new THREE.PerspectiveCamera(62, width / height, 0.1, 1000);
-    this.camera.position.set(0, -20, 52);
+    this.camera.position.set(0, 0, 52);
     this.camera.updateMatrix();
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -354,43 +324,125 @@ export default class bevImgContorl {
     this.rgb_data.dom.appendChild(this.renderer.domElement);
     this.renderer.toneMapping = THREE.ReinhardToneMapping;
     this.renderer.toneMappingExposure = 2.0;
-    // this.setMesh();
-    this.load3D();
+    this.setMesh();
     this.setAmbientLight();
     this.setControls();
+    this.load3D();
+  }
+  // 初始化bev的canvas
+  initBasicCanvas() {
+    this.bev.dom = document.createElement("canvas");
+    this.bev.ctx = this.bev.dom.getContext("2d");
+    this.bev.dom.height = 200;
+    this.bev.dom.width = 200;
+    const devicePixelRatio = window.devicePixelRatio || 1;
+    this.bev.ctx.scale(devicePixelRatio, devicePixelRatio);
+    this.bev.ctx.imageSmoothingEnabled = true;
+    this.bev.ctx.imageSmoothingQuality = "high";
+
+    this.bev.ctx.fillStyle = `pink`;
+    this.bev.ctx.fillRect(0, 0, this.bev.dom.width, this.bev.dom.height);
+
+    this.mapBg = this.track(new THREE.CanvasTexture(this.bev.dom));
+    this.mapBg.colorSpace = THREE.SRGBColorSpace;
+    this.mapBg.wrapS = this.mapBg.wrapT = THREE.RepeatWrapping;
+    this.material = this.track(
+      new THREE.MeshPhongMaterial({
+        map: this.mapBg,
+        side: THREE.DoubleSide,
+      })
+    );
+    let plane_w = 60;
+    let plane_h = 60;
+    this.geometry = this.track(new THREE.PlaneGeometry(plane_w, plane_h));
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+    // this.mesh.rotation.x = Math.PI;
+    // this.mesh.rotation.z = -Math.PI / 2;
+    this.scene.add(this.mesh);
   }
   // 加载3D车模型
   async load3D() {
     try {
-      const filesArr = ["car_for_games_unity", "car_for_games_unity"];
+      const filesArr = [
+        "main_car",
+        "car",
+        // "truck",
+        // "construction_vehicle",
+        // "bus",
+        // "trailer",
+        // "barrier",
+        // "motorcycle",
+        // "bicycle",
+        // "pedestrian",
+        // "street_cone",
+      ];
       const res = await Promise.all(filesArr.map(this.loadFile));
-      // debugger
-      // console.log(res, "res");
-      // 主车
-      this.objs.main_car = res[0];
-      const gltf = this.objs.main_car.scene;
-      gltf.rotation.x = Math.PI / 2;
-      // 3d辅助框 获取模型的大小
-      const box = new THREE.Box3().setFromObject(gltf),
-        center = box.getCenter(new THREE.Vector3()),
-        size = box.getSize(new THREE.Vector3());
-      console.log(center, "center");
-      console.log(size, "size");
-      // gltf.position.y = -(size.y / 2) - center.y;
-      this.scene.add(gltf);
-      gltf.matrixAutoUpdate = false;
-      gltf.updateMatrix();
-      // 小车
-      this.objs.car = res[1];
-      const car = this.objs.car.scene;
-      car.rotation.x = Math.PI / 2;
-      car.rotation.y = Math.PI;
-      car.position.y = -50;
-      car.position.x = -50;
-      this.scene.add(car);
-      car.matrixAutoUpdate = false;
-      car.updateMatrix();
-      console.log(this.objs.car, "this.objs.car");
+      console.log(res, "res");
+      res.forEach((item) => {
+        this.objs[item.id] = item.gltf;
+        let gltf = this.objs[item.id].scene;
+        if (item.id === "main_car") {
+          const box = new THREE.Box3().setFromObject(gltf),
+            center = box.getCenter(new THREE.Vector3()),
+            size = box.getSize(new THREE.Vector3());
+          gltf.position.y = -(size.y / 2) - center.y;
+          gltf.rotation.x = Math.PI / 2;
+        } else if (item.id === "car") {
+          gltf.rotation.x = Math.PI / 2;
+          gltf.rotation.y = Math.PI;
+          gltf.position.y = -100;
+          gltf.position.x = -100;
+        } else if (item.id === "truck") {
+          gltf.rotation.x = Math.PI / 2;
+          gltf.rotation.y = Math.PI;
+          gltf.position.y = -105;
+          gltf.position.x = -105;
+        } else if (item.id === "bus") {
+          gltf.rotation.x = Math.PI / 2;
+          gltf.rotation.y = Math.PI;
+          gltf.position.y = -125;
+          gltf.position.x = -125;
+        } else if (item.id === "trailer") {
+          gltf.rotation.x = Math.PI / 2;
+          gltf.rotation.y = Math.PI;
+          gltf.position.y = -135;
+          gltf.position.x = -135;
+        } else if (item.id === "barrier") {
+          gltf.rotation.x = Math.PI / 2;
+          gltf.position.x = -145;
+          gltf.position.y = -144;
+        } else if (item.id === "motorcycle") {
+          gltf.rotation.x = Math.PI / 2;
+          gltf.position.x = 105;
+          gltf.position.y = -124;
+        } else if (item.id === "bicycle") {
+          gltf.rotation.x = Math.PI / 2;
+          gltf.rotation.y = Math.PI;
+          gltf.position.x = -123;
+          gltf.position.y = -144;
+          gltf.scale.set(0.02, 0.02, 0.02);
+        } else if (item.id === "pedestrian") {
+          gltf.rotation.x = Math.PI / 2;
+          gltf.rotation.y = Math.PI / 2 + Math.PI / 3;
+          gltf.position.x = 120;
+          gltf.position.y = -114;
+          gltf.scale.set(0.02, 0.02, 0.02);
+        } else if (item.id === "street_cone") {
+          gltf.rotation.x = Math.PI / 2;
+          gltf.rotation.y = Math.PI / 2;
+          gltf.position.x = 100;
+          gltf.position.y = -147;
+        } else if (item.id === "construction_vehicle") {
+          gltf.rotation.x = Math.PI / 2;
+          gltf.rotation.y = Math.PI;
+          gltf.position.x = 110;
+          gltf.position.y = -105;
+          gltf.scale.set(0.02, 0.02, 0.02);
+        }
+        this.scene.add(gltf);
+        gltf.matrixAutoUpdate = false;
+        gltf.updateMatrix();
+      });
       ObserverInstance.emit("INIT_OK", {
         id: "objs",
       });
@@ -404,7 +456,7 @@ export default class bevImgContorl {
       new GLTFLoader().load(
         `src/assets/car_model/${url}/scene.gltf`,
         (gltf) => {
-          resolve(gltf);
+          resolve({ gltf: gltf, id: url });
         },
         null,
         (err) => {
@@ -439,6 +491,8 @@ export default class bevImgContorl {
       "rgb(158, 156, 153)"
     );
     gridHelper.rotation.x = -(Math.PI / 2);
-    this.scene.add(gridHelper);
+    const axesHelper = new THREE.AxesHelper(15);
+    this.scene.add(axesHelper);
+    // this.scene.add(gridHelper);
   }
 }

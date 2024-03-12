@@ -12,6 +12,7 @@
 // after the generated code, you will need to define   var Module = {};
 // before the code. Then that object will be used in the code, and you
 // can continue to use Module afterwards as well.
+
 var Module = typeof Module != 'undefined' ? Module : {};
 
 // --pre-jses are emitted after the Module integration code, so that they can
@@ -29,6 +30,7 @@ Module.onRuntimeInitialized = function () {
 let u8Array;
 let dataArray;
 let codecId = 0;
+let video_sign = "init";
 // console.log("Worker: mission start.");
 
 function decodeArray() {
@@ -53,29 +55,35 @@ function decodeArray() {
     height: Module._getHeight(),
     rgb: rgbData,
   };
-
   let message = {
     type: "image",
-    info: rgbObj
+    info: rgbObj,
+    sign: video_sign
   };
 
   postMessage(message, [message.info.rgb.buffer]);
 }
-
+let arr = []
 onmessage = function (e) {
-  if (e.data.type === "data_objs") return;
+  // console.log(e.data, "eeeeeeee============");
   if ("updateCodecId" == e.data.type) { 
     codecId = e.data.info;
     Module._close();
     Module._init(codecId);
-    console.log(codecId);
+    // console.log(codecId, "===");
+    let message = {
+      type: "video_init",
+      id: e.data.id
+    };
+    postMessage(message);
   } else {
     if (codecId != 173) { 
       Module._close();
       Module._init(codecId);
       console.log(codecId);
     }
-    u8Array = e.data;
+    u8Array = e.data.video_data;
+    video_sign = e.data?.sign;
     decodeArray();
   }
 };

@@ -1,6 +1,6 @@
 <!--
- * @LastEditTime: 2024-03-09 15:00:17
- * @Description: init
+ * @LastEditTime: 2024-03-12 20:18:56
+ * @Description: 
 -->
 <template>
   <div class="my_page">
@@ -23,7 +23,7 @@
         />
       </div>
       <div class="bottom_box">
-        <!-- <div class="left_box">
+        <div class="left_box">
           <videoYH
             ref="right_front"
             id="right_front"
@@ -39,11 +39,11 @@
             :video_id="'right_back'"
             :class="[`v_2`, 'v_box']"
           />
-        </div> -->
+        </div>
         <div class="center_box">
           <Bev ref="BEV" :objs_data="demo_data" />
         </div>
-        <!-- <div class="right_box">
+        <div class="right_box">
           <videoYH
             ref="left_back"
             id="left_back"
@@ -59,7 +59,7 @@
             :video_id="'left_front'"
             :class="[`v_4`, 'v_box']"
           />
-        </div> -->
+        </div>
       </div>
     </div>
     <!-- <div class="echarts_demos" id="e_demos">
@@ -75,7 +75,8 @@ import videoYH from "./view_video.vue";
 import Bev from "./bev.vue";
 import echartsYH from "./echarts.vue";
 import echartAxis from "./echartAxis.vue";
-import { ref, watch, defineProps } from "vue";
+import { ref, inject, defineProps, provide } from "vue";
+import { ObserverInstance } from "@/controls/event/observer";
 import Ws from "../controls/ws.js";
 import { decode } from "@msgpack/msgpack";
 import demo_data from "../assets/demo_data/demos.json";
@@ -92,7 +93,25 @@ let foresight = ref(),
   left_back = ref(),
   left_front = ref(),
   BEV = ref(),
-  objs_data = ref();
+  objs_data = ref(),
+  data = ref({}),
+  MemoryPool = inject("$MemoryPool"),
+  video_status = ref({
+    foresight: false,
+    rearview: false,
+    right_front: false,
+    right_back: false,
+    left_back: false,
+    left_front: false,
+  }),
+  observerListenerList = [
+    {
+      eventName: "VIDEO_OK",
+      fn: handleVideoStatus.bind(this),
+    },
+  ];
+ObserverInstance.selfAddListenerList(observerListenerList, "yh_init");
+provide("data_now", data);
 let view_i = {
   0: "foresight",
   1: "rearview",
@@ -104,61 +123,78 @@ let view_i = {
 let K = ref({}),
   ext_lidar2cam = ref({});
 const props = defineProps(["initStatus"]);
-watch(
-  () => props.initStatus,
-  async (res) => {
-    if (res) {
-      // await handlePoints(demo_data).then((data) => {
-      //   BEV.value.updataBev([], data);
-      // });
-    }
-  },
-  { deep: true }
-);
-// handlePoints(demo_data);
 // const ws = new Ws("ws://192.168.30.9:12347", true, async (e) => {
 const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
   try {
     if (!props.initStatus) return;
-    // console.log(arr, "arr");
-    // BEV.value.updataBev([], arr);
-    // foresight.value.updataCode([], arr),
-    // rearview.value.updataCode([], arr),
-    // right_front.value.updataCode([], arr),
-    // right_back.value.updataCode([], arr),
-    // left_back.value.updataCode([], arr),
-    // left_front.value.updataCode([], arr);
+    let object;
     if (e.data instanceof ArrayBuffer) {
-      const object = decode(e.data);
-      console.log(object, "object=====");
-      let objs = await handleObjPoints(object[2], object[4]);
-      // handleObjPoints(object[2], object[4]);
-      const res = Promise.all([
-        // foresight.value.updataCode(object[2], objs_data.value),
-        // rearview.value.updataCode(object[2], objs_data.value),
-        // right_front.value.updataCode(object[2], objs_data.value),
-        // right_back.value.updataCode(object[2], objs_data.value),
-        // left_back.value.updataCode(object[2], objs_data.value),
-        // left_front.value.updataCode(object[2], objs_data.value),
+      // console.log(e.data, "object========");
+      if (
+        video_status.value["foresight"] &&
+        video_status.value["rearview"] &&
+        video_status.value["right_front"] &&
+        video_status.value["right_back"] &&
+        video_status.value["left_back"] &&
+        video_status.value["left_front"]
+      ) {
+        object = decode(e.data);
+        object[4] = await handleObjPoints(object[2], object[4]);
+        data.value = object;
+        // console.log(data.value, "data.value======")
+        // if (MemoryPool.pool.length === 0) {
+        //   MemoryPool.free(object);
+        //   return;
+        // } else {
+        //   data = MemoryPool.allocate();
+        //   MemoryPool.free(object);
+        // }
 
-        foresight.value.updataCode(
-          object[1][0],
-          object[2], // 超参
-          objs // 障碍物数据
-        ),
-        rearview.value.updataCode(object[1][1], object[2], objs),
-        right_front.value.updataCode(object[1][2], object[2], objs),
-        right_back.value.updataCode(object[1][3], object[2], objs),
-        left_back.value.updataCode(object[1][4], object[2], objs),
-        left_front.value.updataCode(object[1][5], object[2], objs),
-        BEV.value.updataBev(object[3], object[2], object[4]),
-      ]);
-      // }
+        // const res = Promise.all([
+        //   foresight.value.updataCode(
+        //     object[1][0],
+        //     object[4] // 障碍物数据
+        //   ),
+        //   rearview.value.updataCode(object[1][1], object[4]),
+        //   right_front.value.updataCode(object[1][2], object[4]),
+        //   right_back.value.updataCode(object[1][3], object[4]),
+        //   left_back.value.updataCode(object[1][4], object[4]),
+        //   left_front.value.updataCode(object[1][5], object[4]),
+        //   // BEV.value.updataBev(data[3], data[2], data[4]),
+        // ]);
+        Promise.all([
+          foresight.value.updataCode(
+            object[1][0],
+            object[4] // 障碍物数据
+          ),
+          rearview.value.updataCode(object[1][1], object[4]),
+        ]);
+        await Promise.all([
+          ]);
+          Promise.all([
+          right_front.value.updataCode(object[1][2], object[4]),
+          right_back.value.updataCode(object[1][3], object[4]),
+          left_back.value.updataCode(object[1][4], object[4]),
+          left_front.value.updataCode(object[1][5], object[4]),
+        ]);
+        // foresight.value.updataCode(
+        //   object[1][0],
+        //   object[4] // 障碍物数据
+        // );
+        // rearview.value.updataCode(object[1][1], object[4]);
+        // right_front.value.updataCode(object[1][2], object[4]);
+        // right_back.value.updataCode(object[1][3], object[4]);
+        // left_back.value.updataCode(object[1][4], object[4]);
+        // left_front.value.updataCode(object[1][5], object[4]);
+      }
     }
   } catch (err) {
     console.log(err, "err----WS");
   }
 });
+function handleVideoStatus(e) {
+  video_status.value[e.id] = true;
+}
 async function handleObjPoints(base, objs) {
   try {
     return new Promise(async (resolve, reject) => {
@@ -166,7 +202,6 @@ async function handleObjPoints(base, objs) {
         K.value[view_i[i]] = construct2DArray(base[4][i], 3, 3);
         ext_lidar2cam.value[view_i[i]] = construct2DArray(base[3][i], 4, 4);
       }
-      // console.log(K.value, "K.value --- ext_lidar2cam", ext_lidar2cam.value);
       for (let j = 0; j < objs.length; j++) {
         if (objs[j].length != 0) {
           for (let e = 0; e < objs[j].length; e++) {
@@ -182,7 +217,6 @@ async function handleObjPoints(base, objs) {
             let a = objs[j][e].slice(0, 6);
             data.points_eight = await GetBoundingBoxPoints(...a, objs[j][e][9]);
             data.points_eight.forEach((item) => {
-              // console.log(item, "item=========");
               data.foresight.push(
                 project_lidar2img(
                   item,
@@ -303,6 +337,7 @@ async function handlePoints(data) {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   .l_box {
     width: 30%;
     height: 100%;

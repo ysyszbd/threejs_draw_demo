@@ -1,5 +1,9 @@
 <!--
- * @LastEditTime: 2024-03-07 17:43:10
+ * @LastEditTime: 2024-03-11 16:24:18
+ * @Description: 
+-->
+<!--
+ * @LastEditTime: 2024-03-11 14:33:48
  * @Description: 
 -->
 <script setup>
@@ -11,6 +15,7 @@ let work_init_arr = ref([]),
   work_status = ref(false),
   model3D_status = ref(false),
   all_status = ref(false),
+  video_start = ref(false),
   observerListenerList = [
     {
       eventName: "INIT_OK",
@@ -21,9 +26,11 @@ ObserverInstance.selfAddListenerList(observerListenerList, "yh_init");
 function initAll(data) {
   if (data.id === "objs") {
     model3D_status.value = true;
+  } else if (data.id === "video") {
+    video_start.value = true;
   } else {
     work_init_arr.value.push(data.id);
-    if (work_init_arr.value.length === 2) {
+    if (work_init_arr.value.length === 1) {
     // if (work_init_arr.value.length === 6) {
       work_status.value = true;
     }

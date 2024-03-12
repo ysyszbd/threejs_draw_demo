@@ -423,14 +423,14 @@ export default class Base {
   async loadObjs() {
     try {
       const filesArr = [
-        "car_for_games_unity",
+        "car",
         "bus",
         "bicycle_low-poly_minimalistic",
         "bicycle_low-poly_minimalistic",
         "street_cone",
         "street_cone",
         "barrier",
-        "car_for_games_unity",
+        "car",
       ];
       const res = await Promise.all(filesArr.map(this.loadFile));
       // debugger
