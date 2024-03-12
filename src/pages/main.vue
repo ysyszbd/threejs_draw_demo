@@ -62,10 +62,10 @@
         </div> -->
       </div>
     </div>
-    <!-- <div class="echarts_demos" id="e_demos">
+    <div class="echarts_demos" id="e_demos">
       <echartsYH id="echarts_box" />
       <echartAxis />
-    </div> -->
+    </div>
   </div>
 </template>
 

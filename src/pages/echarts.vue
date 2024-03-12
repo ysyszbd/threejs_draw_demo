@@ -10,30 +10,8 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-import * as echarts from "echarts/core";
-import {
-  DatasetComponent,
-  TitleComponent,
-  TooltipComponent,
-  GridComponent,
-  TransformComponent,
-} from "echarts/components";
+import { init } from "echarts/core";
 
-import { LineChart } from "echarts/charts";
-import { LabelLayout, UniversalTransition } from "echarts/features";
-import { CanvasRenderer } from "echarts/renderers";
-import echartsData from "@/assets/demo_data/echarts_demo.json";
-echarts.use([
-  DatasetComponent,
-  TitleComponent,
-  TooltipComponent,
-  GridComponent,
-  TransformComponent,
-  LineChart,
-  CanvasRenderer,
-  LabelLayout,
-  UniversalTransition,
-]);
 let chartDom = ref(null),
   myChart = ref(null),
   option;
@@ -43,98 +21,71 @@ onMounted(() => {
 function initEcharts() {
   // debugger
   chartDom.value = document.getElementById("move_echart");
-  myChart.value = echarts.init(chartDom.value, "dark", {
+  const height = document.getElementById("e_demos").clientHeight / 2;
+  myChart.value = init(chartDom.value, "dark", {
     width: 650,
-    height: document.getElementById("e_demos").clientHeight / 2
+    height,
   });
-  // debugger
-  run(echartsData);
-
-}
-function run(_rawData) {
-  const countries = [
-    "Finland",
-    "France",
-    "Germany",
-    "Iceland",
-    "Norway",
-    "Poland",
-    "Russia",
-    "United Kingdom",
-  ];
-  const datasetWithFilters = [];
-  const seriesList = [];
-  echarts.util.each(countries, function (country) {
-    var datasetId = "dataset_" + country;
-    datasetWithFilters.push({
-      id: datasetId,
-      fromDatasetId: "dataset_raw",
-      transform: {
-        type: "filter",
-        config: {
-          and: [
-            { dimension: "Year", gte: 1950 },
-            { dimension: "Country", "=": country },
-          ],
-        },
-      },
-    });
-    seriesList.push({
-      type: "line",
-      datasetId: datasetId,
-      showSymbol: false,
-      name: country,
-      endLabel: {
-        show: true,
-        formatter: function (params) {
-          return params.value[3] + ": " + params.value[0];
-        },
-      },
-      labelLayout: {
-        moveOverlap: "shiftY",
-      },
-      emphasis: {
-        focus: "series",
-      },
-      encode: {
-        x: "Year",
-        y: "Income",
-        label: ["Country", "Income"],
-        itemName: "Year",
-        tooltip: ["Income"],
-      },
-    });
-  });
-  option = {
-    animationDuration: 10000,
-    dataset: [
-      {
-        id: "dataset_raw",
-        source: _rawData,
-      },
-      ...datasetWithFilters,
-    ],
-    title: {
-      text: "Income of Germany and France since 1950",
-    },
-    tooltip: {
-      order: "valueDesc",
-      trigger: "axis",
-    },
-    xAxis: {
-      type: "category",
-      nameLocation: "middle",
-    },
-    yAxis: {
-      name: "Income",
-    },
-    grid: {
-      right: 140,
-    },
-    series: seriesList,
-  };
   myChart.value.setOption(option);
+  // debugger
 }
+var base = +new Date(2014, 9, 3);
+var oneDay = 24 * 3600 * 1000;
+var date = [];
+var data = [Math.random() * 150];
+var now = new Date(base);
+function addData(shift) {
+  now = [now.getFullYear(), now.getMonth() + 1, now.getDate()].join("/");
+  date.push(now);
+  data.push((Math.random() - 0.4) * 10 + data[data.length - 1]);
+  if (shift) {
+    date.shift();
+    data.shift();
+  }
+  now = new Date(+new Date(now) + oneDay);
+}
+for (var i = 1; i < 100; i++) {
+  addData();
+}
+option = {
+  xAxis: {
+    type: "category",
+    boundaryGap: false,
+    data: date,
+  },
+  yAxis: {
+    boundaryGap: [0, "50%"],
+    type: "value",
+  },
+  series: [
+    {
+      name: "成交",
+      type: "line",
+      smooth: true,
+      symbol: "none",
+      stack: "a",
+      areaStyle: {
+        normal: {},
+      },
+      data: data,
+    },
+  ],
+};
+
+setInterval(function () {
+  addData(true);
+  myChart.value.setOption({
+    xAxis: {
+      data: date,
+    },
+    series: [
+      {
+        name: "成交",
+        data: data,
+      },
+    ],
+  });
+}, 500);
 </script>
 
 <style lang="scss" scoped>
