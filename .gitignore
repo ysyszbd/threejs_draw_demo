@@ -8,10 +8,9 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-/src/assets/car_model/
+/src/assets/car_model/ 
 dist
 dist-ssr
-src/assets/car_model/
 *.local
 
 # Editor directories and files
