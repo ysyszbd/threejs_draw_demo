@@ -1,7 +1,8 @@
 export let dataEvents = {
   INIT_OK,
   VIDEO_OK,
-  DRAW_BEV
+  DRAW_BEV,
+  VIDEO_DRAW,
 }
 
 export default { dataEvents };

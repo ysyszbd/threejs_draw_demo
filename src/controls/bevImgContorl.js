@@ -21,7 +21,13 @@ export default class bevImgContorl {
   renderer;
   particleSystem;
   geometry;
-  scale = numberExcept(51.2 , 30);
+  scale = numberExcept(51.2, 30);
+  observerListenerList = [
+    {
+      eventName: "DRAW_BEV",
+      fn: this.getData.bind(this),
+    },
+  ];
   objs = {
     main_car: null,
     car: null,
@@ -68,6 +74,7 @@ export default class bevImgContorl {
   mapBg = null;
 
   constructor() {
+    ObserverInstance.selfAddListenerList(this.observerListenerList, "yh_init");
     this.rgb_data.dom = document.getElementById("bev_box");
     // 初始化three
     this.init();
@@ -76,13 +83,12 @@ export default class bevImgContorl {
     this.animate();
   }
   // 更新bev
-  async getData(bev_demo, bev_data, objs_data) {
+  async getData(data) {
     try {
       // 更新canvas图像
-      this.drawBev(bev_data[1], bev_data[2], bev_demo).then((res) => {
-        // console.log(res, "res=======");
+      this.drawBev(data.basic_data[1], data.basic_data[2], data.info).then((res) => {
         // 更新障碍物
-        this.handleObjs(objs_data);
+        this.handleObjs(data.objs);
       });
     } catch (err) {
       console.log(err, "err---getData");

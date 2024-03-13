@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-12 20:09:20
+ * @LastEditTime: 2024-03-13 18:33:51
  * @Description:./
  */
 
@@ -20,7 +20,12 @@ export default class Video {
     left_back: left_back_img,
     left_front: left_front_img,
   };
-
+  observerListenerList = [
+    {
+      eventName: "VIDEO_DRAW",
+      fn: this.drawVideo.bind(this),
+    },
+  ];
   work = new Worker(new URL("./ffmpeg_decode.js", import.meta.url).href);
   status = false;
   dom; // 外侧dom，利用该dom计算子元素宽高
@@ -36,6 +41,7 @@ export default class Video {
   video_start = false; // 视频是否开始了，未开始则先离屏渲染
   canvas_work;
   constructor(id) {
+    ObserverInstance.selfAddListenerList(this.observerListenerList, "yh_video_draw");
     this.init(id);
   }
   // 获取所需的dom元素
@@ -59,9 +65,13 @@ export default class Video {
     // console.log(data, "data================")
   }
   // 绘制3D线框
-  handleHelper(data) {
+  handleHelper(data, i, j) {
     try {
-      data.forEach((item) => {
+      let arr = data.filter((item) => {
+        return item[0] === -1 && item[1] === -1;
+      });
+      if (arr.length === 8) return;
+      data.forEach((item, index) => {
         this.drawCircle(item, "yellow");
       });
       this.drawLine([data[0], data[1]]);
@@ -96,7 +106,12 @@ export default class Video {
     this.offscreen_ctx.strokeStyle = color;
     this.offscreen_ctx.stroke(); //描边
   }
-  drawVideo(info) {
+  drawVideo(data) {
+    if (data.view !== this.id) return;
+    // console.log(data, "data====");
+    let info = data.info,
+      objs = data.objs;
+    this.objs_data = objs;
     let rect = this.dom.getBoundingClientRect();
     // 使用canvas外部的元素来控制canvas的大小
     let wh_obj = this.handleWH(
@@ -107,13 +122,19 @@ export default class Video {
     );
     this.handle_box.style.width = wh_obj.w + "px";
     this.handle_box.style.height = wh_obj.h + "px";
-    
-    if (this.helper_dom.width != info.width || this.helper_dom.height != info.height) {
+
+    if (
+      this.helper_dom.width != info.width ||
+      this.helper_dom.height != info.height
+    ) {
       this.helper_dom.width = info.width;
       this.helper_dom.height = info.height;
     }
 
-    if (this.offscreen.width != info.width || this.offscreen.height != info.height) {
+    if (
+      this.offscreen.width != info.width ||
+      this.offscreen.height != info.height
+    ) {
       this.offscreen.width = info.width;
       this.offscreen.height = info.height;
     }
@@ -137,10 +158,11 @@ export default class Video {
         imgData.data[i + 2] = data0;
       }
       this.offscreen_ctx.putImageData(imgData, 0, 0);
+      // console.log(this.objs_data, "this.objs_data");
       for (let i = 0; i < this.objs_data.length; i++) {
         for (let j = 0; j < this.objs_data[i].length; j++) {
           let item = this.objs_data[i][j];
-          this.handleHelper(item[item.length - 1][this.id]);
+          this.handleHelper(item[item.length - 1][this.id], i, j);
         }
       }
       this.imageBitmap = this.offscreen.transferToImageBitmap();
@@ -168,5 +190,4 @@ export default class Video {
       h: h,
     };
   }
-
 }

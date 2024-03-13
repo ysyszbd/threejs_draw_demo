@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@msgpack/msgpack": "3.0.0-beta2",
+    "comlink": "^4.4.1",
     "echarts": "^5.5.0",
     "eventemitter3": "^5.0.1",
     "mathjs": "^12.4.0",

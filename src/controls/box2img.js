@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-11 10:34:48
+ * @LastEditTime: 2024-03-13 13:39:48
  * @Description:
  */
 // import { K, D, ext_lidar2cam } from "../assets/demo_data/data";
@@ -70,7 +70,7 @@ export function project_lidar2img(pts, ext_lidar2cam, K, scale, crop) {
     pts[2] * ext_lidar2cam[2][2] +
     ext_lidar2cam[2][3];
 
-  // if (Math.abs(Math.atan(pt_cam_x / pt_cam_z)) > 60) return [-1, -1];
+  if (Math.abs(Math.atan(pt_cam_x / pt_cam_z)) > 40) return [-1, -1];
 
   if (pt_cam_z < 0.2) return [-1, -1];
 
@@ -84,7 +84,6 @@ export function project_lidar2img(pts, ext_lidar2cam, K, scale, crop) {
 
   const x_crop = x_scale + crop[0];
   const y_crop = y_scale + crop[1];
-  // console.log(x, y, "=============x, y")
   return [x_crop, y_crop];
 }
 // export function project_lidar2img(pts, type) {
@@ -143,13 +142,6 @@ export function project_lidar2img(pts, ext_lidar2cam, K, scale, crop) {
 // pt6 -- pt7
 // 计算盒子的8个点坐标
 export function GetBoundingBoxPoints(x, y, z, w, l, h, r_z) {
-  // console.log(x,
-  //   y,
-  //   z,
-  //   w,
-  //   l,
-  //   h,
-  //   r_z, "`PromisePromise+++++++++++");
   return new Promise(async (resolve, reject) => {
     const cos_a = Math.cos(r_z - Math.PI / 2);
     const sin_a = Math.sin(r_z - Math.PI / 2);
@@ -196,7 +188,7 @@ export function GetBoundingBoxPoints(x, y, z, w, l, h, r_z) {
       sin_a * half_w + cos_a * half_l + y,
       z + half_h,
     ];
-    // const pt8 = [x, -y, z];
+    // const pt8 = [x, y, z];
     // resolve([pt8, pt8, pt8, pt8, pt8, pt8, pt8, pt8]);
     resolve([pt0, pt1, pt2, pt3, pt4, pt5, pt6, pt7]);
   });

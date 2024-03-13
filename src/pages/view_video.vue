@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-12 15:00:45
+ * @LastEditTime: 2024-03-13 17:05:37
  * @Description: 
 -->
 <template>
@@ -16,6 +16,7 @@
 <script setup>
 import {
   defineProps,
+  defineEmits,
   onMounted,
   defineExpose,
   onUnmounted,
@@ -26,7 +27,9 @@ import VIDEO from "../controls/video/video.js";
 import { ObserverInstance } from "@/controls/event/observer";
 
 const props = defineProps(["video_id"]);
+const emits = defineEmits(["updataVideoStatus"]);
 let yh_video = null;
+let MemoryPool = inject("$MemoryPool");
 let video_start = ref(false);
 let video_work = new Worker(
   new URL("../controls/video/ffmpeg_decode.js", import.meta.url).href
@@ -36,6 +39,13 @@ onMounted(() => {
   yh_video = new VIDEO(props.video_id);
   initVideoWork();
 });
+function postVideo(u8Array, key) {
+  video_work.postMessage({
+    video_data: u8Array,
+    view: props.video_id,
+    key: key,
+  });
+}
 function updataCode(u8Array, objs, bev) {
   try {
     return new Promise(async (resolve, reject) => {
@@ -69,12 +79,14 @@ function initVideoWork() {
       if (info.width == 0 || info.height == 0) {
         return;
       }
-      if (props.video_id === "foresight") {
-        ObserverInstance.emit("DRAW_BEV", {
-          type: "start",
-        });
-      }
-      yh_video.drawVideo(info);
+      // console.log(message, "message===========MemoryPool", MemoryPool);
+      emits("updataVideoStatus", message);
+      // if (props.video_id === "foresight") {
+      //   ObserverInstance.emit("DRAW_BEV", {
+      //     type: "start",
+      //   });
+      // }
+      // yh_video.drawVideo(info);
     }
   };
 }
@@ -88,6 +100,7 @@ function changeCodecId(val) {
 }
 defineExpose({
   updataCode,
+  postVideo,
 });
 onUnmounted(() => {
   yh_video.work.terminate();
