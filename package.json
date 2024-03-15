@@ -19,6 +19,7 @@
     "vue": "^3.3.11"
   },
   "devDependencies": {
+    "@njleonzhang/postcss-px-to-rem": "^1.0.1",
     "@vitejs/plugin-vue": "^4.5.2",
     "sass": "^1.70.0",
     "vite": "^5.0.8"

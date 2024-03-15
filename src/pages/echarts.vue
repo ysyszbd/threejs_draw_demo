@@ -42,9 +42,9 @@ onMounted(() => {
 });
 function initEcharts() {
   chartDom.value = document.getElementById("move_echart");
-  myChart.value = echarts.init(chartDom.value, "dark", {
+  myChart.value = echarts.init(chartDom.value, "light", {
     width: document.getElementById("e_demos").clientWidth,
-    height: document.getElementById("e_demos").clientHeight / 2,
+    height: (document.getElementById("e_demos").clientHeight - 20) / 2,
   });
   option.value = {
     title: {

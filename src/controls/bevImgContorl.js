@@ -33,23 +33,23 @@ export default class bevImgContorl {
     car: null,
     car_group: new THREE.Object3D(),
     truck: null,
-    truck_group: [],
+    truck_group: new THREE.Object3D(),
     construction_vehicle: null,
-    construction_vehicle_group: [],
+    construction_vehicle_group: new THREE.Object3D(),
     bus: null,
-    bus_group: [],
+    bus_group: new THREE.Object3D(),
     trailer: null,
-    trailer_group: [],
+    trailer_group: new THREE.Object3D(),
     barrier: null,
-    barrier_group: [],
+    barrier_group: new THREE.Object3D(),
     motorcycle: null,
-    motorcycle_group: [],
+    motorcycle_group: new THREE.Object3D(),
     bicycle: null,
-    bicycle_group: [],
+    bicycle_group: new THREE.Object3D(),
     pedestrian: null,
-    pedestrian_group: [],
+    pedestrian_group: new THREE.Object3D(),
     street_cone: null,
-    street_cone_group: [],
+    street_cone_group: new THREE.Object3D(),
   };
   obj_index = {
     "0-0": "car",
@@ -72,10 +72,19 @@ export default class bevImgContorl {
   geometry = null;
   mesh = null;
   mapBg = null;
-
+  offscreen;
+  offscreen_ctx;
+  big_offscreen;
+  big_offscreen_ctx;
+  imageBitmap;
+  canvas;
+  ctx;
   constructor() {
     ObserverInstance.selfAddListenerList(this.observerListenerList, "yh_init");
     this.rgb_data.dom = document.getElementById("bev_box");
+    // 离屏渲染
+    this.offscreen = new OffscreenCanvas(400, 400);
+    this.offscreen_ctx = this.offscreen.getContext("2d");
     // 初始化three
     this.init();
     // 初始化canvas，并在three上绘制网格，将canvas贴上去
@@ -86,25 +95,24 @@ export default class bevImgContorl {
   async getData(data) {
     try {
       // 更新canvas图像
-      this.drawBev(data.basic_data[1], data.basic_data[2], data.info).then((res) => {
-        // 更新障碍物
-        this.handleObjs(data.objs);
-      });
+      this.drawBev(data.basic_data[1], data.basic_data[2], data.info).then(
+        (res) => {
+          // 更新障碍物
+          this.handleObjs(data.objs);
+        }
+      );
     } catch (err) {
       console.log(err, "err---getData");
     }
   }
   // 更新障碍物
   handleObjs(objs_data) {
-    for (let i = 0; i < objs_data.length; i++) {
-      if (objs_data[i].length <= 0) break;
-      this.handle3D("car", objs_data[i]);
-    }
+    if (objs_data.length <= 0) return;
+    this.handle3D("car", objs_data);
   }
   // 操作具体的障碍物
   async handle3D(type, data) {
     try {
-      // console.log(data, "data");
       if (!this.objs[type]) return;
       let group = this.objs[`${type}_group`],
         model = this.objs[type];
@@ -133,8 +141,10 @@ export default class bevImgContorl {
             group.children[i].rotation.y = -data[i][9];
           }
           for (let j = data.length; j < group.children.length; j++) {
-            group.children[j].position.x = 50;
-            group.children[j].position.y = 50;
+            this.scene.remove(group.children[j]);
+            group.remove(group.children[j]);
+            // group.children[j].position.x = 100;
+            // group.children[j].position.y = 100;
           }
         } else {
           for (let i = 0; i < group.children.length; i++) {
@@ -221,7 +231,6 @@ export default class bevImgContorl {
   handleDataCanvas(bev_demo) {
     try {
       return new Promise((resolve, reject) => {
-        console.log(this, "his");
         let road = [];
         let now_h = -1;
         let road_empty = [-1, -1];
@@ -288,27 +297,86 @@ export default class bevImgContorl {
   // 绘制出bev所需的canvas
   drawBev(w, h, bev_demo) {
     try {
-      return new Promise((resolve, reject) => {
-        this.bev.ctx.clearRect(0, 0, this.bev.dom.width, this.bev.dom.height);
+      return new Promise(async (resolve, reject) => {
+        // this.bev.ctx.clearRect(0, 0, this.bev.dom.width, this.bev.dom.height);
         if (this.img_w != w || this.img_h != h) {
           this.img_w = w;
           this.img_h = h;
           this.bev.dom.width = this.img_w;
           this.bev.dom.height = this.img_h;
+          this.offscreen.width = w;
+          this.offscreen.height = h;
         }
-        for (let i = 0; i < bev_demo.length; i++) {
-          let c = this.getColor(bev_demo[i]);
-          let points = this.getPoints(i, this.bev.dom.width);
-          this.bev.ctx.fillStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${c[3]})`;
-          this.bev.ctx.fillRect(points[0], points[1], 1, 1);
-        }
-        // 更新 CanvasTexture
-        this.mapBg.needsUpdate = true;
-        resolve("canvas更新成功");
+        requestAnimationFrame(() => {
+          this.bev.ctx.clearRect(0, 0, w, h);
+          if (this.imageBitmap) {
+            this.bev.ctx.drawImage(this.imageBitmap, 0, 0, w, h);
+            console.log(Date.now(), "-----------bev2");
+            this.mapBg.needsUpdate = true;
+            resolve("canvas更新成功");
+          }
+          for (let i = 0; i < bev_demo.length; i++) {
+            let c = this.getColor(bev_demo[i]);
+            let points = this.getPoints(i, w);
+            this.offscreen_ctx.fillStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${c[3]})`;
+            this.offscreen_ctx.fillRect(points[0], points[1], 1, 1);
+          }
+          this.imageBitmap = this.offscreen.transferToImageBitmap();
+        });
       });
     } catch (err) {
       console.log(err, "err==drawBev");
     }
+  }
+  applySharpen(context, width, height) {
+    // 获取原始图像数据
+    let originalImageData = context.getImageData(0, 0, width, height);
+    let originalPixels = originalImageData.data;
+
+    // 创建一个用于存放处理后的图像数据的 ImageData 对象
+    let outputImageData = context.createImageData(width, height);
+    let outputPixels = outputImageData.data;
+
+    const kernel = [0, -1, 0, -1, 5, -1, 0, -1, 0];
+
+    const kernelSize = Math.sqrt(kernel.length);
+    const halfKernelSize = Math.floor(kernelSize / 2);
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        let r = 0,
+          g = 0,
+          b = 0;
+
+        for (let ky = 0; ky < kernelSize; ky++) {
+          for (let kx = 0; kx < kernelSize; kx++) {
+            // 考虑边缘像素
+            let pixelY = y + ky - halfKernelSize;
+            let pixelX = x + kx - halfKernelSize;
+
+            if (pixelY < 0 || pixelY >= height || pixelX < 0 || pixelX >= width)
+              continue;
+
+            // 卷积计算
+            let offset = (pixelY * width + pixelX) * 4;
+            let weight = kernel[ky * kernelSize + kx];
+
+            r += originalPixels[offset] * weight;
+            g += originalPixels[offset + 1] * weight;
+            b += originalPixels[offset + 2] * weight;
+          }
+        }
+
+        let destOffset = (y * width + x) * 4;
+        outputPixels[destOffset] = r;
+        outputPixels[destOffset + 1] = g;
+        outputPixels[destOffset + 2] = b;
+        outputPixels[destOffset + 3] = originalPixels[destOffset + 3]; // 保持相同的 alpha 值
+      }
+    }
+
+    // 将处理后的图像数据绘制回画布
+    context.putImageData(outputImageData, 0, 0);
   }
   // 初始化threejs
   init() {
@@ -317,7 +385,7 @@ export default class bevImgContorl {
     var width = this.rgb_data.dom.clientWidth;
     var height = this.rgb_data.dom.clientHeight;
     this.camera = new THREE.PerspectiveCamera(62, width / height, 0.1, 1000);
-    this.camera.position.set(0, 0, 52);
+    this.camera.position.set(0, 0, 50);
     this.camera.updateMatrix();
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -339,19 +407,20 @@ export default class bevImgContorl {
   initBasicCanvas() {
     this.bev.dom = document.createElement("canvas");
     this.bev.ctx = this.bev.dom.getContext("2d");
-    this.bev.dom.height = 200;
-    this.bev.dom.width = 200;
+    this.bev.dom.height = 400;
+    this.bev.dom.width = 400;
     const devicePixelRatio = window.devicePixelRatio || 1;
     this.bev.ctx.scale(devicePixelRatio, devicePixelRatio);
     this.bev.ctx.imageSmoothingEnabled = true;
     this.bev.ctx.imageSmoothingQuality = "high";
-
     this.bev.ctx.fillStyle = `pink`;
     this.bev.ctx.fillRect(0, 0, this.bev.dom.width, this.bev.dom.height);
-
+    this.imageBitmap = this.offscreen.transferToImageBitmap();
     this.mapBg = this.track(new THREE.CanvasTexture(this.bev.dom));
     this.mapBg.colorSpace = THREE.SRGBColorSpace;
     this.mapBg.wrapS = this.mapBg.wrapT = THREE.RepeatWrapping;
+    this.mapBg.magFilter = THREE.LinearFilter;
+    this.mapBg.minFilter = THREE.LinearFilter;
     this.material = this.track(
       new THREE.MeshPhongMaterial({
         map: this.mapBg,
@@ -362,10 +431,9 @@ export default class bevImgContorl {
     let plane_h = 60;
     this.geometry = this.track(new THREE.PlaneGeometry(plane_w, plane_h));
     this.mesh = new THREE.Mesh(this.geometry, this.material);
-    // this.mesh.rotation.x = Math.PI;
-    // this.mesh.rotation.z = -Math.PI / 2;
     this.scene.add(this.mesh);
   }
+
   // 加载3D车模型
   async load3D() {
     try {
@@ -383,7 +451,7 @@ export default class bevImgContorl {
         // "street_cone",
       ];
       const res = await Promise.all(filesArr.map(this.loadFile));
-      console.log(res, "res");
+      // console.log(res, "res");
       res.forEach((item) => {
         this.objs[item.id] = item.gltf;
         let gltf = this.objs[item.id].scene;

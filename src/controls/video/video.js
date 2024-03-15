@@ -1,32 +1,16 @@
 /*
- * @LastEditTime: 2024-03-13 18:33:51
+ * @LastEditTime: 2024-03-15 17:29:39
  * @Description:./
  */
-
-import foresight_img from "../../assets/demo_data/foresight.jpg";
-import rearview_img from "../../assets/demo_data/rearview.jpg";
-import right_front_img from "../../assets/demo_data/right_front.jpg";
-import right_back_img from "../../assets/demo_data/right_back.jpg";
-import left_back_img from "../../assets/demo_data/left_back.jpg";
-import left_front_img from "../../assets/demo_data/left_front.jpg";
 import { ObserverInstance } from "@/controls/event/observer";
 
 export default class Video {
-  img_ibj = {
-    foresight: foresight_img,
-    rearview: rearview_img,
-    right_front: right_front_img,
-    right_back: right_back_img,
-    left_back: left_back_img,
-    left_front: left_front_img,
-  };
   observerListenerList = [
     {
       eventName: "VIDEO_DRAW",
       fn: this.drawVideo.bind(this),
     },
   ];
-  work = new Worker(new URL("./ffmpeg_decode.js", import.meta.url).href);
   status = false;
   dom; // 外侧dom，利用该dom计算子元素宽高
   // 用来控制canvas大小的dom
@@ -65,15 +49,15 @@ export default class Video {
     // console.log(data, "data================")
   }
   // 绘制3D线框
-  handleHelper(data, i, j) {
+  handleHelper(data) {
     try {
       let arr = data.filter((item) => {
         return item[0] === -1 && item[1] === -1;
       });
       if (arr.length === 8) return;
-      data.forEach((item, index) => {
-        this.drawCircle(item, "yellow");
-      });
+      // data.forEach((item, index) => {
+      //   this.drawCircle(item, "yellow");
+      // });
       this.drawLine([data[0], data[1]]);
       this.drawLine([data[0], data[2]]);
       this.drawLine([data[0], data[4]]);
@@ -158,12 +142,9 @@ export default class Video {
         imgData.data[i + 2] = data0;
       }
       this.offscreen_ctx.putImageData(imgData, 0, 0);
-      // console.log(this.objs_data, "this.objs_data");
       for (let i = 0; i < this.objs_data.length; i++) {
-        for (let j = 0; j < this.objs_data[i].length; j++) {
-          let item = this.objs_data[i][j];
-          this.handleHelper(item[item.length - 1][this.id], i, j);
-        }
+        let item = this.objs_data[i];
+        this.handleHelper(item[item.length - 1][this.id]);
       }
       this.imageBitmap = this.offscreen.transferToImageBitmap();
     });

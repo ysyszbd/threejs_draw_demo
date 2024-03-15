@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-13 19:06:01
+ * @LastEditTime: 2024-03-15 11:11:04
  * @Description: 
 -->
 <template>
@@ -7,13 +7,9 @@
 </template>
 
 <script setup>
-import bevControl from "../controls/bevControl.js";
 import bevImgControl from "../controls/bevImgContorl.js";
-import { onMounted, ref, defineExpose } from "vue";
-
+import { onMounted, ref } from "vue";
 let Bev = ref(null);
-
-
 onMounted(() => {
   Bev.value = new bevImgControl();
 });

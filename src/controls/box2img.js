@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-13 13:39:48
+ * @LastEditTime: 2024-03-15 17:42:14
  * @Description:
  */
 // import { K, D, ext_lidar2cam } from "../assets/demo_data/data";
@@ -70,12 +70,12 @@ export function project_lidar2img(pts, ext_lidar2cam, K, scale, crop) {
     pts[2] * ext_lidar2cam[2][2] +
     ext_lidar2cam[2][3];
 
-  if (Math.abs(Math.atan(pt_cam_x / pt_cam_z)) > 40) return [-1, -1];
+  // if (Math.abs(Math.atan(pt_cam_x / pt_cam_z)) > 70) return [-1, -1];
 
-  if (pt_cam_z < 0.2) return [-1, -1];
+  // if (pt_cam_z < 0.2) return [-1, -1];
 
-  const x_u = pt_cam_x / pt_cam_z;
-  const y_u = pt_cam_y / pt_cam_z;
+  const x_u = pt_cam_x / Math.abs(pt_cam_z);
+  const y_u = pt_cam_y /  Math.abs(pt_cam_z);
 
   const x = K[0][0] * x_u + K[0][2];
   const y = K[1][1] * y_u + K[1][2];

@@ -79,14 +79,7 @@ function initVideoWork() {
       if (info.width == 0 || info.height == 0) {
         return;
       }
-      // console.log(message, "message===========MemoryPool", MemoryPool);
       emits("updataVideoStatus", message);
-      // if (props.video_id === "foresight") {
-      //   ObserverInstance.emit("DRAW_BEV", {
-      //     type: "start",
-      //   });
-      // }
-      // yh_video.drawVideo(info);
     }
   };
 }
@@ -103,7 +96,7 @@ defineExpose({
   postVideo,
 });
 onUnmounted(() => {
-  yh_video.work.terminate();
+  video_work.terminate();
 });
 </script>
 

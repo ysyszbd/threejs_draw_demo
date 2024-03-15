@@ -59,7 +59,8 @@ body {
 .main_box {
   width: 100vw;
   height: 100vh;
-  position: relative;
+  // position: relative;
+  box-sizing: border-box;
   // overflow: hidden;
   .loading_page {
     position: absolute;

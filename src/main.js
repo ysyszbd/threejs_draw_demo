@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-11 14:03:17
+ * @LastEditTime: 2024-03-15 13:59:57
  * @Description: 
  */
 import { createApp } from 'vue'
@@ -7,6 +7,7 @@ import './style.css'
 import App from './App.vue'
 import Base from "@/controls/base.js";
 import MemoryPool from '@/controls/memoryPool';
+import '@/controls/rem.js';
 
 
 let base = new Base();
