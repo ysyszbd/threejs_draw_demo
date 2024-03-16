@@ -1,8 +1,8 @@
 /*
- * @LastEditTime: 2024-03-15 13:58:45
+ * @LastEditTime: 2024-03-16 09:45:26
  * @Description: 
  */
-module.exports = {
+export default {
   plugins: {
     autoprefixer: {},
     "@njleonzhang/postcss-px-to-rem": {

@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-15 18:25:07
+ * @LastEditTime: 2024-03-16 20:02:23
  * @Description: 
 -->
 <!--
@@ -84,7 +84,7 @@ import videoYH from "./view_video.vue";
 import Bev from "./bev.vue";
 import echartsYH from "./echarts.vue";
 import echartAxis from "./echartAxis.vue";
-import { ref, inject, defineProps, provide } from "vue";
+import { ref, inject, defineProps, onUnmounted, onBeforeMount } from "vue";
 import { ObserverInstance } from "@/controls/event/observer";
 import Ws from "../controls/ws.js";
 import { decode } from "@msgpack/msgpack";
@@ -143,18 +143,18 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
         video_status.value["left_front"]
       ) {
         object = decode(e.data);
-        console.log(object, "object");
+        // console.log(object, "object");
+
         // return
         object[4] = await handleObjPoints(object[2], object[4]);
-        Promise.all([
-          foresight.value.postVideo(object[1][0], object[0]),
-          rearview.value.postVideo(object[1][3], object[0]),
-          left_front.value.postVideo(object[1][2], object[0]),
-          left_back.value.postVideo(object[1][4], object[0]),
-          right_front.value.postVideo(object[1][1], object[0]),
-          right_back.value.postVideo(object[1][5], object[0]),
-        ]);
+        foresight.value.postVideo(object[1][0], object[0]);
+        rearview.value.postVideo(object[1][3], object[0]);
+        left_front.value.postVideo(object[1][2], object[0]);
+        left_back.value.postVideo(object[1][4], object[0]);
+        right_front.value.postVideo(object[1][1], object[0]);
+        right_back.value.postVideo(object[1][5], object[0]);
         if (video_start.value) {
+          // console.log(Date.now(), "-----------setKey");
           MemoryPool.free(object[0], object[4], "obj");
           MemoryPool.free(object[0], object[3], "bev");
           MemoryPool.free(object[0], object[2], "basic");
@@ -177,7 +177,8 @@ function updataVideoStatus(message) {
     MemoryPool.hasVideo(message.key, "right_front") &&
     MemoryPool.hasVideo(message.key, "right_back") &&
     MemoryPool.hasVideo(message.key, "left_back") &&
-    MemoryPool.hasVideo(message.key, "left_front") && MemoryPool.keyArr.length > 1
+    MemoryPool.hasVideo(message.key, "left_front") &&
+    MemoryPool.keyArr.length > 1
   ) {
     // console.log(MemoryPool.keyArr, "key========");
     // console.log(MemoryPool.video["foresight"], "video========");
@@ -211,7 +212,7 @@ function noticeVideo(key, view) {
 }
 function noticeBev(key) {
   return new Promise((resolve, reject) => {
-    console.log(Date.now(), "-----------bev1");
+    // console.log(Date.now(), "-----------bev1");
     ObserverInstance.emit("DRAW_BEV", {
       basic_data: MemoryPool.allocate(key, "basic"),
       objs: MemoryPool.allocate(key, "obj"),
@@ -306,6 +307,12 @@ async function handleObjPoints(base, objs) {
     });
   } catch (err) {}
 }
+onBeforeMount(() => {
+  ObserverInstance.emit("BEV_CLEAR");
+});
+onUnmounted(() => {
+  ObserverInstance.emit("BEV_CLEAR");
+});
 </script>
 
 <style lang="scss" scoped>
@@ -321,6 +328,7 @@ async function handleObjPoints(base, objs) {
   position: relative;
   box-sizing: border-box;
   padding: 0 0.1rem 0.1rem;
+  // color: rgb(53, 54, 48);
   .bg_box {
     position: absolute;
     top: 0;
@@ -431,7 +439,8 @@ async function handleObjPoints(base, objs) {
   flex-shrink: 0;
   overflow: hidden;
   box-sizing: border-box;
-  .echarts_box, .axis_box {
+  .echarts_box,
+  .axis_box {
     border: 0.01rem solid #278ff0;
     border-radius: 0.05rem;
     background-color: rgba(13, 51, 118, 0.8);
