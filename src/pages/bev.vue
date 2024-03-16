@@ -1,9 +1,10 @@
 <!--
- * @LastEditTime: 2024-03-15 11:11:04
+ * @LastEditTime: 2024-03-16 18:44:45
  * @Description: 
 -->
 <template>
-  <div class="rbg_demo" id="bev_box"></div>
+  <div class="rbg_demo" id="bev_box">
+  </div>
 </template>
 
 <script setup>

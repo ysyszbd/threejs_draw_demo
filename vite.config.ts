@@ -1,21 +1,21 @@
 /*
- * @LastEditTime: 2024-03-04 09:59:29
- * @Description: 
+ * @LastEditTime: 2024-03-16 17:38:43
+ * @Description:
  */
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from "path"
 import postcssPx2Rem from 'postcss-pxtorem'
 import autoprefixer from 'autoprefixer'
+import { comlink } from "vite-plugin-comlink";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()
-  ],
+  plugins: [vue(), comlink()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, "src")
-    }
+      "@": resolve(__dirname, "src"),
+    },
   },
   css: {
     preprocessorOptions: {
@@ -39,5 +39,8 @@ export default defineConfig({
         })
       ]
     },
-  }
-})
+  },
+  worker: {
+    plugins: () => [comlink()],
+  },
+});
