@@ -5,10 +5,13 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from "path"
+import postcssPx2Rem from 'postcss-pxtorem'
+import autoprefixer from 'autoprefixer'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue()
+  ],
   resolve: {
     alias: {
       '@': resolve(__dirname, "src")
@@ -23,6 +26,18 @@ export default defineConfig({
         charset: false,
         javascriptEnabled: true,
       }
-    }
+    },
+    postcss: {
+      plugins: [
+        autoprefixer(),
+        postcssPx2Rem({
+          exclude: /node_modules/,
+          mediaQuery: false,
+          unitPrecision: 3,
+          minPixelValue: 0,
+          propList: ['*'],
+        })
+      ]
+    },
   }
 })

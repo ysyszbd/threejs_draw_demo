@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@msgpack/msgpack": "3.0.0-beta2",
+    "autoprefixer": "^10.4.18",
     "comlink": "^4.4.1",
     "echarts": "^5.5.0",
     "eventemitter3": "^5.0.1",
@@ -19,9 +20,13 @@
     "vue": "^3.3.11"
   },
   "devDependencies": {
-    "@njleonzhang/postcss-px-to-rem": "^1.0.1",
+    "@types/node": "^20.11.28",
+    "@types/postcss-pxtorem": "^6.0.3",
     "@vitejs/plugin-vue": "^4.5.2",
+    "postcss": "^8.4.35",
+    "postcss-pxtorem": "^6.1.0",
     "sass": "^1.70.0",
+    "typescript": "^5.4.2",
     "vite": "^5.0.8"
   }
 }

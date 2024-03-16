@@ -177,7 +177,8 @@ function updataVideoStatus(message) {
     MemoryPool.hasVideo(message.key, "right_front") &&
     MemoryPool.hasVideo(message.key, "right_back") &&
     MemoryPool.hasVideo(message.key, "left_back") &&
-    MemoryPool.hasVideo(message.key, "left_front") && MemoryPool.keyArr.length > 1
+    MemoryPool.hasVideo(message.key, "left_front") &&
+    MemoryPool.keyArr.length > 1
   ) {
     // console.log(MemoryPool.keyArr, "key========");
     // console.log(MemoryPool.video["foresight"], "video========");
@@ -320,19 +321,19 @@ async function handleObjPoints(base, objs) {
   background-size: 100% 100%;
   position: relative;
   box-sizing: border-box;
-  padding: 0 0.1rem 0.1rem;
+  padding: 0 49px calcHight(17) 45px;
   .bg_box {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 4.14rem;
+    height: 100%;
     background: url("@/assets/images/bg_color.png") no-repeat;
     background-size: 100% 100%;
   }
   .page_title {
     width: 100%;
-    height: 0.56rem;
+    height: calcHight(113);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -340,36 +341,32 @@ async function handleObjPoints(base, objs) {
     position: relative;
     z-index: 1;
     .logo_box {
-      width: 2.86rem;
-      height: 0.56rem;
+      width: 572px;
+      height: 100%;
       background: url("@/assets/images/logo_bg.png") no-repeat;
       background-size: 100% 100%;
       box-sizing: border-box;
       display: flex;
-      // align-items: center;
       justify-content: center;
-      padding-top: 0.09rem;
+      padding-top: calcHight(18);
       .logo_img {
-        // width: 1rem;
-        height: 0.26rem;
+        height: calcHight(32);
       }
     }
   }
   .page_main {
-    width: 100%;
-    height: 100%;
     box-sizing: border-box;
     flex: 1;
     display: flex;
     align-items: center;
     .data_box {
-      width: 100%;
+      width: calc(100% - 414px);
       height: 100%;
       display: flex;
       flex-direction: column;
-      margin-right: 0.11rem;
+      margin-right: 22px;
       .top_box {
-        height: 2rem;
+        height: calcHight(310);
         width: 100%;
         display: flex;
         align-items: center;
@@ -377,45 +374,40 @@ async function handleObjPoints(base, objs) {
         flex-shrink: 0;
         box-sizing: border-box;
         position: relative;
-        margin-bottom: 0.14rem;
+        margin-bottom: calcHight(26);
         .v_box {
           height: 100%;
           width: 50%;
         }
         .v_box:first-child {
-          margin-right: 0.12rem;
+          margin-right: 12.5px;
         }
       }
       .bottom_box {
-        width: 100%;
-        height: 100%;
+        flex: 1;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: space-between;
+        gap: 22px;
+        // justify-content: center;
         .left_box,
         .right_box {
-          width: 100%;
+          width: 414px;
           height: 100%;
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
           .v_box {
             width: 100%;
-            height: 50%;
+            height: calc((100% - calcHight(30)) / 2);
           }
           .v_box:first-child {
-            margin-bottom: 0.15rem;
+            margin-bottom: calcHight(30);
           }
-        }
-        .left_box {
-          margin-right: 0.11rem;
-        }
-        .right_box {
-          margin-left: 0.11rem;
         }
         .center_box {
           height: 100%;
-          width: 2.59rem;
+          flex: 1;
           flex-shrink: 0;
         }
       }
@@ -423,7 +415,7 @@ async function handleObjPoints(base, objs) {
   }
 }
 .echarts_demos {
-  width: 2.07rem;
+  width: 414px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -431,24 +423,25 @@ async function handleObjPoints(base, objs) {
   flex-shrink: 0;
   overflow: hidden;
   box-sizing: border-box;
-  .echarts_box, .axis_box {
-    border: 0.01rem solid #278ff0;
-    border-radius: 0.05rem;
+  .echarts_box,
+  .axis_box {
+    border: 1px solid #278ff0;
+    border-radius: 10px;
     background-color: rgba(13, 51, 118, 0.8);
     box-sizing: border-box;
     width: 100%;
-    height: 50%;
+    height: calc((100% - calcHight(27)) / 2);
   }
   .echarts_box {
-    margin-bottom: 0.13rem;
+    margin-bottom: calcHight(27);
   }
 }
 .v_box {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 0.01rem solid #278ff0;
-  border-radius: 0.05rem;
+  border: 1px solid #278ff0;
+  border-radius: 10px;
   background-color: rgba(13, 51, 118, 0.8);
 }
 </style>
