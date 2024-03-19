@@ -48,6 +48,7 @@ onMounted(() => {
     (function (index) {
       return function (data) {
         // console.log(data, "image====================================");
+        console.log("解码完成=============开始渲染", Date.now());
         renderImage(data);
         data.free();
       };
@@ -101,12 +102,14 @@ function renderImage(image) {
       ctx.strokeStyle = "yellow";
       ctx.stroke(); //描边
     });
+    console.log("=============渲染完毕", Date.now());
   });
 }
 function getData(e) {
   // console.log(e, "=======================getData");
   // return;
   objs.value = e.objs;
+  console.log("开始解码=============", Date.now());
   video_265.value.push_data(e.video);
   video_265.value.decode(function (err) {
     switch (err) {

@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-19 20:39:09
+ * @LastEditTime: 2024-03-19 20:47:13
  * @Description: 
 -->
 <!--
@@ -89,10 +89,8 @@ import Ws from "../controls/ws.js";
 import { decode } from "@msgpack/msgpack";
 import memoryPool from "@/controls/memoryPool.js";
 import {
-  GetBoundingBoxPoints,
-  project_lidar2img,
-  construct2DArray,
-  math,
+  handleObjs,
+  handleObjsPoints,
 } from "@/controls/box2img.js";
 
 let foresight = ref(),
@@ -118,14 +116,7 @@ let foresight = ref(),
       fn: handleVideoStatus.bind(this),
     },
   ],
-  bev_arr = ref([]),
-  num = ref(0),
-  stop = ref(false);
-let map = new Map();
-map.set(0, "rgba(80, 82, 79, 1)");
-map.set(1, "rgba(255, 255, 255, 1)");
-map.set(2, "rgba(0, 255, 0, 1)");
-map.set(3, "rgba(255, 0, 0, 1)");
+  num = ref(0);
 ObserverInstance.selfAddListenerList(observerListenerList, "yh_init");
 const props = defineProps(["initStatus"]);
 // animate();
@@ -134,55 +125,46 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
     if (!props.initStatus) return;
     let object;
     if (e.data instanceof ArrayBuffer) {
-      if (
-        video_status.value["foresight"] &&
-        video_status.value["rearview"] &&
-        video_status.value["right_front"] &&
-        video_status.value["right_back"] &&
-        video_status.value["left_back"] &&
-        video_status.value["left_front"]
-      ) {
-        object = decode(e.data);
-        console.log(Date.now(), "-----------获取数据");
-        object[4] = await handleObjsPoints(object[2], object[4]);
-        // 处理障碍物信息--给bev用
-        let objs = await handleObjs(object[4]);
-        foresight.value.getData({
-          video: object[1][0],
-          objs: object[4],
-          basic: object[2],
-        });
-        rearview.value.getData({
-          video: object[1][3],
-          objs: object[4],
-          basic: object[2],
-        });
-        right_front.value.getData({
-          video: object[1][1],
-          objs: object[4],
-          basic: object[2],
-        });
-        right_back.value.getData({
-          video: object[1][5],
-          objs: object[4],
-          basic: object[2],
-        });
-        left_back.value.getData({
-          video: object[1][4],
-          objs: object[4],
-          basic: object[2],
-        });
-        left_front.value.getData({
-          video: object[1][2],
-          objs: object[4],
-          basic: object[2],
-        });
-        BEV.value.drawBev({
-          bev: object[3],
-          basic_data: object[2],
-          objs: objs
-        })
-      }
+      object = decode(e.data);
+      console.log(Date.now(), "-----------获取数据");
+      object[4] = await handleObjsPoints(object[2], object[4]);
+      // 处理障碍物信息--给bev用
+      let objs = await handleObjs(object[4]);
+      foresight.value.getData({
+        video: object[1][0],
+        objs: object[4],
+        basic: object[2],
+      });
+      rearview.value.getData({
+        video: object[1][3],
+        objs: object[4],
+        basic: object[2],
+      });
+      right_front.value.getData({
+        video: object[1][1],
+        objs: object[4],
+        basic: object[2],
+      });
+      right_back.value.getData({
+        video: object[1][5],
+        objs: object[4],
+        basic: object[2],
+      });
+      left_back.value.getData({
+        video: object[1][4],
+        objs: object[4],
+        basic: object[2],
+      });
+      left_front.value.getData({
+        video: object[1][2],
+        objs: object[4],
+        basic: object[2],
+      });
+      BEV.value.drawBev({
+        bev: object[3],
+        basic_data: object[2],
+        objs: objs
+      })
     }
   } catch (err) {
     console.log(err, "err----WS");
@@ -193,202 +175,7 @@ function animate() {
   updateVideo();
   requestAnimationFrame(() => animate());
 }
-// 更新视频--按照视频帧
-function updateVideo() {
-  let key;
-  if (MemoryPool.keyArr.length > 1) {
-    key = MemoryPool.keyArr[0];
-    if (!MemoryPool.basic_data.has(key)) return;
-    key = MemoryPool.getKey();
-  }
-  noticeBev(key);
-}
-// 接受视频解码的数据，通知去离屏渲染
-async function updataVideoStatus(message) {
-  // console.log(message, "message============");
-  if (!video_start.value) {
-    video_start.value = true;
-    return;
-  }
-  if (!MemoryPool.basic_data.has(message.key)) return;
-  MemoryPool.setData(message.key, message.info, "video", message.view);
-  let imageBitmap = await drawVideoBg(
-    message.info,
-    MemoryPool.allocate(message.key, "video_objs_arr"),
-    message.view
-  );
-  MemoryPool.setData(message.key, imageBitmap, "video_bg", message.view);
-  // updateVideo();
-}
-// 计算障碍物信息
-function handleObjs(objs_data) {
-  return new Promise((resolve, reject) => {
-    let obj_index = {
-      "0-0": {
-        name: "car",
-        data: [],
-      },
-      "1-0": { name: "truck", data: [] },
-      "1-1": { name: "construction_vehicle", data: [] },
-      "2-0": { name: "bus", data: [] },
-      "2-1": { name: "trailer", data: [] },
-      "3-0": { name: "barrier", data: [] },
-      "4-0": { name: "motorcycle", data: [] },
-      "4-1": { name: "bicycle", data: [] },
-      "5-0": { name: "pedestrian", data: [] },
-      "5-1": { name: "street_cone", data: [] },
-    };
-    objs_data.filter((item) => {
-      let type = `${item[7]}-${item[8]}`;
-      if (obj_index[type]) {
-        obj_index[type].data.push(item);
-      }
-    });
-    resolve(obj_index);
-  });
-}
-function drawVideoBg(info, objs, view) {
-  return new Promise((resolve, reject) => {
-    let canvas = new OffscreenCanvas(info.width, info.height);
-    let context = canvas.getContext("2d");
-    let imageBitmap;
-    let imgData = new ImageData(info.rgb, info.width, info.height);
-    for (let i = 0; i < imgData.data.length; i += 4) {
-      let data0 = imgData.data[i + 0];
-      imgData.data[i + 0] = imgData.data[i + 2];
-      imgData.data[i + 2] = data0;
-    }
-    context.putImageData(imgData, 0, 0);
-    objs.filter((item) => {
-      let obj_data = item[item.length - 1][view];
-      let arr = obj_data.filter((item) => {
-        return item[0] === -1 && item[1] === -1;
-      });
-      if (arr.length === 8) return;
-      context.beginPath();
-      context.moveTo(obj_data[0][0], obj_data[0][1]); //移动到某个点；
-      context.lineTo(obj_data[1][0], obj_data[1][1]);
-      context.lineTo(obj_data[5][0], obj_data[5][1]);
-      context.lineTo(obj_data[7][0], obj_data[7][1]);
-      context.lineTo(obj_data[6][0], obj_data[6][1]);
-      context.lineTo(obj_data[2][0], obj_data[2][1]);
-      context.lineTo(obj_data[3][0], obj_data[3][1]);
-      context.lineTo(obj_data[1][0], obj_data[1][1]);
-      context.moveTo(obj_data[0][0], obj_data[0][1]);
-      context.lineTo(obj_data[2][0], obj_data[2][1]);
-      context.moveTo(obj_data[0][0], obj_data[0][1]);
-      context.lineTo(obj_data[4][0], obj_data[4][1]);
-      context.lineTo(obj_data[6][0], obj_data[6][1]);
-      context.moveTo(obj_data[4][0], obj_data[4][1]);
-      context.lineTo(obj_data[5][0], obj_data[5][1]);
-      context.moveTo(obj_data[3][0], obj_data[3][1]);
-      context.lineTo(obj_data[7][0], obj_data[7][1]);
-      context.lineWidth = "1.4"; //线条 宽度
-      context.strokeStyle = "yellow";
-      context.stroke(); //描边
-    });
-    imageBitmap = canvas.transferToImageBitmap();
-    resolve(imageBitmap);
-  });
-}
-// 通知视频渲染
-function noticeVideo(key, view, objs_canvas) {
-  return new Promise(async (resolve, reject) => {
-    ObserverInstance.emit("VIDEO_DRAW", {
-      view: view,
-      objs: MemoryPool.allocate(key, "video_objs_arr"),
-      info: MemoryPool.allocate(key, "video", view),
-      objs_canvas: objs_canvas,
-      video_bg: MemoryPool.allocate(key, "video_bg", view),
-      key: key,
-      sign: "通知视频渲染--main",
-    });
-    resolve(`通知 ${view} 完毕`);
-  });
-}
-// 通知bev分割图渲染
-function noticeBev(key) {
-  return new Promise(async (resolve, reject) => {
-    let info = MemoryPool.allocate(key, "bev");
-    // console.log(Date.now(), key, "-----------------通知bev分割图渲染", info);
-    ObserverInstance.emit("DRAW_BEV", {
-      basic_data: MemoryPool.allocate(key, "basic"),
-      objs: MemoryPool.allocate(key, "obj"),
-      info: info,
-      key: key,
-    });
-    resolve(`通知 bev 完毕`);
-  });
-}
-// 计算点坐标数据
-let view_i = {
-    0: "foresight",
-    3: "rearview",
-    1: "right_front",
-    5: "right_back",
-    4: "left_back",
-    2: "left_front",
-  },
-  K = {},
-  ext_lidar2cam = {};
-async function handleObjsPoints(base, objs) {
-  return new Promise(async (resolve, reject) => {
-    for (let i = 0; i < 6; i++) {
-      K[view_i[i]] = construct2DArray(base[4][i], 3, 3);
-      ext_lidar2cam[view_i[i]] = construct2DArray(base[3][i], 4, 4);
-    }
-    for (let j = 0; j < objs.length; j++) {
-      let data = {
-        points_eight: [],
-        foresight: [],
-        rearview: [],
-        right_front: [],
-        right_back: [],
-        left_back: [],
-        left_front: [],
-      };
 
-      let a = objs[j].slice(0, 6);
-      data.points_eight = await GetBoundingBoxPoints(...a, objs[j][9]);
-      let view_sign = {
-        foresight: 0,
-        rearview: 0,
-        right_front: 0,
-        right_back: 0,
-        left_back: 0,
-        left_front: 0,
-      };
-      data.points_eight.filter((item) => {
-        let pt_cam_z;
-        for (let e in view_sign) {
-          const transposeMatrix = math.inv(ext_lidar2cam[e]);
-          pt_cam_z =
-            item[0] * transposeMatrix[2][0] +
-            item[1] * transposeMatrix[2][1] +
-            item[2] * transposeMatrix[2][2] +
-            transposeMatrix[2][3];
-          if (pt_cam_z < 0.2) {
-            view_sign[e]++;
-          }
-        }
-      });
-
-      data.points_eight.filter((item) => {
-        for (let e in view_sign) {
-          if (view_sign[e] === 8) {
-            data[e].push([-1, -1]);
-          } else {
-            data[e].push(
-              project_lidar2img(item, ext_lidar2cam[e], K[e], base[5], base[6])
-            );
-          }
-        }
-      });
-      objs[j].push(data);
-    }
-    resolve(objs);
-  });
-}
 function handleVideoStatus(e) {
   video_status.value[e.id] = true;
 }

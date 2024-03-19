@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-18 14:32:20
+ * @LastEditTime: 2024-03-19 20:49:23
  * @Description:
  */
 // import { K, D, ext_lidar2cam } from "../assets/demo_data/data";
@@ -23,7 +23,6 @@ export function project_lidar2img(pts, ext_lidar2cam, K, scale, crop) {
   const transposeMatrix = math.inv(ext_lidar2cam);
   ext_lidar2cam = transposeMatrix;
 
-
   const pt_cam_x =
     pts[0] * ext_lidar2cam[0][0] +
     pts[1] * ext_lidar2cam[0][1] +
@@ -42,7 +41,7 @@ export function project_lidar2img(pts, ext_lidar2cam, K, scale, crop) {
   // if (Math.abs(Math.atan(pt_cam_x / pt_cam_z)) > 70) return [-1, -1];
   // if (pt_cam_z < 0.2) return [-1, -1];
   const x_u = pt_cam_x / Math.abs(pt_cam_z);
-  const y_u = pt_cam_y /  Math.abs(pt_cam_z);
+  const y_u = pt_cam_y / Math.abs(pt_cam_z);
 
   const x = K[0][0] * x_u + K[0][2];
   const y = K[1][1] * y_u + K[1][2];
@@ -114,36 +113,133 @@ export function GetBoundingBoxPoints(x, y, z, w, l, h, r_z) {
     resolve([pt0, pt1, pt2, pt3, pt4, pt5, pt6, pt7]);
   });
 }
+// 计算点坐标数据
+let view_i = {
+    0: "foresight",
+    3: "rearview",
+    1: "right_front",
+    5: "right_back",
+    4: "left_back",
+    2: "left_front",
+  },
+  K = {},
+  ext_lidar2cam = {};
+export async function handleObjsPoints(base, objs) {
+  return new Promise(async (resolve, reject) => {
+    for (let i = 0; i < 6; i++) {
+      K[view_i[i]] = construct2DArray(base[4][i], 3, 3);
+      ext_lidar2cam[view_i[i]] = construct2DArray(base[3][i], 4, 4);
+    }
+    for (let j = 0; j < objs.length; j++) {
+      let data = {
+        points_eight: [],
+        foresight: [],
+        rearview: [],
+        right_front: [],
+        right_back: [],
+        left_back: [],
+        left_front: [],
+      };
+
+      let a = objs[j].slice(0, 6);
+      data.points_eight = await GetBoundingBoxPoints(...a, objs[j][9]);
+      let view_sign = {
+        foresight: 0,
+        rearview: 0,
+        right_front: 0,
+        right_back: 0,
+        left_back: 0,
+        left_front: 0,
+      };
+      data.points_eight.filter((item) => {
+        let pt_cam_z;
+        for (let e in view_sign) {
+          const transposeMatrix = math.inv(ext_lidar2cam[e]);
+          pt_cam_z =
+            item[0] * transposeMatrix[2][0] +
+            item[1] * transposeMatrix[2][1] +
+            item[2] * transposeMatrix[2][2] +
+            transposeMatrix[2][3];
+          if (pt_cam_z < 0.2) {
+            view_sign[e]++;
+          }
+        }
+      });
+
+      data.points_eight.filter((item) => {
+        for (let e in view_sign) {
+          if (view_sign[e] === 8) {
+            data[e].push([-1, -1]);
+          } else {
+            data[e].push(
+              project_lidar2img(item, ext_lidar2cam[e], K[e], base[5], base[6])
+            );
+          }
+        }
+      });
+      objs[j].push(data);
+    }
+    resolve(objs);
+  });
+}
+// 计算障碍物信息
+export function handleObjs(objs_data) {
+  return new Promise((resolve, reject) => {
+    let obj_index = {
+      "0-0": {
+        name: "car",
+        data: [],
+      },
+      "1-0": { name: "truck", data: [] },
+      "1-1": { name: "construction_vehicle", data: [] },
+      "2-0": { name: "bus", data: [] },
+      "2-1": { name: "trailer", data: [] },
+      "3-0": { name: "barrier", data: [] },
+      "4-0": { name: "motorcycle", data: [] },
+      "4-1": { name: "bicycle", data: [] },
+      "5-0": { name: "pedestrian", data: [] },
+      "5-1": { name: "street_cone", data: [] },
+    };
+    objs_data.filter((item) => {
+      let type = `${item[7]}-${item[8]}`;
+      if (obj_index[type]) {
+        obj_index[type].data.push(item);
+      }
+    });
+    resolve(obj_index);
+  });
+}
 
 // 深拷贝
 // 这里重写了用is对象来判断类型
 const is = {
   Array: Array.isArray,
   Date: (val) => val instanceof Date,
-  Set: (val) => Object.prototype.toString.call(val) === '[object Set]',
-  Map: (val) => Object.prototype.toString.call(val) === '[object Map]',
-  Object: (val) => Object.prototype.toString.call(val) === '[object Object]',
-  Symbol: (val) => Object.prototype.toString.call(val) === '[object Symbol]',
-  Function: (val) => Object.prototype.toString.call(val) === '[object Function]',
-}
+  Set: (val) => Object.prototype.toString.call(val) === "[object Set]",
+  Map: (val) => Object.prototype.toString.call(val) === "[object Map]",
+  Object: (val) => Object.prototype.toString.call(val) === "[object Object]",
+  Symbol: (val) => Object.prototype.toString.call(val) === "[object Symbol]",
+  Function: (val) =>
+    Object.prototype.toString.call(val) === "[object Function]",
+};
 
 export function deepClone(value) {
   // 2.1 函数浅拷贝
   /* if (is.Function(value)) return value */
-    
-  // 2.2 函数深拷贝
-    if (is.Function(value)) {
-    if (/^function/.test(value.toString()) || /^\(\)/.test(value.toString())) 
-      return new Function('return ' + value.toString())()
 
-    return new Function('return function ' + value.toString())()
+  // 2.2 函数深拷贝
+  if (is.Function(value)) {
+    if (/^function/.test(value.toString()) || /^\(\)/.test(value.toString()))
+      return new Function("return " + value.toString())();
+
+    return new Function("return function " + value.toString())();
   }
-  
+
   // 3.Date 深拷贝
-  if (is.Date(value)) return new Date(value.valueOf())
+  if (is.Date(value)) return new Date(value.valueOf());
 
   // 4.判断如果是Symbol的value, 那么创建一个新的Symbol
-  if (is.Symbol(value)) return Symbol(value.description)
+  if (is.Symbol(value)) return Symbol(value.description);
 
   // 5.判断是否是Set类型 进行深拷贝
   if (is.Set(value)) {
@@ -151,43 +247,43 @@ export function deepClone(value) {
     // return new Set([...value])
 
     // 5.2 深拷贝
-    const newSet = new Set()
-    for (const item of value) newSet.add(deepClone(item))
-    return newSet
+    const newSet = new Set();
+    for (const item of value) newSet.add(deepClone(item));
+    return newSet;
   }
-  
-  // 6.判断是否是Map类型 
+
+  // 6.判断是否是Map类型
   if (is.Map(value)) {
     // 6.1 浅拷贝 直接进行解构即可
     // return new Map([...value])
 
     // 6.2 深拷贝
-    const newMap = new Map()
-    for (const item of value) newMap.set(deepClone(item[0]), deepClone(item[1]))
-    return newMap
+    const newMap = new Map();
+    for (const item of value)
+      newMap.set(deepClone(item[0]), deepClone(item[1]));
+    return newMap;
   }
 
   // 1.如果不是对象类型则直接将当前值返回
-  if (!(is.Object(value))) return value
+  if (!is.Object(value)) return value;
 
   // 7.判断传入的对象是数组, 还是对象
-  const newObject = is.Array(value) ? [] : {}
+  const newObject = is.Array(value) ? [] : {};
 
   for (const key in value) {
     // 8 进行递归调用
-    newObject[key] = deepClone(value[key])
+    newObject[key] = deepClone(value[key]);
   }
 
   // 4.1 对Symbol作为key进行特殊的处理 拿到对象上面的所有Symbol key，以数组形式返回
-  const symbolKeys = Object.getOwnPropertySymbols(value)
+  const symbolKeys = Object.getOwnPropertySymbols(value);
   for (const sKey of symbolKeys) {
-
     // 4.2 这里没有必要创建一个新的Symbol
     // const newSKey = Symbol(sKey.description)
 
     // 4.3 直接将原来的Symbol key 拷贝到新对象上就可以了
-    newObject[sKey] = deepClone(value[sKey])
+    newObject[sKey] = deepClone(value[sKey]);
   }
 
-  return newObject
+  return newObject;
 }
