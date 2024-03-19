@@ -1,24 +1,6 @@
-// include: shell.js
-// The Module object: Our interface to the outside world. We import
-// and export values on it. There are various ways Module can be used:
-// 1. Not defined. We create it here
-// 2. A function parameter, function(Module) { ..generated code.. }
-// 3. pre-run appended it, var Module = {}; ..generated code..
-// 4. External script tag defines var Module.
-// We need to check if Module already exists (e.g. case 3 above).
-// Substitution will be replaced with actual code on later stage of the build,
-// this way Closure Compiler will not mangle it (e.g. case 4. above).
-// Note that if you want to run closure, and also to use Module
-// after the generated code, you will need to define   var Module = {};
-// before the code. Then that object will be used in the code, and you
-// can continue to use Module afterwards as well.
 var Module = typeof Module != 'undefined' ? Module : {};
-
-// --pre-jses are emitted after the Module integration code, so that they can
-// refer to Module (if they choose; they can also define Module)
 Module = {};
 Module.onRuntimeInitialized = function () {
-  // console.log(Module);
   let message = {
     type: "message",
     info: "init"
@@ -29,16 +11,15 @@ Module.onRuntimeInitialized = function () {
 let u8Array;
 let dataArray;
 let codecId = 0;
-// console.log("Worker: mission start.");
+let video_sign = "init";
+let postData = {};
 
 function decodeArray() {
   dataArray = u8Array;
-  // console.log(u8Array, "u8Array");
   var ptr = Module._malloc(u8Array.length * dataArray.BYTES_PER_ELEMENT);
   Module.HEAPU8.set(dataArray, ptr);
   Module._parsePkt(ptr, u8Array.length);
   let outputPtr = Module._getFrame();
-  // console.log("_parsePkt end");
   Module._free(ptr);
 
   var rgbData = new Uint8ClampedArray(
@@ -53,33 +34,39 @@ function decodeArray() {
     height: Module._getHeight(),
     rgb: rgbData,
   };
-
   let message = {
     type: "image",
-    info: rgbObj
+    info: rgbObj,
+    sign: video_sign,
+    ...postData
   };
-
   postMessage(message, [message.info.rgb.buffer]);
 }
-
 onmessage = function (e) {
-  if (e.data.type === "data_objs") return;
   if ("updateCodecId" == e.data.type) { 
     codecId = e.data.info;
     Module._close();
     Module._init(codecId);
-    console.log(codecId);
+    let message = {
+      type: "video_init",
+      id: e.data.id
+    };
+    postMessage(message);
   } else {
     if (codecId != 173) { 
       Module._close();
       Module._init(codecId);
-      console.log(codecId);
     }
-    u8Array = e.data;
+    u8Array = e.data.video_data;
+    video_sign = e.data?.sign;
+    postData.key = e.data.key;
+    postData.view = e.data.view;
     decodeArray();
   }
 };
 
+
+// ------------------解码
 // Sometimes an existing Module object exists with properties
 // meant to overwrite the default module functionality. Here
 // we collect those properties and reapply _after_ we configure

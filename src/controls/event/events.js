@@ -1,5 +1,10 @@
 export let dataEvents = {
-  INIT_OK
+  INIT_OK,
+  VIDEO_OK,
+  DRAW_BEV,
+  VIDEO_DRAW,
+  BEV_CLEAR,
+  SET_DATA,
 }
 
 export default { dataEvents };

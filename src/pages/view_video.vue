@@ -1,11 +1,10 @@
 <!--
- * @LastEditTime: 2024-03-08 13:27:05
+ * @LastEditTime: 2024-03-13 17:05:37
  * @Description: 
 -->
 <template>
   <div class="video_box">
     <div class="handle_box" :id="props.video_id + '_box'">
-      <canvas :id="props.video_id + '_video'" class="canvas_video"></canvas>
       <canvas
         class="handle_box_canvas"
         :id="props.video_id + '_helper_box'"
@@ -15,52 +14,85 @@
 </template>
 
 <script setup>
-import { defineProps, onMounted, defineExpose, onUnmounted } from "vue";
-import VIDEO from "../controls/video/video.js";
 import {
-  GetBoundingBoxPoints,
-  project_lidar2img,
-  construct2DArray,
-} from "@/controls/box2img.js";
+  defineProps,
+  defineEmits,
+  onMounted,
+  defineExpose,
+  onUnmounted,
+  ref,
+  inject,
+} from "vue";
+import VIDEO from "../controls/video/video.js";
+import { ObserverInstance } from "@/controls/event/observer";
 
 const props = defineProps(["video_id"]);
+const emits = defineEmits(["updataVideoStatus"]);
 let yh_video = null;
+let video_start = ref(false);
+let video_work = new Worker(
+  new URL("../controls/video/ffmpeg_decode.js", import.meta.url).href
+);
 onMounted(() => {
   yh_video = new VIDEO(props.video_id);
+  initVideoWork();
 });
-
-
-function updataCode(u8Array, base, objs, bev) {
+function postVideo(u8Array, key) {
+  video_work.postMessage({
+    video_data: u8Array,
+    view: props.video_id,
+    key: key,
+  });
+}
+function updataCode(u8Array, objs, bev) {
   try {
-    // console.log(base, objs, "base, objs-----");
     return new Promise(async (resolve, reject) => {
-      yh_video.setObjs(objs);
-      // handleObjPoints(base, objs);
-      yh_video.work.postMessage(u8Array);
-      // if (yh_video.status) {
-      //   // console.log(u8Array, "u8Array====");
-      //   // console.log("-------计算obj完毕");
-      //   // yh_video.drawObjs(arr);
-      // } else {
-      //   reject("失败");
-      // }
+      video_work.postMessage({ video_data: u8Array, sign: "now" });
     });
   } catch (err) {
     console.log(err, "err====updataCode");
   }
 }
-async function handleObjPoints(base, objs) {
-  try {
-    
-  } catch (err) {
-    console.log(err, "err---handleObjPoints");
-  }
+function initVideoWork() {
+  video_work.onmessage = (event) => {
+    if (event.data.type === "message") {
+      if (event.data.info == "init") {
+        ObserverInstance.emit("INIT_OK", {
+          id: props.video_id,
+        });
+        changeCodecId(173);
+      }
+    } else if (event.data.type === "video_init") {
+      if (!video_start.value) {
+        ObserverInstance.emit("VIDEO_OK", {
+          id: props.video_id,
+        });
+      }
+      video_start.value = true;
+    } else {
+      let message = event.data,
+        info = message.info;
+      if (info.width == 0 || info.height == 0) {
+        return;
+      }
+      emits("updataVideoStatus", message);
+    }
+  };
+}
+function changeCodecId(val) {
+  let data = {
+    type: "updateCodecId",
+    info: val,
+    id: props.video_id,
+  };
+  video_work.postMessage(data);
 }
 defineExpose({
   updataCode,
+  postVideo,
 });
 onUnmounted(() => {
-  yh_video.work.terminate();
+  video_work.terminate();
 });
 </script>
 
@@ -70,17 +102,6 @@ onUnmounted(() => {
   height: 100%;
   position: relative;
   overflow: hidden;
-  .canvas_video {
-    width: 100%;
-    height: 100%;
-  }
-  .img_css {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
   .handle_box_canvas {
     // width: 0;
     // height: 0;
