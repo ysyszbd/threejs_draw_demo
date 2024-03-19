@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-15 17:29:39
+ * @LastEditTime: 2024-03-19 14:01:04
  * @Description:./
  */
 import { ObserverInstance } from "@/controls/event/observer";
@@ -23,9 +23,11 @@ export default class Video {
   imageBitmap;
   id = "";
   video_start = false; // 视频是否开始了，未开始则先离屏渲染
-  canvas_work;
   constructor(id) {
-    ObserverInstance.selfAddListenerList(this.observerListenerList, "yh_video_draw");
+    ObserverInstance.selfAddListenerList(
+      this.observerListenerList,
+      "yh_video_draw"
+    );
     this.init(id);
   }
   // 获取所需的dom元素
@@ -41,12 +43,6 @@ export default class Video {
       willReadFrequently: true,
     });
     this.id = id;
-    // this.handleVideo();
-  }
-  // 获取障碍物元素信息---后续用来绘制线框
-  setObjs(data) {
-    this.objs_data = data;
-    // console.log(data, "data================")
   }
   // 绘制3D线框
   handleHelper(data) {
@@ -92,10 +88,12 @@ export default class Video {
   }
   drawVideo(data) {
     if (data.view !== this.id) return;
-    // console.log(data, "data====");
-    let info = data.info,
-      objs = data.objs;
-    this.objs_data = objs;
+    if (this.id === "foresight") {
+      console.log(Date.now(), "-----------video开始渲染", data.key);
+      // console.log(data, "data=================");
+    }
+    let info = data.info;
+    this.objs_data = data.objs;
     let rect = this.dom.getBoundingClientRect();
     // 使用canvas外部的元素来控制canvas的大小
     let wh_obj = this.handleWH(
@@ -115,39 +113,33 @@ export default class Video {
       this.helper_dom.height = info.height;
     }
 
-    if (
-      this.offscreen.width != info.width ||
-      this.offscreen.height != info.height
-    ) {
-      this.offscreen.width = info.width;
-      this.offscreen.height = info.height;
-    }
-    requestAnimationFrame(() => {
-      this.helper_ctx.clearRect(0, 0, info.width, info.height);
-      if (this.imageBitmap) {
-        this.helper_ctx.drawImage(
-          this.imageBitmap,
-          0,
-          0,
-          info.width,
-          info.height
-        );
-      }
-
-      // // 如果还没有渲染，则先渲染离屏数据
-      let imgData = new ImageData(info.rgb, info.width, info.height);
-      for (let i = 0; i < imgData.data.length; i += 4) {
-        let data0 = imgData.data[i + 0];
-        imgData.data[i + 0] = imgData.data[i + 2];
-        imgData.data[i + 2] = data0;
-      }
-      this.offscreen_ctx.putImageData(imgData, 0, 0);
-      for (let i = 0; i < this.objs_data.length; i++) {
-        let item = this.objs_data[i];
-        this.handleHelper(item[item.length - 1][this.id]);
-      }
-      this.imageBitmap = this.offscreen.transferToImageBitmap();
-    });
+    // if (
+    //   this.offscreen.width != info.width ||
+    //   this.offscreen.height != info.height
+    // ) {
+    //   this.offscreen.width = info.width;
+    //   this.offscreen.height = info.height;
+    // }
+    this.helper_ctx.clearRect(0, 0, info.width, info.height);
+    // requestAnimationFrame(() => {
+    // // 如果还没有渲染，则先渲染离屏数据
+    // let imgData = new ImageData(info.rgb, info.width, info.height);
+    // for (let i = 0; i < imgData.data.length; i += 4) {
+    //   let data0 = imgData.data[i + 0];
+    //   imgData.data[i + 0] = imgData.data[i + 2];
+    //   imgData.data[i + 2] = data0;
+    // }
+    // this.offscreen_ctx.putImageData(imgData, 0, 0);
+    // for (let i = 0; i < this.objs_data.length; i++) {
+    //   let item = this.objs_data[i];
+    //   this.handleHelper(item[item.length - 1][this.id]);
+    // }
+    // this.imageBitmap = this.offscreen.transferToImageBitmap();
+    
+    this.helper_ctx.drawImage(data.video_bg, 0, 0, info.width, info.height);
+    // this.helper_ctx.drawImage(data.objs_canvas, 0, 0, info.width, info.height);
+    console.log(Date.now(), "-----------video渲染完毕", data.key, this.id);
+    // });
   }
   // 计算视频要放置在dom元素中的宽高--按照视频帧的比例来
   handleWH(imgW, imgH, domW, domH) {

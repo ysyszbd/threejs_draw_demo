@@ -1,23 +1,49 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link type="text/css" rel="stylesheet" href="main.css">
-		<style>
-			body {
-				color: #000;
-			}
-			a {
-				color: #080;
-			}
-		</style>
-	</head>
-	<body>
-		<!-- <div id="info"><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> css3d - sandbox</div> -->
-		<img src="./111.png" alt="">
-		<img src="../src/assets/demo.jpg" alt="">
-		<!-- <script type="importmap">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
+    <link type="text/css" rel="stylesheet" href="main.css" />
+    <style>
+      body {
+        color: #000;
+      }
+      a {
+        color: #080;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <div id="info"><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> css3d - sandbox</div> -->
+    <img src="./111.png" alt="" />
+    <img src="../src/assets/demo.jpg" alt="" />
+    <script>
+      console.log(Date.now(), "------------------------0");
+      let canvas = new OffscreenCanvas(400, 400);
+      let context = canvas.getContext("2d");
+      let imageBitmap;
+      let arr = new Array(400).fill(new Array(400).fill([]));
+      console.log(arr, "arr");
+      arr.filter((item, index) => {
+        let points = this.getPoints(index, 400);
+        context.fillStyle = `rgba(0, 0, 0, 1)`;
+        context.fillRect(points[0], points[1], 1, 1);
+      });
+
+      imageBitmap = canvas.transferToImageBitmap();
+      console.log(Date.now(), "------------------------1");
+      function getPoints(i, w) {
+        let w_i = 0,
+          h_i = 0;
+        h_i = Math.floor(i / w);
+        w_i = i - w * h_i;
+        return [w_i, h_i];
+      }
+    </script>
+    <!-- <script type="importmap">
 			{
 				"imports": {
 					"three": "../build/three.module.js",
@@ -26,7 +52,7 @@
 			}
 		</script> -->
 
-		<!-- <script type="module">
+    <!-- <script type="module">
 
 			import * as THREE from 'three';
 
@@ -193,5 +219,5 @@
 			}
 
 		</script> -->
-	</body>
+  </body>
 </html>

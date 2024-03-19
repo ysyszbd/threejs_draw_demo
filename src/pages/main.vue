@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-16 20:02:23
+ * @LastEditTime: 2024-03-19 15:13:04
  * @Description: 
 -->
 <!--
@@ -79,7 +79,6 @@
 </template>
 
 <script setup>
-import threeDemo from "./three_demo.vue";
 import videoYH from "./view_video.vue";
 import Bev from "./bev.vue";
 import echartsYH from "./echarts.vue";
@@ -88,10 +87,12 @@ import { ref, inject, defineProps, onUnmounted, onBeforeMount } from "vue";
 import { ObserverInstance } from "@/controls/event/observer";
 import Ws from "../controls/ws.js";
 import { decode } from "@msgpack/msgpack";
+import memoryPool from "@/controls/memoryPool.js";
 import {
   GetBoundingBoxPoints,
   project_lidar2img,
   construct2DArray,
+  math,
 } from "@/controls/box2img.js";
 
 let foresight = ref(),
@@ -102,6 +103,9 @@ let foresight = ref(),
   left_front = ref(),
   BEV = ref(),
   MemoryPool = inject("$MemoryPool"),
+  drawWorker = new Worker(
+    new URL("../controls/demo_worker.js", import.meta.url)
+  ),
   video_start = ref(false),
   video_status = ref({
     foresight: false,
@@ -117,18 +121,31 @@ let foresight = ref(),
       fn: handleVideoStatus.bind(this),
     },
   ];
+let map = new Map();
+map.set(0, "rgba(80, 82, 79, 1)");
+map.set(1, "rgba(255, 255, 255, 1)");
+map.set(2, "rgba(0, 255, 0, 1)");
+map.set(3, "rgba(255, 0, 0, 1)");
 ObserverInstance.selfAddListenerList(observerListenerList, "yh_init");
-let view_i = {
-  0: "foresight",
-  3: "rearview",
-  1: "right_front",
-  5: "right_back",
-  4: "left_back",
-  2: "left_front",
-};
-let K = ref({}),
-  ext_lidar2cam = ref({});
+initWorker();
+function initWorker() {
+  drawWorker.onmessage = (e) => {
+    // console.log(e.data, "e---------接受数据");
+    let type = e.data.type,
+      key = e.data.key;
+    if (type === "draw_video_bg") {
+      if (e.data.view === "foresight") {
+        console.log(Date.now(), "-----------get视频");
+      }
+      MemoryPool.setData(key, e.data.info, "video_bg", e.data.view);
+      updateVideo();
+    } else if (type === "draw_bev") {
+      // MemoryPool.setData(key, e.data.imageBitmap, "bev");
+    }
+  };
+}
 const props = defineProps(["initStatus"]);
+
 const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
   try {
     if (!props.initStatus) return;
@@ -143,169 +160,275 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
         video_status.value["left_front"]
       ) {
         object = decode(e.data);
-        // console.log(object, "object");
-
-        // return
-        object[4] = await handleObjPoints(object[2], object[4]);
-        foresight.value.postVideo(object[1][0], object[0]);
-        rearview.value.postVideo(object[1][3], object[0]);
-        left_front.value.postVideo(object[1][2], object[0]);
-        left_back.value.postVideo(object[1][4], object[0]);
-        right_front.value.postVideo(object[1][1], object[0]);
-        right_back.value.postVideo(object[1][5], object[0]);
         if (video_start.value) {
-          // console.log(Date.now(), "-----------setKey");
-          MemoryPool.free(object[0], object[4], "obj");
-          MemoryPool.free(object[0], object[3], "bev");
-          MemoryPool.free(object[0], object[2], "basic");
           MemoryPool.setKey(object[0]);
+          console.log(Date.now(), "----------开始处理bev");
+          object[4] = await handleObjsPoints(object[2], object[4]);
+          // 处理障碍物信息--给bev用
+          let objs = await handleObjs(object[4]);
+          MemoryPool.setData(object[0], objs, "obj");
+          console.log(Date.now(), "----------bev、障碍物信息处理完毕");
+          // 障碍物--给视频使用
+          MemoryPool.setData(object[0], object[4], "video_objs_arr");
+          // 超参信息
+          MemoryPool.setData(object[0], object[2], "basic");
+          // bev离屏canvas存放
+          MemoryPool.setData(object[0], object[3], "bev");
         }
+        console.log(Date.now(), "-----------开始解码视频");
+        Promise.all([
+          foresight.value.postVideo(object[1][0], object[0]),
+          rearview.value.postVideo(object[1][3], object[0]),
+          left_front.value.postVideo(object[1][2], object[0]),
+          left_back.value.postVideo(object[1][4], object[0]),
+          right_front.value.postVideo(object[1][1], object[0]),
+          right_back.value.postVideo(object[1][5], object[0]),
+        ]);
       }
     }
   } catch (err) {
     console.log(err, "err----WS");
   }
 });
-// 更新视频解码
-function updataVideoStatus(message) {
-  if (!video_start.value) video_start.value = true;
-  // console.log(message, "message-----------key", MemoryPool.keyArr);
-  MemoryPool.free(message.key, message.info, "video", message.view);
+
+// 更新视频--按照视频帧
+function updateVideo() {
+  let key;
+  if (MemoryPool.keyArr.length > 1) {
+    key = MemoryPool.keyArr[0];
+    if (!MemoryPool.basic_data.has(key)) return;
+    key = MemoryPool.getKey();
+  }
+  // 判断6路视频是否都已经离屏渲染并存放完毕
   if (
-    MemoryPool.hasVideo(message.key, "foresight") &&
-    MemoryPool.hasVideo(message.key, "rearview") &&
-    MemoryPool.hasVideo(message.key, "right_front") &&
-    MemoryPool.hasVideo(message.key, "right_back") &&
-    MemoryPool.hasVideo(message.key, "left_back") &&
-    MemoryPool.hasVideo(message.key, "left_front") &&
-    MemoryPool.keyArr.length > 1
+    MemoryPool.hasVideo(key, "foresight") &&
+    MemoryPool.hasVideo(key, "rearview") &&
+    MemoryPool.hasVideo(key, "right_front") &&
+    MemoryPool.hasVideo(key, "right_back") &&
+    MemoryPool.hasVideo(key, "left_back") &&
+    MemoryPool.hasVideo(key, "left_front")
   ) {
-    // console.log(MemoryPool.keyArr, "key========");
-    // console.log(MemoryPool.video["foresight"], "video========");
-    let key = MemoryPool.getKey();
-    if (!key) return;
+    console.log(Date.now(), "-----------通知视频、bev渲染", key);
     Promise.all([
+      noticeBev(key),
       noticeVideo(key, "foresight"),
       noticeVideo(key, "rearview"),
       noticeVideo(key, "right_front"),
+      noticeVideo(key, "left_front"),
       noticeVideo(key, "right_back"),
       noticeVideo(key, "left_back"),
-      noticeBev(key),
-      noticeVideo(key, "left_front"),
     ]).then((res) => {
+      console.log(Date.now(), "通知更新帧--------------------完毕", key);
+      MemoryPool.delVideoValue(key, "video_bg", "foresight");
+      MemoryPool.delVideoValue(key, "video_bg", "rearview");
+      MemoryPool.delVideoValue(key, "video_bg", "right_front");
+      MemoryPool.delVideoValue(key, "video_bg", "right_back");
+      MemoryPool.delVideoValue(key, "video_bg", "left_back");
+      MemoryPool.delVideoValue(key, "video_bg", "left_front");
+      MemoryPool.delVideoValue(key, "video", "foresight");
+      MemoryPool.delVideoValue(key, "video", "rearview");
+      MemoryPool.delVideoValue(key, "video", "right_front");
+      MemoryPool.delVideoValue(key, "video", "right_back");
+      MemoryPool.delVideoValue(key, "video", "left_back");
+      MemoryPool.delVideoValue(key, "video", "left_front");
       MemoryPool.delObjsValue(key);
     });
   }
 }
-function noticeVideo(key, view) {
+// 接受视频解码的数据，通知去离屏渲染
+async function updataVideoStatus(message) {
+  if (!video_start.value) {
+    video_start.value = true;
+    return;
+  }
+  if (!MemoryPool.basic_data.has(message.key)) return;
+  MemoryPool.setData(message.key, message.info, "video", message.view);
+  if (message.view === "foresight") {
+    console.log(
+      Date.now(),
+      "拿到解码的视频数据-----------开始绘制视频",
+      message.key
+    );
+  }
+  let imageBitmap = await drawVideoBg(
+    message.info,
+    MemoryPool.allocate(message.key, "video_objs_arr"),
+    message.view
+  );
+  MemoryPool.setData(message.key, imageBitmap, "video_bg", message.view);
+  updateVideo();
+}
+// 计算障碍物信息
+function handleObjs(objs_data) {
   return new Promise((resolve, reject) => {
-    // console.log(key, "key===============");
-    let video = MemoryPool.allocate(key, "video", view);
-    // console.log(video, "video------------", MemoryPool.video[view]);
+    let obj_index = {
+      "0-0": {
+        name: "car",
+        data: [],
+      },
+      "1-0": { name: "truck", data: [] },
+      "1-1": { name: "construction_vehicle", data: [] },
+      "2-0": { name: "bus", data: [] },
+      "2-1": { name: "trailer", data: [] },
+      "3-0": { name: "barrier", data: [] },
+      "4-0": { name: "motorcycle", data: [] },
+      "4-1": { name: "bicycle", data: [] },
+      "5-0": { name: "pedestrian", data: [] },
+      "5-1": { name: "street_cone", data: [] },
+    };
+    objs_data.filter((item) => {
+      let type = `${item[7]}-${item[8]}`;
+      if (obj_index[type]) {
+        obj_index[type].data.push(item);
+      }
+    });
+    resolve(obj_index);
+  })
+}
+function drawVideoBg(info, objs, view) {
+  return new Promise((resolve, reject) => {
+    let canvas = new OffscreenCanvas(info.width, info.height);
+    let context = canvas.getContext("2d");
+    let imageBitmap;
+    let imgData = new ImageData(info.rgb, info.width, info.height);
+    for (let i = 0; i < imgData.data.length; i += 4) {
+      let data0 = imgData.data[i + 0];
+      imgData.data[i + 0] = imgData.data[i + 2];
+      imgData.data[i + 2] = data0;
+    }
+    context.putImageData(imgData, 0, 0);
+    objs.filter((item) => {
+      let obj_data = item[item.length - 1][view];
+      let arr = obj_data.filter((item) => {
+        return item[0] === -1 && item[1] === -1;
+      });
+      if (arr.length === 8) return;
+      context.beginPath();
+      context.moveTo(obj_data[0][0], obj_data[0][1]); //移动到某个点；
+      context.lineTo(obj_data[1][0], obj_data[1][1]);
+      context.lineTo(obj_data[5][0], obj_data[5][1]);
+      context.lineTo(obj_data[7][0], obj_data[7][1]);
+      context.lineTo(obj_data[6][0], obj_data[6][1]);
+      context.lineTo(obj_data[2][0], obj_data[2][1]);
+      context.lineTo(obj_data[3][0], obj_data[3][1]);
+      context.lineTo(obj_data[1][0], obj_data[1][1]);
+      context.moveTo(obj_data[0][0], obj_data[0][1]);
+      context.lineTo(obj_data[2][0], obj_data[2][1]);
+      context.moveTo(obj_data[0][0], obj_data[0][1]);
+      context.lineTo(obj_data[4][0], obj_data[4][1]);
+      context.lineTo(obj_data[6][0], obj_data[6][1]);
+      context.moveTo(obj_data[4][0], obj_data[4][1]);
+      context.lineTo(obj_data[5][0], obj_data[5][1]);
+      context.moveTo(obj_data[3][0], obj_data[3][1]);
+      context.lineTo(obj_data[7][0], obj_data[7][1]);
+      context.lineWidth = "1.4"; //线条 宽度
+      context.strokeStyle = "yellow";
+      context.stroke(); //描边
+    });
+    imageBitmap = canvas.transferToImageBitmap();
+    resolve(imageBitmap);
+  });
+}
+// 通知视频渲染
+function noticeVideo(key, view, objs_canvas) {
+  return new Promise(async (resolve, reject) => {
     ObserverInstance.emit("VIDEO_DRAW", {
       view: view,
-      objs: MemoryPool.allocate(key, "obj"),
-      info: video,
+      objs: MemoryPool.allocate(key, "video_objs_arr"),
+      info: MemoryPool.allocate(key, "video", view),
+      objs_canvas: objs_canvas,
+      video_bg: MemoryPool.allocate(key, "video_bg", view),
+      key: key,
+      sign: "通知视频渲染--main",
     });
     resolve(`通知 ${view} 完毕`);
   });
 }
+// 通知bev分割图渲染
 function noticeBev(key) {
-  return new Promise((resolve, reject) => {
-    // console.log(Date.now(), "-----------bev1");
+  return new Promise(async (resolve, reject) => {
+    let info = MemoryPool.allocate(key, "bev");
+    console.log(Date.now(), "-----------------通知bev分割图渲染");
     ObserverInstance.emit("DRAW_BEV", {
       basic_data: MemoryPool.allocate(key, "basic"),
       objs: MemoryPool.allocate(key, "obj"),
-      info: MemoryPool.allocate(key, "bev"),
+      info: info,
+      key: key,
     });
     resolve(`通知 bev 完毕`);
   });
 }
+// 计算点坐标数据
+let view_i = {
+    0: "foresight",
+    3: "rearview",
+    1: "right_front",
+    5: "right_back",
+    4: "left_back",
+    2: "left_front",
+  },
+  K = {},
+  ext_lidar2cam = {};
+async function handleObjsPoints(base, objs) {
+  return new Promise(async (resolve, reject) => {
+    for (let i = 0; i < 6; i++) {
+      K[view_i[i]] = construct2DArray(base[4][i], 3, 3);
+      ext_lidar2cam[view_i[i]] = construct2DArray(base[3][i], 4, 4);
+    }
+    for (let j = 0; j < objs.length; j++) {
+      let data = {
+        points_eight: [],
+        foresight: [],
+        rearview: [],
+        right_front: [],
+        right_back: [],
+        left_back: [],
+        left_front: [],
+      };
+
+      let a = objs[j].slice(0, 6);
+      data.points_eight = await GetBoundingBoxPoints(...a, objs[j][9]);
+      let view_sign = {
+        foresight: 0,
+        rearview: 0,
+        right_front: 0,
+        right_back: 0,
+        left_back: 0,
+        left_front: 0,
+      };
+      data.points_eight.filter((item) => {
+        let pt_cam_z;
+        for (let e in view_sign) {
+          const transposeMatrix = math.inv(ext_lidar2cam[e]);
+          pt_cam_z =
+            item[0] * transposeMatrix[2][0] +
+            item[1] * transposeMatrix[2][1] +
+            item[2] * transposeMatrix[2][2] +
+            transposeMatrix[2][3];
+          if (pt_cam_z < 0.2) {
+            view_sign[e]++;
+          }
+        }
+      });
+
+      data.points_eight.filter((item) => {
+        for (let e in view_sign) {
+          if (view_sign[e] === 8) {
+            data[e].push([-1, -1]);
+          } else {
+            data[e].push(
+              project_lidar2img(item, ext_lidar2cam[e], K[e], base[5], base[6])
+            );
+          }
+        }
+      });
+      objs[j].push(data);
+    }
+    resolve(objs);
+  });
+}
 function handleVideoStatus(e) {
   video_status.value[e.id] = true;
-}
-async function handleObjPoints(base, objs) {
-  try {
-    return new Promise(async (resolve, reject) => {
-      // console.log(base, "base");
-      for (let i = 0; i < 6; i++) {
-        K.value[view_i[i]] = construct2DArray(base[4][i], 3, 3);
-        ext_lidar2cam.value[view_i[i]] = construct2DArray(base[3][i], 4, 4);
-      }
-      for (let j = 0; j < objs.length; j++) {
-        let data = {
-          points_eight: [],
-          foresight: [],
-          rearview: [],
-          right_front: [],
-          right_back: [],
-          left_back: [],
-          left_front: [],
-        };
-
-        let a = objs[j].slice(0, 6);
-        data.points_eight = await GetBoundingBoxPoints(...a, objs[j][9]);
-        data.points_eight.forEach((item) => {
-          data.foresight.push(
-            project_lidar2img(
-              item,
-              ext_lidar2cam.value["foresight"],
-              K.value["foresight"],
-              base[5],
-              base[6]
-            )
-          );
-          data.rearview.push(
-            project_lidar2img(
-              item,
-              ext_lidar2cam.value["rearview"],
-              K.value["rearview"],
-              base[5],
-              base[6]
-            )
-          );
-          data.right_front.push(
-            project_lidar2img(
-              item,
-              ext_lidar2cam.value["right_front"],
-              K.value["right_front"],
-              base[5],
-              base[6]
-            )
-          );
-          data.right_back.push(
-            project_lidar2img(
-              item,
-              ext_lidar2cam.value["right_back"],
-              K.value["right_back"],
-              base[5],
-              base[6]
-            )
-          );
-          data.left_back.push(
-            project_lidar2img(
-              item,
-              ext_lidar2cam.value["left_back"],
-              K.value["left_back"],
-              base[5],
-              base[6]
-            )
-          );
-          data.left_front.push(
-            project_lidar2img(
-              item,
-              ext_lidar2cam.value["left_front"],
-              K.value["left_front"],
-              base[5],
-              base[6]
-            )
-          );
-        });
-        objs[j].push(data);
-      }
-      resolve(objs);
-    });
-  } catch (err) {}
 }
 onBeforeMount(() => {
   ObserverInstance.emit("BEV_CLEAR");

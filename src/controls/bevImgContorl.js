@@ -8,7 +8,6 @@ import { numberExcept } from "./util.js";
 export default class bevImgContorl {
   resTracker = new ResourceTracker();
   track = this.resTracker.track.bind(this.resTracker);
-  canvas_work = new ComlinkWorker(new URL("./bevWork.js", import.meta.url));
   rgb_data = {
     dom: null,
     ctx: null,
@@ -63,8 +62,13 @@ export default class bevImgContorl {
   offscreen;
   offscreen_ctx;
   imageBitmap;
-
+  map = new Map();
+  
   constructor() {
+    this.map.set(0, [80, 82, 79, 1]);
+    this.map.set(1, [255, 255, 255, 1]);
+    this.map.set(2, [0, 255, 0, 1]);
+    this.map.set(3, [255, 0, 0, 1]);
     ObserverInstance.selfAddListenerList(this.observerListenerList, "yh_init");
     this.rgb_data.dom = document.getElementById("bev_box");
     // 离屏渲染
@@ -80,25 +84,47 @@ export default class bevImgContorl {
   async getData(data) {
     try {
       // 更新canvas图像
-      this.drawBev(data.basic_data[1], data.basic_data[2], data.info).then(
-        (res) => {
-          // this.cvHandle();
-          // 更新障碍物
-          this.handleObjs(data.objs);
+      // console.log(data, "data");
+      // console.log(Date.now(), "key---------bev2", data.key);
+      let w = data.basic_data[1],
+        h = data.basic_data[2];
+      if (this.img_w != w || this.img_h != h) {
+        this.img_w = w;
+        this.img_h = h;
+        this.bev.dom.width = this.img_w;
+        this.bev.dom.height = this.img_h;
+      }
+      // requestAnimationFrame(async () => {
+        let imgData = new ImageData(w, h);
+        for (let i = 0; i < imgData.data.length; i += 4) {
+          let num = data.info[i / 4];
+          let color = this.map.get(num);
+          // console.log(color, "=========");
+          imgData.data[i + 0] = color[0];
+          imgData.data[i + 1] = color[1];
+          imgData.data[i + 2] = color[2];
+          imgData.data[i + 3] = 255;
         }
-      );
+        this.bev.ctx.putImageData(imgData, 0, 0);
+        // this.bev.ctx.drawImage(data.info, 0, 0, w, h);
+        this.mapBg.needsUpdate = true;
+        this.handleObjs(data.objs).then((res) => {
+          console.log(Date.now(), "---------bev渲染完毕", data.key);
+        });
+      // });
     } catch (err) {
       console.log(err, "err---getData");
     }
   }
   // 更新障碍物
   async handleObjs(objs_data) {
-    if (objs_data.length <= 0) return;
-    await this.canvas_work.handleObjs(objs_data).then((res) => {
-      for (let item in res) {
-        if (res[item].data.length < 1) break;
-        this.handle3D(res[item].name, res[item].data);
+    return new Promise((resolve, reject) => {
+      if (objs_data.length <= 0) return;
+      for (let item in objs_data) {
+        if (objs_data[item].data.length < 1) break;
+        this.handle3D(objs_data[item].name, objs_data[item].data);
       }
+      resolve("---------");
     });
   }
   // 操作具体的障碍物
@@ -227,34 +253,6 @@ export default class bevImgContorl {
     }
     return color;
   }
-  // 绘制出bev所需的canvas
-  drawBev(w, h, bev_demo) {
-    try {
-      return new Promise(async (resolve, reject) => {
-        if (this.img_w != w || this.img_h != h) {
-          this.img_w = w;
-          this.img_h = h;
-          this.bev.dom.width = this.img_w;
-          this.bev.dom.height = this.img_h;
-        }
-        requestAnimationFrame(async () => {
-          await this.canvas_work
-            .drawOffscreen({
-              w: w,
-              h: h,
-              bev_demo: bev_demo,
-            })
-            .then((res) => {
-              this.bev.ctx.drawImage(res, 0, 0, w, h);
-              this.mapBg.needsUpdate = true;
-              resolve("canvas更新成功");
-            });
-        });
-      });
-    } catch (err) {
-      console.log(err, "err==drawBev");
-    }
-  }
   // opencv获取想要的信息
   cvHandle() {
     try {
@@ -320,10 +318,7 @@ export default class bevImgContorl {
       const contourPointsTypedArray = new Int32Array(mergedContourPoints);
       // // console.log(contourPointsTypedArray, "contourPointsTypedArray");
       // // 计算合并后轮廓的凸包
-      const mergedContour = new cv.Mat(
-        contourPointsTypedArray,
-        cv.CV_32F
-      );
+      const mergedContour = new cv.Mat(contourPointsTypedArray, cv.CV_32F);
       console.log(mergedContour, "mergedContour=======");
       // const hull = new cv.Mat();
       // cv.convexHull(mergedContour, hull, false, true);

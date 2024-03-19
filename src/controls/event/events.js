@@ -4,6 +4,7 @@ export let dataEvents = {
   DRAW_BEV,
   VIDEO_DRAW,
   BEV_CLEAR,
+  SET_DATA,
 }
 
 export default { dataEvents };
