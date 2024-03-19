@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-11 14:03:17
+ * @LastEditTime: 2024-03-18 23:10:02
  * @Description: 
  */
 import { createApp } from 'vue'
@@ -10,11 +10,12 @@ import MemoryPool from '@/controls/memoryPool';
 // import '@/controls/rem.js';
 import { setRem } from '@/utils'
 
-
+// const instance = MemoryPool.getInstance();
 let base = new Base();
 let memoryPool = new MemoryPool();
 const app = createApp(App);
 app.provide('$Base', base);
+// app.provide('$MemoryPool', instance);
 app.provide('$MemoryPool', memoryPool);
 app.mount('#app');
 setRem()

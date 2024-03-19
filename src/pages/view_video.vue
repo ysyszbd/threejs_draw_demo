@@ -29,12 +29,10 @@ import { ObserverInstance } from "@/controls/event/observer";
 const props = defineProps(["video_id"]);
 const emits = defineEmits(["updataVideoStatus"]);
 let yh_video = null;
-let MemoryPool = inject("$MemoryPool");
 let video_start = ref(false);
 let video_work = new Worker(
   new URL("../controls/video/ffmpeg_decode.js", import.meta.url).href
 );
-let objects = ref();
 onMounted(() => {
   yh_video = new VIDEO(props.video_id);
   initVideoWork();
@@ -49,8 +47,6 @@ function postVideo(u8Array, key) {
 function updataCode(u8Array, objs, bev) {
   try {
     return new Promise(async (resolve, reject) => {
-      yh_video.setObjs(objs);
-      objects.value = objs;
       video_work.postMessage({ video_data: u8Array, sign: "now" });
     });
   } catch (err) {
