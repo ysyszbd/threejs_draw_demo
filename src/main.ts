@@ -7,7 +7,7 @@ import './style.css'
 import App from './App.vue'
 import Base from "@/controls/base.js";
 import MemoryPool from '@/controls/memoryPool';
-import '@/controls/rem.js';
+// import '@/controls/rem.js';
 import { setRem } from '@/utils'
 
 
