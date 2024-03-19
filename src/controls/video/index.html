@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEV</title>
+    <style type="text/css">
+        .container {
+            position:relative;
+            display: flex;
+            justify-content: center;
+        }
+        .column {
+            display: flex;
+            flex-direction: column;
+            /* margin: 10px; */
+        }
+        .top {
+            position:absolute;
+            margin-top: 156px;
+            margin-left: 152px;
+            z-index:2;
+        }
+        canvas {
+            border: 1px solid black;
+            /* margin: 1px; */
+        }
+        body {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <center><h1>BEV</h1></center>
+    <center><h2 id="server">-</h2></center>
+    <div class="container">
+        <div class="column">
+            <canvas id="canvas_front_left" width="704" height="256"></canvas>
+            <canvas id="canvas_back_left" width="704" height="256"></canvas>
+        </div>
+        <div class="column">
+            <canvas id="canvas_front" width="704" height="256"></canvas>
+            <canvas class="top" id="canvas_seg" width="400" height="400"></canvas>
+            <canvas id="canvas_back" width="704" height="256"></canvas>
+        </div>
+        <div class="column">
+            <canvas id="canvas_front_right" width="704" height="256"></canvas>
+            <canvas id="canvas_back_right" width="704" height="256"></canvas>
+        </div>
+    </div>
+
+    <!-- <script src="https://unpkg.com/@msgpack/msgpack/dist.es5+umd/msgpack.min.js"></script>
+    <script src="https://unpkg.com/md5@2.3.0/dist/md5.min.js"></script>
+    <script type="text/javascript" src="https://rawgithub.com/strukturag/libde265.js/master/lib/libde265.min.js"></script> -->
+    <script type="text/javascript" src="./md5.min.js"></script>
+    <script type="text/javascript" src="./msgpack.min.js"></script>
+    <script type="text/javascript" src="./libde265.js"></script>
+    <script>
+        // 抗锯齿处理函数
+        function applyAntialiasing(data, width, height) {
+            for (var y = 0; y < height; y++) {
+                for (var x = 0; x < width; x++) {
+                    var offset = (y * width + x) * 4;
+
+                    // 获取当前像素的颜色值
+                    var currentR = data[offset];
+                    var currentG = data[offset + 1];
+                    var currentB = data[offset + 2];
+                    var currentA = data[offset + 3];
+
+                    // 获取相邻像素的颜色值
+                    var leftR = (x > 0) ? data[offset - 4] : currentR;
+                    var leftG = (x > 0) ? data[offset - 3] : currentG;
+                    var leftB = (x > 0) ? data[offset - 2] : currentB;
+                    var leftA = (x > 0) ? data[offset - 1] : currentA;
+
+                    var topR = (y > 0) ? data[offset - width * 4] : currentR;
+                    var topG = (y > 0) ? data[offset - width * 4 + 1] : currentG;
+                    var topB = (y > 0) ? data[offset - width * 4 + 2] : currentB;
+                    var topA = (y > 0) ? data[offset - width * 4 + 3] : currentA;
+
+                    // 计算平均颜色值
+                    var avgR = Math.floor((currentR + leftR + topR) / 3);
+                    var avgG = Math.floor((currentG + leftG + topG) / 3);
+                    var avgB = Math.floor((currentB + leftB + topB) / 3);
+                    var avgA = Math.floor((currentA + leftA + topA) / 3);
+
+                    // 更新当前像素的颜色值
+                    data[offset] = avgR;
+                    data[offset + 1] = avgG;
+                    data[offset + 2] = avgB;
+                    data[offset + 3] = avgA;
+                }
+            }
+        }
+        // 高斯模糊算法
+        function boxBlur(data, width, height, radius) {
+            var boxSize = 2 * radius + 1;
+            var boxArea = boxSize * boxSize;
+            var halfBoxArea = Math.floor(boxArea / 2);
+
+            var rBuffer = [];
+            var gBuffer = [];
+            var bBuffer = [];
+            var aBuffer = [];
+
+            for (var i = 0; i < data.length; i += 4) {
+                var x = (i / 4) % width;
+                var y = Math.floor((i / 4) / width);
+
+                rBuffer.length = 0;
+                gBuffer.length = 0;
+                bBuffer.length = 0;
+                aBuffer.length = 0;
+
+                for (var dy = -radius; dy <= radius; dy++) {
+                    var yPos = Math.min(height - 1, Math.max(0, y + dy)) * width;
+                    for (var dx = -radius; dx <= radius; dx++) {
+                        var xPos = Math.min(width - 1, Math.max(0, x + dx));
+                        var offset = (yPos + xPos) * 4;
+
+                        rBuffer.push(data[offset]);
+                        gBuffer.push(data[offset + 1]);
+                        bBuffer.push(data[offset + 2]);
+                        aBuffer.push(data[offset + 3]);
+                    }
+                }
+
+                rBuffer.sort(function (a, b) { return a - b; });
+                gBuffer.sort(function (a, b) { return a - b; });
+                bBuffer.sort(function (a, b) { return a - b; });
+                aBuffer.sort(function (a, b) { return a - b; });
+
+                data[i] = rBuffer[halfBoxArea];
+                data[i + 1] = gBuffer[halfBoxArea];
+                data[i + 2] = bBuffer[halfBoxArea];
+                data[i + 3] = aBuffer[halfBoxArea];
+            }
+        }
+
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+        var startTime = 0;
+        var pts = 0;
+        const chanelsLabel = ['前', '右前', '左前', '后', '左后', '右后'];
+        const canvasElements = [
+            document.getElementById('canvas_front'),
+            document.getElementById('canvas_front_right'),
+            document.getElementById('canvas_front_left'),
+            document.getElementById('canvas_back'),
+            document.getElementById('canvas_back_left'),
+            document.getElementById('canvas_back_right')
+        ];
+
+        const canvasSeg = document.getElementById('canvas_seg');
+
+        function readerLabel(canvas, i, pts) {
+            const ctx = canvas.getContext('2d');
+
+            // 计算时间戳位置
+            const text = formatTimestamp(pts + startTime);
+            const textWidth = ctx.measureText(text).width;
+            const marginTop = 30;
+            const marginRight = 12;
+            const x = canvas.width - textWidth - marginRight;
+            const y = marginTop;
+
+            // 绘制半透明背景
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.fillRect(10, 10, 48, 30); // 给左标签留出4像素的padding
+            ctx.fillRect(x, 10, textWidth, 30); // 给右时间戳留出4像素的padding
+
+            // 绘制文字
+            ctx.font = '20px Arial';
+            ctx.fillStyle = 'black';
+            ctx.fillText(chanelsLabel[i], 14, 34);
+
+            // 在右上角绘制时间戳
+            ctx.fillText(text, x, y);
+        }
+
+        var segImageData;
+        var segImage = new Image();
+        function readerSegImg(seg, segWidth, segHeight) {
+            // 渲染分割图
+            const ctx = canvasSeg.getContext('2d');
+            ctx.fillRect(0, 0, segWidth, segHeight);
+
+            // ctx.drawImage(segImage, 0, 0, 200, 200);
+            if (canvasSeg.width != segWidth || canvasSeg.height != segHeight) {
+                canvasSeg.widht = segWidth;
+                canvasSeg.height = segHeight;
+                segImageData = null;
+            }
+
+            if (!segImageData) {
+                segImageData = ctx.getImageData(0, 0, canvasSeg.width, canvasSeg.height);
+                //console.log("canvase width - height - len     ", canvasSeg.width, canvasSeg.height, segImageData.data.length);
+            }
+
+            var rotate90 = false;
+
+            //boxBlur(segImageData, segWidth, segHeight, 5);
+            // applyAntialiasing(segImageData, segWidth, segHeight);
+
+            for (var i = 0; i < segImageData.data.length; i += 4) {
+                var iSeg = i / 4;
+                var gray = seg[iSeg];
+                if (rotate90) {
+                    // 计算旋转后的索引位置
+                    let x = iSeg % segWidth;
+                    let y = Math.floor(iSeg / segWidth);
+                    // 顺时针
+                    // let index = (segWidth * (segWidth - x - 1) + y);
+                    // 逆时针
+                    let index = segHeight * (x + 1) - y - 1;
+                    gray = seg[index];
+                }
+                var r = 0;
+                var g = 0;
+                var b = 0;
+                switch (gray) {
+                    case 1:
+                        r = 0xFF;
+                        break;
+                    case 2:
+                        g = 0xFF;
+                        break;
+                    case 3:
+                        b = 0xFF;
+                        break;
+                    default:
+                        r = 0x88;
+                        g = 0x88;
+                        b = 0x88;
+                        break;
+                }
+                segImageData.data[i] = r;
+                segImageData.data[i + 1] = g;
+                segImageData.data[i + 2] = b;
+            }
+
+            // 绘制图像到画布上
+            ctx.putImageData(segImageData, 0, 0);
+        }
+
+        function renderObjs(objs) {
+            // TODO 渲染障碍物框
+            let str = '';
+            const canvas = canvasSeg;//canvasElements[0];
+            const ctx0 = canvas.getContext('2d');
+            const ratio = canvas.width / 704;
+            for (var i = 0; i < objs.length; ++i) {
+                var obj = objs[i];
+                var x = obj[0];
+                var y = obj[1];
+                var w = obj[3];
+                var h = obj[6];
+                // console.log("w: ", w, ", h: ", h);
+                str += x + y + w + h;
+                //ctx0.strokeStyle = "red";
+                //ctx0.strokeRect(x * canvas.width / 40, y * canvas.height / 40, w * canvas.width / 2, h * canvas.height / 2);
+            }
+
+            // 渲染目标列表MD5值
+            var md5 = MD5(str);
+            ctx0.font = '11px Arial';
+            ctx0.fillStyle = 'white';
+            ctx0.fillText(md5, 4, 16);
+        }
+
+        function renderImage(image, i) {
+            const canvas = canvasElements[i];
+            const ctx = canvas.getContext('2d');
+            var w = image.get_width();
+            var h = image.get_height();
+            if (w != canvas.width || h != canvas.height || !imagesData[i]) {
+                canvas.width = w;
+                canvas.height = h;
+                imagesData[i] = ctx.createImageData(w, h);
+            }
+
+            image.display(imagesData[i], function(data) {
+                ctx.putImageData(data, 0, 0);
+                readerLabel(canvas, i, image.pts);
+            });
+        }
+
+        for (var i = 0; i < 6; ++i) {
+            // 初始化显示
+            readerLabel(canvasElements[i], i, 0);
+        }
+
+        var imagesData = [];
+        var decoders = [];
+        for (var i = 0; i < 6; i++) {
+            decoders[i] = new libde265.Decoder(canvasElements[i]);
+            decoders[i].set_image_callback((function(index) {
+                return function(image) {
+                    renderImage(image, index);
+                    image.free();
+                };
+            })(i));
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        let server = urlParams.get('server');
+        if (!server || server.length == 0) {
+            server = '192.168.1.160:1234';
+        }
+
+        const h2Server = document.getElementById('server');
+        h2Server.innerText = server;
+
+        var ws;
+        // var wsUrl = 'ws://192.168.30.4:1234';
+        // var wsUrl = 'ws://192.168.1.160:1234';
+        var wsUrl = `ws://${server}`;
+        var reconnectInterval;
+
+        function connectWebSocket() {
+            if (ws) {
+                ws.close();
+            }
+            ws = new WebSocket(wsUrl);
+            ws.binaryType = 'arraybuffer';
+
+            ws.onopen = function() {
+                console.log('连接成功');
+                clearInterval(reconnectInterval); // 连接成功后清除定时器
+                reconnectInterval = null;
+            };
+
+            ws.onclose = function() {
+                // console.log('连接已关闭，2秒后重连');
+                if (reconnectInterval) {
+                    clearInterval(reconnectInterval);
+                }
+                reconnectInterval = setInterval(function() {
+                    connectWebSocket();
+                }, 2000); // 每隔2秒重新连接
+            };
+
+            ws.onerror = function(event) {
+                if (event.type != 'error' && event.eventPhase != 2) {
+                    console.error('发生错误：', event);
+                }
+            };
+
+            ws.onmessage = function(event) {
+                const data = new Uint8Array(event.data);
+                const msg = msgpack.decode(data);
+                const ts = msg[0];
+                if (!startTime || startTime === 0) {
+                    startTime = ts;
+                }
+                // console.log('时间戳:', formatTimestamp(ts));
+
+                msg[1].forEach((img_data, i) => {
+                    decoders[i].push_data(img_data, ts - startTime);
+                    var err = decoders[i].flush();
+                    if (!libde265.de265_isOK(err)) {
+                        console.error("解码Flush错误：", libde265.de265_get_error_text(err));
+                        return;
+                    }
+                    // console.info("解码数据长度：", img_data.length);
+                    decoders[i].decode(function(err) {
+                        switch (err) {
+                            case libde265.DE265_ERROR_WAITING_FOR_INPUT_DATA:
+                                console.info("解码：等待数据... ", img_data.length);
+                                break;
+                            default:
+                                if (!libde265.de265_isOK(err)) {
+                                    console.log(libde265.de265_get_error_text(err));
+                                }
+                        }
+                    });
+                });
+
+                // 是否有图
+                if (msg[3] && msg[3].length > 0) {
+                    // 超参
+                    var hyperParam = msg[2];
+                    var segWidth = hyperParam[1];
+                    var segHeight = hyperParam[2];
+
+                    // 渲染分割图
+                    readerSegImg(msg[3], segWidth, segHeight);
+
+                    // 渲染目标列表
+                    renderObjs(msg[4]);
+                }
+            };
+        }
+
+        connectWebSocket();
+    </script>
+</body>
+</html>

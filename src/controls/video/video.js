@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-19 14:01:04
+ * @LastEditTime: 2024-03-19 15:44:13
  * @Description:./
  */
 import { ObserverInstance } from "@/controls/event/observer";
@@ -89,8 +89,7 @@ export default class Video {
   drawVideo(data) {
     if (data.view !== this.id) return;
     if (this.id === "foresight") {
-      console.log(Date.now(), "-----------video开始渲染", data.key);
-      // console.log(data, "data=================");
+      // console.log(Date.now(), "-----------video开始渲染", data.key);
     }
     let info = data.info;
     this.objs_data = data.objs;
@@ -112,34 +111,11 @@ export default class Video {
       this.helper_dom.width = info.width;
       this.helper_dom.height = info.height;
     }
-
-    // if (
-    //   this.offscreen.width != info.width ||
-    //   this.offscreen.height != info.height
-    // ) {
-    //   this.offscreen.width = info.width;
-    //   this.offscreen.height = info.height;
-    // }
     this.helper_ctx.clearRect(0, 0, info.width, info.height);
-    // requestAnimationFrame(() => {
-    // // 如果还没有渲染，则先渲染离屏数据
-    // let imgData = new ImageData(info.rgb, info.width, info.height);
-    // for (let i = 0; i < imgData.data.length; i += 4) {
-    //   let data0 = imgData.data[i + 0];
-    //   imgData.data[i + 0] = imgData.data[i + 2];
-    //   imgData.data[i + 2] = data0;
-    // }
-    // this.offscreen_ctx.putImageData(imgData, 0, 0);
-    // for (let i = 0; i < this.objs_data.length; i++) {
-    //   let item = this.objs_data[i];
-    //   this.handleHelper(item[item.length - 1][this.id]);
-    // }
-    // this.imageBitmap = this.offscreen.transferToImageBitmap();
-    
     this.helper_ctx.drawImage(data.video_bg, 0, 0, info.width, info.height);
-    // this.helper_ctx.drawImage(data.objs_canvas, 0, 0, info.width, info.height);
-    console.log(Date.now(), "-----------video渲染完毕", data.key, this.id);
-    // });
+    if (this.id === "foresight") {
+      console.log(Date.now(), "-----------video渲染完毕", data.key, this.id);
+    }
   }
   // 计算视频要放置在dom元素中的宽高--按照视频帧的比例来
   handleWH(imgW, imgH, domW, domH) {

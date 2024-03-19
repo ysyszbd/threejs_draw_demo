@@ -63,7 +63,7 @@ export default class bevImgContorl {
   offscreen_ctx;
   imageBitmap;
   map = new Map();
-  
+
   constructor() {
     this.map.set(0, [80, 82, 79, 1]);
     this.map.set(1, [255, 255, 255, 1]);
@@ -95,33 +95,100 @@ export default class bevImgContorl {
         this.bev.dom.height = this.img_h;
       }
       // requestAnimationFrame(async () => {
+      if (data.bev && data.bev.length > 0) {
+
+        // 渲染分割图
         let imgData = new ImageData(w, h);
         for (let i = 0; i < imgData.data.length; i += 4) {
-          let num = data.info[i / 4];
+          let num = data.bev[i / 4];
           let color = this.map.get(num);
-          // console.log(color, "=========");
           imgData.data[i + 0] = color[0];
           imgData.data[i + 1] = color[1];
           imgData.data[i + 2] = color[2];
           imgData.data[i + 3] = 255;
         }
         this.bev.ctx.putImageData(imgData, 0, 0);
-        // this.bev.ctx.drawImage(data.info, 0, 0, w, h);
         this.mapBg.needsUpdate = true;
         this.handleObjs(data.objs).then((res) => {
-          console.log(Date.now(), "---------bev渲染完毕", data.key);
+          console.log(Date.now(), "---------bev渲染完毕");
         });
-      // });
+        // });
+      }
     } catch (err) {
       console.log(err, "err---getData");
     }
   }
+  readerSegImg(seg, segWidth, segHeight) {
+    // 渲染分割图
+    const ctx = this.bev.ctx;
+    ctx.fillRect(0, 0, segWidth, segHeight);
+    let segImageData;
+    // ctx.drawImage(segImage, 0, 0, 200, 200);
+    if (
+      this.rgb_data.dom.width != segWidth ||
+      this.rgb_data.dom.height != segHeight
+    ) {
+      this.rgb_data.dom.widht = segWidth;
+      this.rgb_data.dom.height = segHeight;
+      segImageData = null;
+    }
+
+    if (!segImageData) {
+      segImageData = ctx.getImageData(
+        0,
+        0,
+        this.rgb_data.dom.width,
+        this.rgb_data.dom.height
+      );
+    }
+    var rotate90 = false;
+    for (var i = 0; i < segImageData.data.length; i += 4) {
+      var iSeg = i / 4;
+      var gray = seg[iSeg];
+      if (rotate90) {
+        // 计算旋转后的索引位置
+        let x = iSeg % segWidth;
+        let y = Math.floor(iSeg / segWidth);
+        // 逆时针
+        let index = segHeight * (x + 1) - y - 1;
+        gray = seg[index];
+      }
+      var r = 0;
+      var g = 0;
+      var b = 0;
+      switch (gray) {
+        case 1:
+          r = 0xff;
+          break;
+        case 2:
+          g = 0xff;
+          break;
+        case 3:
+          b = 0xff;
+          break;
+        default:
+          r = 0x88;
+          g = 0x88;
+          b = 0x88;
+          break;
+      }
+      segImageData.data[i] = r;
+      segImageData.data[i + 1] = g;
+      segImageData.data[i + 2] = b;
+      segImageData.data[i + 3] = 255;
+    }
+    // console.log(segImageData, "segImageData");
+    // 绘制图像到画布上
+    ctx.putImageData(segImageData, 0, 0);
+  }
   // 更新障碍物
   async handleObjs(objs_data) {
     return new Promise((resolve, reject) => {
+      // console.log(objs_data, "objs_data=====");
       if (objs_data.length <= 0) return;
       for (let item in objs_data) {
         if (objs_data[item].data.length < 1) break;
+        // console.log(objs_data[item].name, objs_data[item].data, "=============================");
         this.handle3D(objs_data[item].name, objs_data[item].data);
       }
       resolve("---------");

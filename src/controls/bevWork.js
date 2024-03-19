@@ -131,6 +131,12 @@ export function drawOffscreen(data) {
     context.fillStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${c[3]})`;
     context.fillRect(points[0], points[1], 1, 1);
   });
+  // for (let i = 0; i < data.bev_demo.length; i++) {
+  //   let c = getColor(data.bev_demo[i]);
+  //   let points = getPoints(i, data.w);
+  //   context.fillStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${c[3]})`;
+  //   context.fillRect(points[0], points[1], 1, 1);
+  // }
   imageBitmap = canvas.transferToImageBitmap();
   return imageBitmap;
 }

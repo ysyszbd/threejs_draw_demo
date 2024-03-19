@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-16 18:44:45
+ * @LastEditTime: 2024-03-19 20:09:10
  * @Description: 
 -->
 <template>
@@ -9,10 +9,17 @@
 
 <script setup>
 import bevImgControl from "../controls/bevImgContorl.js";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, defineExpose } from "vue";
 let Bev = ref(null);
 onMounted(() => {
   Bev.value = new bevImgControl();
+});
+function drawBev(data) {
+  // console.log(data, "data------------");
+  Bev.value.getData(data)
+}
+defineExpose({
+  drawBev
 });
 </script>
 
