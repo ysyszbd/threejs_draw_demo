@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-19 19:56:56
+ * @LastEditTime: 2024-03-19 20:39:09
  * @Description: 
 -->
 <!--
@@ -143,6 +143,7 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
         video_status.value["left_front"]
       ) {
         object = decode(e.data);
+        console.log(Date.now(), "-----------获取数据");
         object[4] = await handleObjsPoints(object[2], object[4]);
         // 处理障碍物信息--给bev用
         let objs = await handleObjs(object[4]);
