@@ -283,7 +283,7 @@ function handleObjs(objs_data) {
       }
     });
     resolve(obj_index);
-  })
+  });
 }
 function drawVideoBg(info, objs, view) {
   return new Promise((resolve, reject) => {
