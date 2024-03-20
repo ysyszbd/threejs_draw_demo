@@ -89,9 +89,9 @@ export default class Video {
   drawVideo(data) {
     if (data.view !== this.id) return;
     // console.log(data, "data");
-    if (this.id === "foresight") {
-      console.log(Date.now(), "-----------video开始渲染", data.key);
-    }
+    // if (this.id === "foresight") {
+    //   // console.log(Date.now(), "-----------video开始渲染", data.key);
+    // }
     let info = data.info;
     let rect = this.dom.getBoundingClientRect();
     // 使用canvas外部的元素来控制canvas的大小
@@ -113,9 +113,9 @@ export default class Video {
     }
     this.helper_ctx.clearRect(0, 0, info.w, info.h);
     this.helper_ctx.drawImage(data.video_bg.info, 0, 0, info.w, info.h);
-    if (this.id === "foresight") {
-      console.log(Date.now(), "-----------video渲染完毕", data.key, this.id);
-    }
+    // if (this.id === "foresight") {
+    //   // console.log(Date.now(), "-----------video渲染完毕", data.key, this.id);
+    // }
   }
   // 计算视频要放置在dom元素中的宽高--按照视频帧的比例来
   handleWH(imgW, imgH, domW, domH) {

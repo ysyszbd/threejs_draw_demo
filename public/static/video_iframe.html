@@ -27,7 +27,9 @@
       let video_265 = new libde265.Decoder(dom);
       video_265.set_image_callback((msg) => {
         // console.log(msg, "msg");
-        console.log(Date.now(), "------------开始处理");
+        // if (view === "foresight") {
+        //   console.log(Date.now(), "------------解码完成,开始渲染");
+        // }
         imageDataHandler(msg);
       });
       // 在发送方的代码中
@@ -42,6 +44,9 @@
         data.free();
       };
       function update(data) {
+        if (view === "foresight") {
+          // console.log(Date.now(), "------------video渲染完毕");
+        }
         window.parent.postMessage({ params: data, view: view, key: key }, "*");
       }
       function drawVideoBg(info, objs, view, width, height) {

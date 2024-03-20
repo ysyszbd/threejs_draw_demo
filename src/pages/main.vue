@@ -118,13 +118,7 @@ let foresight = ref(),
       eventName: "VIDEO_OK",
       fn: handleVideoStatus.bind(this),
     },
-  ],
-  num = ref(0);
-let map = new Map();
-map.set(0, "rgba(80, 82, 79, 1)");
-map.set(1, "rgba(255, 255, 255, 1)");
-map.set(2, "rgba(0, 255, 0, 1)");
-map.set(3, "rgba(255, 0, 0, 1)");
+  ];
 ObserverInstance.selfAddListenerList(observerListenerList, "yh_init");
 const props = defineProps(["initStatus"]);
 // animate();
@@ -213,7 +207,7 @@ function updateVideo() {
     MemoryPool.hasVideo(key, "left_front")
   ) {
     key = MemoryPool.getKey();
-    console.log(Date.now(), "-----------通知视频、bev渲染", key);
+    // console.log(Date.now(), "-----------通知视频、bev渲染", key);
     Promise.all([
       noticeBev(key),
       noticeVideo(key, "foresight"),
@@ -223,7 +217,7 @@ function updateVideo() {
       noticeVideo(key, "right_back"),
       noticeVideo(key, "left_back"),
     ]).then((res) => {
-      console.log(Date.now(), "通知更新帧--------------------完毕", key);
+      // console.log(Date.now(), "通知更新帧--------------------完毕", key);
       MemoryPool.delVideoValue(key, "video_bg", "foresight");
       MemoryPool.delVideoValue(key, "video_bg", "rearview");
       MemoryPool.delVideoValue(key, "video_bg", "right_front");

@@ -84,7 +84,7 @@ export default class bevImgContorl {
   async getData(data) {
     try {
       // 更新canvas图像
-      console.log(data, "data");
+      // console.log(data, "data");
       // console.log(Date.now(), "key---------bev2", data.key);
       let w = data.basic_data[1],
         h = data.basic_data[2];
