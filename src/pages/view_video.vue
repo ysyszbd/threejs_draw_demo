@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-19 20:31:45
+ * @LastEditTime: 2024-03-20 11:31:06
  * @Description: 
 -->
 <template>
@@ -25,6 +25,7 @@ import {
 } from "vue";
 import VIDEO from "../controls/video/video.js";
 import { ObserverInstance } from "@/controls/event/observer";
+// import MyWorker from '../controls/video/vWorker.js?sharedworker'
 
 const props = defineProps(["video_id"]);
 const emits = defineEmits(["updataVideoStatus"]);
@@ -32,6 +33,13 @@ let yh_video = null;
 let video_start = ref(false);
 let video_work = new Worker(
   new URL("../controls/video/ffmpeg_decode.js", import.meta.url).href
+);
+// let v_work = new MyWorker();
+let v_work = new SharedWorker(
+  new URL("../controls/video/vShareWorker.js", import.meta.url),
+  {
+    name: "video",
+  }
 );
 let dom = ref(null);
 let video_265 = ref();
@@ -45,80 +53,95 @@ onMounted(() => {
   video_265.value = new libde265.Decoder(dom.value);
   initVideoWork();
   video_265.value.set_image_callback(
-    (function (index) {
-      return function (data) {
+    ((index) => {
+      return async (data) => {
         // console.log(data, "image====================================");
-        renderImage(data);
+        console.log(Date.now(), "-----------解码完成", props.video_id);
+        await renderImage(data);
         data.free();
       };
     })(props.video_id)
   );
 });
 function renderImage(image) {
-  let rect = document
-    .getElementById(`${props.video_id}`)
-    .getBoundingClientRect();
-  const ctx = dom.value.getContext("2d");
-  var w = image.get_width();
-  var h = image.get_height();
-  let wh_obj = yh_video.handleWH(w, h, rect.width, rect.height);
-  dom_box.value.style.width = wh_obj.w + "px";
-  dom_box.value.style.height = wh_obj.h + "px";
+  return new Promise((resolve, reject) => {
+    let rect = document
+      .getElementById(`${props.video_id}`)
+      .getBoundingClientRect();
+    const ctx = dom.value.getContext("2d");
+    // let canvas = new OffscreenCanvas(w, h);
+    // let ctx = canvas.getContext("2d");
+    // let imageBitmap;
+    var w = image.get_width();
+    var h = image.get_height();
+    let wh_obj = yh_video.handleWH(w, h, rect.width, rect.height);
+    dom_box.value.style.width = wh_obj.w + "px";
+    dom_box.value.style.height = wh_obj.h + "px";
 
-  if (w != dom.value.width || h != dom.value.height || !imagesData.value) {
-    dom.value.width = w;
-    dom.value.height = h;
-    imagesData.value = ctx.createImageData(w, h);
-  }
+    if (w != dom.value.width || h != dom.value.height || !imagesData.value) {
+      dom.value.width = w;
+      dom.value.height = h;
+      imagesData.value = ctx.createImageData(w, h);
+    }
 
-  image.display(imagesData.value, (data) => {
-    ctx.putImageData(data, 0, 0);
-    objs.value.filter((item) => {
-      let obj_data = item[item.length - 1][props.video_id];
-      let arr = obj_data.filter((item) => {
-        return item[0] === -1 && item[1] === -1;
+    image.display(imagesData.value, (data) => {
+      ctx.putImageData(data, 0, 0);
+      objs.value.filter((item) => {
+        let obj_data = item[item.length - 1][props.video_id];
+        let arr = obj_data.filter((item) => {
+          return item[0] === -1 && item[1] === -1;
+        });
+        if (arr.length === 8) return;
+        ctx.beginPath();
+        ctx.moveTo(obj_data[0][0], obj_data[0][1]); //移动到某个点；
+        ctx.lineTo(obj_data[1][0], obj_data[1][1]);
+        ctx.lineTo(obj_data[5][0], obj_data[5][1]);
+        ctx.lineTo(obj_data[7][0], obj_data[7][1]);
+        ctx.lineTo(obj_data[6][0], obj_data[6][1]);
+        ctx.lineTo(obj_data[2][0], obj_data[2][1]);
+        ctx.lineTo(obj_data[3][0], obj_data[3][1]);
+        ctx.lineTo(obj_data[1][0], obj_data[1][1]);
+        ctx.moveTo(obj_data[0][0], obj_data[0][1]);
+        ctx.lineTo(obj_data[2][0], obj_data[2][1]);
+        ctx.moveTo(obj_data[0][0], obj_data[0][1]);
+        ctx.lineTo(obj_data[4][0], obj_data[4][1]);
+        ctx.lineTo(obj_data[6][0], obj_data[6][1]);
+        ctx.moveTo(obj_data[4][0], obj_data[4][1]);
+        ctx.lineTo(obj_data[5][0], obj_data[5][1]);
+        ctx.moveTo(obj_data[3][0], obj_data[3][1]);
+        ctx.lineTo(obj_data[7][0], obj_data[7][1]);
+        ctx.lineWidth = "1.4"; //线条 宽度
+        ctx.strokeStyle = "yellow";
+        ctx.stroke(); //描边
       });
-      if (arr.length === 8) return;
-      ctx.beginPath();
-      ctx.moveTo(obj_data[0][0], obj_data[0][1]); //移动到某个点；
-      ctx.lineTo(obj_data[1][0], obj_data[1][1]);
-      ctx.lineTo(obj_data[5][0], obj_data[5][1]);
-      ctx.lineTo(obj_data[7][0], obj_data[7][1]);
-      ctx.lineTo(obj_data[6][0], obj_data[6][1]);
-      ctx.lineTo(obj_data[2][0], obj_data[2][1]);
-      ctx.lineTo(obj_data[3][0], obj_data[3][1]);
-      ctx.lineTo(obj_data[1][0], obj_data[1][1]);
-      ctx.moveTo(obj_data[0][0], obj_data[0][1]);
-      ctx.lineTo(obj_data[2][0], obj_data[2][1]);
-      ctx.moveTo(obj_data[0][0], obj_data[0][1]);
-      ctx.lineTo(obj_data[4][0], obj_data[4][1]);
-      ctx.lineTo(obj_data[6][0], obj_data[6][1]);
-      ctx.moveTo(obj_data[4][0], obj_data[4][1]);
-      ctx.lineTo(obj_data[5][0], obj_data[5][1]);
-      ctx.moveTo(obj_data[3][0], obj_data[3][1]);
-      ctx.lineTo(obj_data[7][0], obj_data[7][1]);
-      ctx.lineWidth = "1.4"; //线条 宽度
-      ctx.strokeStyle = "yellow";
-      ctx.stroke(); //描边
+      // imageBitmap = canvas.transferToImageBitmap();
+
+      console.log(Date.now(), "-----------渲染结束", props.video_id);
     });
   });
 }
-function getData(e) {
-  // console.log(e, "=======================getData");
-  // return;
-  objs.value = e.objs;
-  video_265.value.push_data(e.video);
-  video_265.value.decode(function (err) {
-    switch (err) {
-      case libde265.DE265_ERROR_WAITING_FOR_INPUT_DATA:
-        console.info("解码：等待数据... ", e.video.length);
-        break;
-      default:
-        if (!libde265.de265_isOK(err)) {
-          console.log(libde265.de265_get_error_text(err));
-        }
-    }
-  });
+async function getData(e) {
+  try {
+    // return new Promise((resolve, reject) => {
+    // console.log(e, "=======================getData");
+    console.log(Date.now(), "-----------开始解码", props.video_id);
+    objs.value = e.objs;
+    video_265.value.push_data(e.video);
+    video_265.value.decode((err) => {
+      switch (err) {
+        case libde265.DE265_ERROR_WAITING_FOR_INPUT_DATA:
+          console.info("解码：等待数据... ", e.video.length);
+          break;
+        default:
+          if (!libde265.de265_isOK(err)) {
+            console.log(libde265.de265_get_error_text(err));
+          }
+      }
+    });
+    // })
+  } catch (err) {
+    console.log(err, "err====getData");
+  }
 }
 function readerSegImg(seg, segWidth, segHeight) {
   // 渲染分割图

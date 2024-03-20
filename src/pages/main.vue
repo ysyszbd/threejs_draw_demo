@@ -131,7 +131,8 @@ const props = defineProps(["initStatus"]);
 // animate();
 const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
   try {
-    if (!props.initStatus) return;
+    // console.log(e, "eee");
+    // if (!props.initStatus) return;
     let object;
     if (e.data instanceof ArrayBuffer) {
       if (
@@ -147,10 +148,12 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
         object[4] = await handleObjsPoints(object[2], object[4]);
         // 处理障碍物信息--给bev用
         let objs = await handleObjs(object[4]);
+        console.log(Date.now(), "-----------传递解码1");
         foresight.value.getData({
           video: object[1][0],
           objs: object[4],
           basic: object[2],
+          key: object[0]
         });
         rearview.value.getData({
           video: object[1][3],
