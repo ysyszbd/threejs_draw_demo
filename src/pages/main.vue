@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-20 09:40:59
+ * @LastEditTime: 2024-03-20 12:52:27
  * @Description: 
 -->
 <!--
@@ -10,6 +10,7 @@
   <div class="my_page">
     <div class="key_css">{{ key_time }}</div>
     <canvas id="key_canvas" width="704" height="256"></canvas>
+    <canvas id="objs_canvas" width="704" height="256"></canvas>
     <div class="bg_box"></div>
     <div class="page_title">
       <div class="logo_box">
@@ -135,17 +136,25 @@ let foresight = ref(),
   }),
   key_canvas = ref(),
   key_ctx = ref(),
+  objs_canvas = ref(),
+  objs_ctx = ref(),
   observerListenerList = [
     {
       eventName: "VIDEO_OK",
       fn: handleVideoStatus.bind(this),
     },
   ];
+let old_object = ref();
 ObserverInstance.selfAddListenerList(observerListenerList, "yh_init");
+let objsMap = new Map(),
+  key_arr = ref([]),
+  old_key = ref();
 const props = defineProps(["initStatus"]);
 onMounted(() => {
   key_canvas.value = document.getElementById("key_canvas");
   key_ctx.value = key_canvas.value.getContext("2d");
+  objs_canvas.value = document.getElementById("objs_canvas");
+  objs_ctx.value = objs_canvas.value.getContext("2d");
 });
 const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
   try {
@@ -169,12 +178,48 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
             MemoryPool.video_bg
           );
           MemoryPool.setKey(object[0]);
-          console.log(Date.now(), "----------开始处理111", MemoryPool.keyArr);
+          console.log(Date.now(), "----------开始处理111", object[4].length);
           object[4] = await handleObjsPoints(object[2], object[4]);
           // 处理障碍物信息--给bev用
           let objs = await handleObjs(object[4]);
           MemoryPool.setData(object[0], objs, "obj");
           console.log(Date.now(), "----------bev、障碍物信息处理完毕");
+          if (!old_object.value) {
+            old_object.value = object;
+          } else {
+            objs_ctx.value.clearRect(0, 0, 704, 256);
+            let context = objs_ctx.value;
+            console.log("-----------------zhangaiwu", old_object.value[0] );
+            old_object.value[4].filter((item) => {
+              let obj_data = item[item.length - 1]["foresight"];
+              let arr = obj_data.filter((item) => {
+                return item[0] === -1 && item[1] === -1;
+              });
+              if (arr.length === 8) return;
+              context.beginPath();
+              context.moveTo(obj_data[0][0], obj_data[0][1]); //移动到某个点；
+              context.lineTo(obj_data[1][0], obj_data[1][1]);
+              context.lineTo(obj_data[5][0], obj_data[5][1]);
+              context.lineTo(obj_data[7][0], obj_data[7][1]);
+              context.lineTo(obj_data[6][0], obj_data[6][1]);
+              context.lineTo(obj_data[2][0], obj_data[2][1]);
+              context.lineTo(obj_data[3][0], obj_data[3][1]);
+              context.lineTo(obj_data[1][0], obj_data[1][1]);
+              context.moveTo(obj_data[0][0], obj_data[0][1]);
+              context.lineTo(obj_data[2][0], obj_data[2][1]);
+              context.moveTo(obj_data[0][0], obj_data[0][1]);
+              context.lineTo(obj_data[4][0], obj_data[4][1]);
+              context.lineTo(obj_data[6][0], obj_data[6][1]);
+              context.moveTo(obj_data[4][0], obj_data[4][1]);
+              context.lineTo(obj_data[5][0], obj_data[5][1]);
+              context.moveTo(obj_data[3][0], obj_data[3][1]);
+              context.lineTo(obj_data[7][0], obj_data[7][1]);
+              context.lineWidth = "1.4"; //线条 宽度
+              context.strokeStyle = "yellow";
+              context.stroke(); //描边
+            });
+            old_object.value = object;
+          }
           // 障碍物--给视频使用
           MemoryPool.setData(object[0], object[4], "video_objs_arr");
           // 超参信息
@@ -191,13 +236,14 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
           right_front.value.postVideo(object[1][1], object[0], "right_front"),
           right_back.value.postVideo(object[1][5], object[0], "right_back"),
         ]);
+        updateVideo();
       }
     }
   } catch (err) {
     console.log(err, "err----WS");
   }
 });
-animate();
+// animate();
 // 渲染循环
 function animate() {
   updateVideo();
@@ -220,15 +266,8 @@ function updateVideo() {
     MemoryPool.hasVideo(key, "left_front")
   ) {
     key = MemoryPool.getKey();
+    old_key.value = key;
     key_time.value = key;
-    console.log(
-      key,
-      "MemoryPool=============",
-      MemoryPool.video_bg.foresight.size
-    );
-    console.log("objs=============", MemoryPool.objs.size);
-    console.log("MemoryPool=============", MemoryPool.video_objs_arr);
-    console.log("MemoryPool=============", MemoryPool.bevs.size);
     console.log(Date.now(), "-----------通知视频、bev渲染", key);
     Promise.all([
       noticeBev(key),
@@ -240,18 +279,18 @@ function updateVideo() {
       noticeVideo(key, "left_back"),
     ]).then((res) => {
       console.log(Date.now(), "通知更新帧--------------------完毕", key);
-      MemoryPool.delVideoValue(key, "video_bg", "foresight");
-      MemoryPool.delVideoValue(key, "video_bg", "rearview");
-      MemoryPool.delVideoValue(key, "video_bg", "right_front");
-      MemoryPool.delVideoValue(key, "video_bg", "right_back");
-      MemoryPool.delVideoValue(key, "video_bg", "left_back");
-      MemoryPool.delVideoValue(key, "video_bg", "left_front");
-      MemoryPool.delVideoValue(key, "video", "foresight");
-      MemoryPool.delVideoValue(key, "video", "rearview");
-      MemoryPool.delVideoValue(key, "video", "right_front");
-      MemoryPool.delVideoValue(key, "video", "right_back");
-      MemoryPool.delVideoValue(key, "video", "left_back");
-      MemoryPool.delVideoValue(key, "video", "left_front");
+      // MemoryPool.delVideoValue(key, "video_bg", "foresight");
+      // MemoryPool.delVideoValue(key, "video_bg", "rearview");
+      // MemoryPool.delVideoValue(key, "video_bg", "right_front");
+      // MemoryPool.delVideoValue(key, "video_bg", "right_back");
+      // MemoryPool.delVideoValue(key, "video_bg", "left_back");
+      // MemoryPool.delVideoValue(key, "video_bg", "left_front");
+      // MemoryPool.delVideoValue(key, "video", "foresight");
+      // MemoryPool.delVideoValue(key, "video", "rearview");
+      // MemoryPool.delVideoValue(key, "video", "right_front");
+      // MemoryPool.delVideoValue(key, "video", "right_back");
+      // MemoryPool.delVideoValue(key, "video", "left_back");
+      // MemoryPool.delVideoValue(key, "video", "left_front");
       MemoryPool.delObjsValue(key);
     });
   }
@@ -265,62 +304,65 @@ async function updataVideoStatus(message) {
   }
   if (!MemoryPool.allocate(message.key, "video_objs_arr")) return;
   MemoryPool.setData(message.key, message.info, "video", message.view);
-  if (message.view === "foresight") {
-  }
-  if (message.view === "foresight") {
-    console.log(
-      Date.now(),
-      "拿到解码的视频数据-----------开始绘制视频",
-      message.key,
-      MemoryPool.video_bg,
-      message.view
-    );
+  if (message.view === "foresight" && old_key.value) {
     key_ctx.value.clearRect(0, 0, message.info.width, message.info.height);
-    let imgData = new ImageData(message.info.rgb, message.info.width, message.info.height);
+    console.log(
+      message.key,
+      "now-------------------old",
+      old_key.value,
+    );
+    let info = MemoryPool.allocate(old_key.value, "video", message.view);
+    console.log(MemoryPool.video);
+    let imgData = new ImageData(
+      info.rgb,
+      info.width,
+      info.height
+    );
     for (let i = 0; i < imgData.data.length; i += 4) {
       let data0 = imgData.data[i + 0];
       imgData.data[i + 0] = imgData.data[i + 2];
       imgData.data[i + 2] = data0;
     }
     key_ctx.value.putImageData(imgData, 0, 0);
-    // let context = key_ctx.value;
-    // MemoryPool.allocate(message.key, "video_objs_arr").filter((item) => {
-    //   let obj_data = item[item.length - 1]["foresight"];
-    //   let arr = obj_data.filter((item) => {
-    //     return item[0] === -1 && item[1] === -1;
-    //   });
-    //   if (arr.length === 8) return;
-    //   context.beginPath();
-    //   context.moveTo(obj_data[0][0], obj_data[0][1]); //移动到某个点；
-    //   context.lineTo(obj_data[1][0], obj_data[1][1]);
-    //   context.lineTo(obj_data[5][0], obj_data[5][1]);
-    //   context.lineTo(obj_data[7][0], obj_data[7][1]);
-    //   context.lineTo(obj_data[6][0], obj_data[6][1]);
-    //   context.lineTo(obj_data[2][0], obj_data[2][1]);
-    //   context.lineTo(obj_data[3][0], obj_data[3][1]);
-    //   context.lineTo(obj_data[1][0], obj_data[1][1]);
-    //   context.moveTo(obj_data[0][0], obj_data[0][1]);
-    //   context.lineTo(obj_data[2][0], obj_data[2][1]);
-    //   context.moveTo(obj_data[0][0], obj_data[0][1]);
-    //   context.lineTo(obj_data[4][0], obj_data[4][1]);
-    //   context.lineTo(obj_data[6][0], obj_data[6][1]);
-    //   context.moveTo(obj_data[4][0], obj_data[4][1]);
-    //   context.lineTo(obj_data[5][0], obj_data[5][1]);
-    //   context.moveTo(obj_data[3][0], obj_data[3][1]);
-    //   context.lineTo(obj_data[7][0], obj_data[7][1]);
-    //   context.lineWidth = "1.4"; //线条 宽度
-    //   context.strokeStyle = "yellow";
-    //   context.stroke(); //描边
-    // });
+  //   // let context = key_ctx.value;
+  //   // MemoryPool.allocate(message.key, "video_objs_arr").filter((item) => {
+  //   //   let obj_data = item[item.length - 1]["foresight"];
+  //   //   let arr = obj_data.filter((item) => {
+  //   //     return item[0] === -1 && item[1] === -1;
+  //   //   });
+  //   //   if (arr.length === 8) return;
+  //   //   context.beginPath();
+  //   //   context.moveTo(obj_data[0][0], obj_data[0][1]); //移动到某个点；
+  //   //   context.lineTo(obj_data[1][0], obj_data[1][1]);
+  //   //   context.lineTo(obj_data[5][0], obj_data[5][1]);
+  //   //   context.lineTo(obj_data[7][0], obj_data[7][1]);
+  //   //   context.lineTo(obj_data[6][0], obj_data[6][1]);
+  //   //   context.lineTo(obj_data[2][0], obj_data[2][1]);
+  //   //   context.lineTo(obj_data[3][0], obj_data[3][1]);
+  //   //   context.lineTo(obj_data[1][0], obj_data[1][1]);
+  //   //   context.moveTo(obj_data[0][0], obj_data[0][1]);
+  //   //   context.lineTo(obj_data[2][0], obj_data[2][1]);
+  //   //   context.moveTo(obj_data[0][0], obj_data[0][1]);
+  //   //   context.lineTo(obj_data[4][0], obj_data[4][1]);
+  //   //   context.lineTo(obj_data[6][0], obj_data[6][1]);
+  //   //   context.moveTo(obj_data[4][0], obj_data[4][1]);
+  //   //   context.lineTo(obj_data[5][0], obj_data[5][1]);
+  //   //   context.moveTo(obj_data[3][0], obj_data[3][1]);
+  //   //   context.lineTo(obj_data[7][0], obj_data[7][1]);
+  //   //   context.lineWidth = "1.4"; //线条 宽度
+  //   //   context.strokeStyle = "yellow";
+  //   //   context.stroke(); //描边
+  //   // });
   }
 
-  let imageBitmap = await drawVideoBg(
+  await drawVideoBg(
     message.info,
     MemoryPool.allocate(message.key, "video_objs_arr"),
     message.view,
     message.key
-  );
-  MemoryPool.setData(message.key, imageBitmap, "video_bg", message.view);
+  ).then((imageBitmap) => {
+    MemoryPool.setData(message.key, imageBitmap, "video_bg", message.view);
+  });
 }
 // 计算障碍物信息
 function handleObjs(objs_data) {

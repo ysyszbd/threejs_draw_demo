@@ -88,10 +88,10 @@ export default class Video {
   }
   drawVideo(data) {
     if (data.view !== this.id) return;
-    if (this.id === "foresight") {
-      console.log(Date.now(), "-----------video开始渲染", data.key);
-      // console.log(data, "data=================");
-    }
+    // if (this.id === "foresight") {
+    //   console.log(Date.now(), "-----------video开始渲染", data.key);
+    //   // console.log(data, "data=================");
+    // }
     let info = data.info;
     this.objs_data = data.objs;
     let rect = this.dom.getBoundingClientRect();
@@ -138,7 +138,7 @@ export default class Video {
     
     this.helper_ctx.drawImage(data.video_bg, 0, 0, info.width, info.height);
     // this.helper_ctx.drawImage(data.objs_canvas, 0, 0, info.width, info.height);
-    console.log(Date.now(), "-----------video渲染完毕", data.key, this.id);
+    // console.log(Date.now(), "-----------video渲染完毕", data.key, this.id);
     // });
   }
   // 计算视频要放置在dom元素中的宽高--按照视频帧的比例来

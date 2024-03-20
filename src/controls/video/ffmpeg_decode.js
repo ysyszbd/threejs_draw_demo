@@ -22,7 +22,6 @@ function decodeArray(u8Array, video_sign, key, view) {
   let outputPtr = Module._getFrame();
   Module._free(ptr);
   if (outputPtr === 0) return
-  console.log(outputPtr, "outputPtr=================", view, key);
   var rgbData = new Uint8ClampedArray(
     Module.HEAPU8.subarray(
       outputPtr,
@@ -60,7 +59,7 @@ onmessage = function (e) {
       Module._close();
       Module._init(codecId);
     }
-    console.log(e.data.video_data.length, e.data.key, "------", e.data.view);
+    // console.log(e.data.video_data.length, e.data.key, "------", e.data.view);
     // u8Array = e.data.video_data;
     // video_sign = e.data?.sign;
     // postData.key = e.data.key;
