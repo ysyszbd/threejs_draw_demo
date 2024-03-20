@@ -11,6 +11,7 @@ import { comlink } from "vite-plugin-comlink";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [vue(), comlink()],
   resolve: {
     alias: {
