@@ -1,0 +1,8 @@
+@use "sass:math";
+
+$scale: math.div(1080, 828);
+
+// 计算函数，因为设计图高度是828，不是1080
+@function calcHight($px) {
+  @return ($px * $scale) + px;
+}

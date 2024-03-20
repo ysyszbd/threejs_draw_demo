@@ -7,7 +7,8 @@ import './style.css'
 import App from './App.vue'
 import Base from "@/controls/base.js";
 import MemoryPool from '@/controls/memoryPool';
-import '@/controls/rem.js';
+// import '@/controls/rem.js';
+import { setRem } from '@/utils'
 
 // const instance = MemoryPool.getInstance();
 let base = new Base();
@@ -17,3 +18,4 @@ app.provide('$Base', base);
 // app.provide('$MemoryPool', instance);
 app.provide('$MemoryPool', memoryPool);
 app.mount('#app');
+setRem()
