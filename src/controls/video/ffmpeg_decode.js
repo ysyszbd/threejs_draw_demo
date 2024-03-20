@@ -8,20 +8,21 @@ Module.onRuntimeInitialized = function () {
   postMessage(message);
 };
 
-let u8Array;
+// let u8Array;
 let dataArray;
 let codecId = 0;
-let video_sign = "init";
+// let video_sign = "init";
 let postData = {};
 
-function decodeArray() {
-  dataArray = u8Array;
-  var ptr = Module._malloc(u8Array.length * dataArray.BYTES_PER_ELEMENT);
-  Module.HEAPU8.set(dataArray, ptr);
+function decodeArray(u8Array, video_sign, key, view) {
+  // dataArray = u8Array;
+  var ptr = Module._malloc(u8Array.length * u8Array.BYTES_PER_ELEMENT);
+  Module.HEAPU8.set(u8Array, ptr);
   Module._parsePkt(ptr, u8Array.length);
   let outputPtr = Module._getFrame();
   Module._free(ptr);
-
+  if (outputPtr === 0) return
+  console.log(outputPtr, "outputPtr=================", view, key);
   var rgbData = new Uint8ClampedArray(
     Module.HEAPU8.subarray(
       outputPtr,
@@ -34,11 +35,13 @@ function decodeArray() {
     height: Module._getHeight(),
     rgb: rgbData,
   };
+  // console.log(rgbObj.rgb.length, "=============", key, view);
   let message = {
     type: "image",
     info: rgbObj,
     sign: video_sign,
-    ...postData
+    key: key,
+    view: view
   };
   postMessage(message, [message.info.rgb.buffer]);
 }
@@ -57,11 +60,12 @@ onmessage = function (e) {
       Module._close();
       Module._init(codecId);
     }
-    u8Array = e.data.video_data;
-    video_sign = e.data?.sign;
-    postData.key = e.data.key;
-    postData.view = e.data.view;
-    decodeArray();
+    console.log(e.data.video_data.length, e.data.key, "------", e.data.view);
+    // u8Array = e.data.video_data;
+    // video_sign = e.data?.sign;
+    // postData.key = e.data.key;
+    // postData.view = e.data.view;
+    decodeArray(e.data.video_data, e.data?.sign, e.data.key, e.data.view);
   }
 };
 
@@ -72,7 +76,8 @@ onmessage = function (e) {
 // we collect those properties and reapply _after_ we configure
 // the current environment's defaults to avoid having to be so
 // defensive during initialization.
-var moduleOverrides = Object.assign({}, Module);
+var moduleOverrides = {...Module};
+// var moduleOverrides = Object.assign({}, Module);
 
 var arguments_ = [];
 var thisProgram = './this.program';

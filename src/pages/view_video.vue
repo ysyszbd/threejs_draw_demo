@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-13 17:05:37
+ * @LastEditTime: 2024-03-19 22:08:20
  * @Description: 
 -->
 <template>
@@ -37,21 +37,14 @@ onMounted(() => {
   yh_video = new VIDEO(props.video_id);
   initVideoWork();
 });
-function postVideo(u8Array, key) {
+function postVideo(u8Array, key, view) {
+  if (view != props.video_id) return;
+  // console.log(view, "view==============", props.video_id);
   video_work.postMessage({
     video_data: u8Array,
     view: props.video_id,
     key: key,
   });
-}
-function updataCode(u8Array, objs, bev) {
-  try {
-    return new Promise(async (resolve, reject) => {
-      video_work.postMessage({ video_data: u8Array, sign: "now" });
-    });
-  } catch (err) {
-    console.log(err, "err====updataCode");
-  }
 }
 function initVideoWork() {
   video_work.onmessage = (event) => {
@@ -88,7 +81,6 @@ function changeCodecId(val) {
   video_work.postMessage(data);
 }
 defineExpose({
-  updataCode,
   postVideo,
 });
 onUnmounted(() => {

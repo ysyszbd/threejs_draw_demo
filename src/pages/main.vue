@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-19 15:13:04
+ * @LastEditTime: 2024-03-20 09:40:59
  * @Description: 
 -->
 <!--
@@ -8,6 +8,8 @@
 -->
 <template>
   <div class="my_page">
+    <div class="key_css">{{ key_time }}</div>
+    <canvas id="key_canvas" width="704" height="256"></canvas>
     <div class="bg_box"></div>
     <div class="page_title">
       <div class="logo_box">
@@ -83,7 +85,14 @@ import videoYH from "./view_video.vue";
 import Bev from "./bev.vue";
 import echartsYH from "./echarts.vue";
 import echartAxis from "./echartAxis.vue";
-import { ref, inject, defineProps, onUnmounted, onBeforeMount } from "vue";
+import {
+  ref,
+  inject,
+  defineProps,
+  onUnmounted,
+  onBeforeMount,
+  onMounted,
+} from "vue";
 import { ObserverInstance } from "@/controls/event/observer";
 import Ws from "../controls/ws.js";
 import { decode } from "@msgpack/msgpack";
@@ -102,6 +111,7 @@ let foresight = ref(),
   left_back = ref(),
   left_front = ref(),
   BEV = ref(),
+  key_time = ref(),
   MemoryPool = inject("$MemoryPool"),
   drawWorker = new Worker(
     new URL("../controls/demo_worker.js", import.meta.url)
@@ -115,37 +125,28 @@ let foresight = ref(),
     left_back: false,
     left_front: false,
   }),
+  video_start_sign = ref({
+    foresight: false,
+    rearview: false,
+    right_front: false,
+    right_back: false,
+    left_back: false,
+    left_front: false,
+  }),
+  key_canvas = ref(),
+  key_ctx = ref(),
   observerListenerList = [
     {
       eventName: "VIDEO_OK",
       fn: handleVideoStatus.bind(this),
     },
   ];
-let map = new Map();
-map.set(0, "rgba(80, 82, 79, 1)");
-map.set(1, "rgba(255, 255, 255, 1)");
-map.set(2, "rgba(0, 255, 0, 1)");
-map.set(3, "rgba(255, 0, 0, 1)");
 ObserverInstance.selfAddListenerList(observerListenerList, "yh_init");
-initWorker();
-function initWorker() {
-  drawWorker.onmessage = (e) => {
-    // console.log(e.data, "e---------接受数据");
-    let type = e.data.type,
-      key = e.data.key;
-    if (type === "draw_video_bg") {
-      if (e.data.view === "foresight") {
-        console.log(Date.now(), "-----------get视频");
-      }
-      MemoryPool.setData(key, e.data.info, "video_bg", e.data.view);
-      updateVideo();
-    } else if (type === "draw_bev") {
-      // MemoryPool.setData(key, e.data.imageBitmap, "bev");
-    }
-  };
-}
 const props = defineProps(["initStatus"]);
-
+onMounted(() => {
+  key_canvas.value = document.getElementById("key_canvas");
+  key_ctx.value = key_canvas.value.getContext("2d");
+});
 const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
   try {
     if (!props.initStatus) return;
@@ -161,8 +162,14 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
       ) {
         object = decode(e.data);
         if (video_start.value) {
+          console.log(
+            Date.now(),
+            "----------开始处理bev",
+            object[0],
+            MemoryPool.video_bg
+          );
           MemoryPool.setKey(object[0]);
-          console.log(Date.now(), "----------开始处理bev");
+          console.log(Date.now(), "----------开始处理111", MemoryPool.keyArr);
           object[4] = await handleObjsPoints(object[2], object[4]);
           // 处理障碍物信息--给bev用
           let objs = await handleObjs(object[4]);
@@ -175,14 +182,14 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
           // bev离屏canvas存放
           MemoryPool.setData(object[0], object[3], "bev");
         }
-        console.log(Date.now(), "-----------开始解码视频");
+        console.log(Date.now(), "-----------开始解码视频", object[0]);
         Promise.all([
-          foresight.value.postVideo(object[1][0], object[0]),
-          rearview.value.postVideo(object[1][3], object[0]),
-          left_front.value.postVideo(object[1][2], object[0]),
-          left_back.value.postVideo(object[1][4], object[0]),
-          right_front.value.postVideo(object[1][1], object[0]),
-          right_back.value.postVideo(object[1][5], object[0]),
+          foresight.value.postVideo(object[1][0], object[0], "foresight"),
+          rearview.value.postVideo(object[1][3], object[0], "rearview"),
+          left_front.value.postVideo(object[1][2], object[0], "left_front"),
+          left_back.value.postVideo(object[1][4], object[0], "left_back"),
+          right_front.value.postVideo(object[1][1], object[0], "right_front"),
+          right_back.value.postVideo(object[1][5], object[0], "right_back"),
         ]);
       }
     }
@@ -190,15 +197,19 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
     console.log(err, "err----WS");
   }
 });
-
+animate();
+// 渲染循环
+function animate() {
+  updateVideo();
+  requestAnimationFrame(() => animate());
+}
 // 更新视频--按照视频帧
 function updateVideo() {
   let key;
-  if (MemoryPool.keyArr.length > 1) {
-    key = MemoryPool.keyArr[0];
-    if (!MemoryPool.basic_data.has(key)) return;
-    key = MemoryPool.getKey();
-  }
+  if (MemoryPool.keyArr.length < 1) return;
+  console.log(MemoryPool.keyArr, "keyArr=============");
+  key = MemoryPool.keyArr[0];
+
   // 判断6路视频是否都已经离屏渲染并存放完毕
   if (
     MemoryPool.hasVideo(key, "foresight") &&
@@ -208,6 +219,16 @@ function updateVideo() {
     MemoryPool.hasVideo(key, "left_back") &&
     MemoryPool.hasVideo(key, "left_front")
   ) {
+    key = MemoryPool.getKey();
+    key_time.value = key;
+    console.log(
+      key,
+      "MemoryPool=============",
+      MemoryPool.video_bg.foresight.size
+    );
+    console.log("objs=============", MemoryPool.objs.size);
+    console.log("MemoryPool=============", MemoryPool.video_objs_arr);
+    console.log("MemoryPool=============", MemoryPool.bevs.size);
     console.log(Date.now(), "-----------通知视频、bev渲染", key);
     Promise.all([
       noticeBev(key),
@@ -237,26 +258,69 @@ function updateVideo() {
 }
 // 接受视频解码的数据，通知去离屏渲染
 async function updataVideoStatus(message) {
+  // if (video_start_sign.value[message.view])
   if (!video_start.value) {
     video_start.value = true;
     return;
   }
-  if (!MemoryPool.basic_data.has(message.key)) return;
+  if (!MemoryPool.allocate(message.key, "video_objs_arr")) return;
   MemoryPool.setData(message.key, message.info, "video", message.view);
+  if (message.view === "foresight") {
+  }
   if (message.view === "foresight") {
     console.log(
       Date.now(),
       "拿到解码的视频数据-----------开始绘制视频",
-      message.key
+      message.key,
+      MemoryPool.video_bg,
+      message.view
     );
+    key_ctx.value.clearRect(0, 0, message.info.width, message.info.height);
+    let imgData = new ImageData(message.info.rgb, message.info.width, message.info.height);
+    for (let i = 0; i < imgData.data.length; i += 4) {
+      let data0 = imgData.data[i + 0];
+      imgData.data[i + 0] = imgData.data[i + 2];
+      imgData.data[i + 2] = data0;
+    }
+    key_ctx.value.putImageData(imgData, 0, 0);
+    // let context = key_ctx.value;
+    // MemoryPool.allocate(message.key, "video_objs_arr").filter((item) => {
+    //   let obj_data = item[item.length - 1]["foresight"];
+    //   let arr = obj_data.filter((item) => {
+    //     return item[0] === -1 && item[1] === -1;
+    //   });
+    //   if (arr.length === 8) return;
+    //   context.beginPath();
+    //   context.moveTo(obj_data[0][0], obj_data[0][1]); //移动到某个点；
+    //   context.lineTo(obj_data[1][0], obj_data[1][1]);
+    //   context.lineTo(obj_data[5][0], obj_data[5][1]);
+    //   context.lineTo(obj_data[7][0], obj_data[7][1]);
+    //   context.lineTo(obj_data[6][0], obj_data[6][1]);
+    //   context.lineTo(obj_data[2][0], obj_data[2][1]);
+    //   context.lineTo(obj_data[3][0], obj_data[3][1]);
+    //   context.lineTo(obj_data[1][0], obj_data[1][1]);
+    //   context.moveTo(obj_data[0][0], obj_data[0][1]);
+    //   context.lineTo(obj_data[2][0], obj_data[2][1]);
+    //   context.moveTo(obj_data[0][0], obj_data[0][1]);
+    //   context.lineTo(obj_data[4][0], obj_data[4][1]);
+    //   context.lineTo(obj_data[6][0], obj_data[6][1]);
+    //   context.moveTo(obj_data[4][0], obj_data[4][1]);
+    //   context.lineTo(obj_data[5][0], obj_data[5][1]);
+    //   context.moveTo(obj_data[3][0], obj_data[3][1]);
+    //   context.lineTo(obj_data[7][0], obj_data[7][1]);
+    //   context.lineWidth = "1.4"; //线条 宽度
+    //   context.strokeStyle = "yellow";
+    //   context.stroke(); //描边
+    // });
   }
+
   let imageBitmap = await drawVideoBg(
     message.info,
     MemoryPool.allocate(message.key, "video_objs_arr"),
-    message.view
+    message.view,
+    message.key
   );
   MemoryPool.setData(message.key, imageBitmap, "video_bg", message.view);
-  updateVideo();
 }
 // 计算障碍物信息
 function handleObjs(objs_data) {
@@ -283,9 +347,10 @@ function handleObjs(objs_data) {
       }
     });
     resolve(obj_index);
-  })
+  });
 }
-function drawVideoBg(info, objs, view) {
+function drawVideoBg(info, objs, view, key) {
+  console.log("info, objs, view-------------", key);
   return new Promise((resolve, reject) => {
     let canvas = new OffscreenCanvas(info.width, info.height);
     let context = canvas.getContext("2d");
@@ -451,6 +516,14 @@ onUnmounted(() => {
   position: relative;
   box-sizing: border-box;
   padding: 0 0.1rem 0.1rem;
+  .key_css {
+    width: 3rem;
+    height: 1.2rem;
+    font-size: 0.3rem;
+    color: #000;
+    position: relative;
+    z-index: 2;
+  }
   // color: rgb(53, 54, 48);
   .bg_box {
     position: absolute;
