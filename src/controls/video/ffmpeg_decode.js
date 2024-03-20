@@ -19,6 +19,7 @@ function decodeArray(u8Array, video_sign, key, view) {
   var ptr = Module._malloc(u8Array.length * u8Array.BYTES_PER_ELEMENT);
   Module.HEAPU8.set(u8Array, ptr);
   Module._parsePkt(ptr, u8Array.length);
+  Module._parsePkt(ptr, u8Array.length);
   let outputPtr = Module._getFrame();
   Module._free(ptr);
   if (outputPtr === 0) return
