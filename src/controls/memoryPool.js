@@ -105,6 +105,6 @@ export default class MemoryPool {
   }
   // 判断video对应视角中是否已有解码后的视频数据了
   hasVideo(key, view) {
-    return this.video[view].has(key);
+    return this.video_bg[view].has(key);
   }
 }

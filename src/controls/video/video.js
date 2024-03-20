@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-19 15:44:13
+ * @LastEditTime: 2024-03-20 16:34:26
  * @Description:./
  */
 import { ObserverInstance } from "@/controls/event/observer";
@@ -88,16 +88,16 @@ export default class Video {
   }
   drawVideo(data) {
     if (data.view !== this.id) return;
+    // console.log(data, "data");
     if (this.id === "foresight") {
-      // console.log(Date.now(), "-----------video开始渲染", data.key);
+      console.log(Date.now(), "-----------video开始渲染", data.key);
     }
     let info = data.info;
-    this.objs_data = data.objs;
     let rect = this.dom.getBoundingClientRect();
     // 使用canvas外部的元素来控制canvas的大小
     let wh_obj = this.handleWH(
-      info.width,
-      info.height,
+      info.w,
+      info.h,
       rect.width,
       rect.height
     );
@@ -105,14 +105,14 @@ export default class Video {
     this.handle_box.style.height = wh_obj.h + "px";
 
     if (
-      this.helper_dom.width != info.width ||
-      this.helper_dom.height != info.height
+      this.helper_dom.width != info.w ||
+      this.helper_dom.height != info.h
     ) {
-      this.helper_dom.width = info.width;
-      this.helper_dom.height = info.height;
+      this.helper_dom.width = info.w;
+      this.helper_dom.height = info.h;
     }
-    this.helper_ctx.clearRect(0, 0, info.width, info.height);
-    this.helper_ctx.drawImage(data.video_bg, 0, 0, info.width, info.height);
+    this.helper_ctx.clearRect(0, 0, info.w, info.h);
+    this.helper_ctx.drawImage(data.video_bg.info, 0, 0, info.w, info.h);
     if (this.id === "foresight") {
       console.log(Date.now(), "-----------video渲染完毕", data.key, this.id);
     }

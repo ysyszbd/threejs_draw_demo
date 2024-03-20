@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-18 14:32:20
+ * @LastEditTime: 2024-03-20 12:56:27
  * @Description:
  */
 // import { K, D, ext_lidar2cam } from "../assets/demo_data/data";
@@ -114,7 +114,102 @@ export function GetBoundingBoxPoints(x, y, z, w, l, h, r_z) {
     resolve([pt0, pt1, pt2, pt3, pt4, pt5, pt6, pt7]);
   });
 }
+// 计算障碍物信息
+export function handleObjs(objs_data) {
+  return new Promise((resolve, reject) => {
+    let obj_index = {
+      "0-0": {
+        name: "car",
+        data: [],
+      },
+      "1-0": { name: "truck", data: [] },
+      "1-1": { name: "construction_vehicle", data: [] },
+      "2-0": { name: "bus", data: [] },
+      "2-1": { name: "trailer", data: [] },
+      "3-0": { name: "barrier", data: [] },
+      "4-0": { name: "motorcycle", data: [] },
+      "4-1": { name: "bicycle", data: [] },
+      "5-0": { name: "pedestrian", data: [] },
+      "5-1": { name: "street_cone", data: [] },
+    };
+    objs_data.filter((item) => {
+      let type = `${item[7]}-${item[8]}`;
+      if (obj_index[type]) {
+        obj_index[type].data.push(item);
+      }
+    });
+    resolve(obj_index);
+  });
+}
+// 计算点坐标数据
+let view_i = {
+    0: "foresight",
+    3: "rearview",
+    1: "right_front",
+    5: "right_back",
+    4: "left_back",
+    2: "left_front",
+  },
+  K = {},
+  ext_lidar2cam = {};
+export async function handleObjsPoints(base, objs) {
+  return new Promise(async (resolve, reject) => {
+    for (let i = 0; i < 6; i++) {
+      K[view_i[i]] = construct2DArray(base[4][i], 3, 3);
+      ext_lidar2cam[view_i[i]] = construct2DArray(base[3][i], 4, 4);
+    }
+    for (let j = 0; j < objs.length; j++) {
+      let data = {
+        points_eight: [],
+        foresight: [],
+        rearview: [],
+        right_front: [],
+        right_back: [],
+        left_back: [],
+        left_front: [],
+      };
 
+      let a = objs[j].slice(0, 6);
+      data.points_eight = await GetBoundingBoxPoints(...a, objs[j][9]);
+      let view_sign = {
+        foresight: 0,
+        rearview: 0,
+        right_front: 0,
+        right_back: 0,
+        left_back: 0,
+        left_front: 0,
+      };
+      data.points_eight.filter((item) => {
+        let pt_cam_z;
+        for (let e in view_sign) {
+          const transposeMatrix = math.inv(ext_lidar2cam[e]);
+          pt_cam_z =
+            item[0] * transposeMatrix[2][0] +
+            item[1] * transposeMatrix[2][1] +
+            item[2] * transposeMatrix[2][2] +
+            transposeMatrix[2][3];
+          if (pt_cam_z < 0.2) {
+            view_sign[e]++;
+          }
+        }
+      });
+
+      data.points_eight.filter((item) => {
+        for (let e in view_sign) {
+          if (view_sign[e] === 8) {
+            data[e].push([-1, -1]);
+          } else {
+            data[e].push(
+              project_lidar2img(item, ext_lidar2cam[e], K[e], base[5], base[6])
+            );
+          }
+        }
+      });
+      objs[j].push(data);
+    }
+    resolve(objs);
+  });
+}
 // 深拷贝
 // 这里重写了用is对象来判断类型
 const is = {
