@@ -465,7 +465,7 @@ onUnmounted(() => {
   background-size: 100% 100%;
   position: relative;
   box-sizing: border-box;
-  padding: 0 0.1rem 0.1rem;
+  padding: 0 49px calcHight(17) 45px;
   .key_css {
     width: 3rem;
     height: 1.2rem;
