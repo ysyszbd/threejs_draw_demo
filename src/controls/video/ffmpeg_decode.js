@@ -14,7 +14,7 @@ let codecId = 0;
 // let video_sign = "init";
 let postData = {};
 
-function decodeArray(u8Array, video_sign, key, view) {
+async function decodeArray(u8Array, video_sign, key, view) {
   // dataArray = u8Array;
   var ptr = Module._malloc(u8Array.length * u8Array.BYTES_PER_ELEMENT);
   Module.HEAPU8.set(u8Array, ptr);
@@ -35,7 +35,7 @@ function decodeArray(u8Array, video_sign, key, view) {
     height: Module._getHeight(),
     rgb: rgbData,
   };
-  // console.log(rgbObj.rgb.length, "=============", key, view);
+  
   let message = {
     type: "image",
     info: rgbObj,

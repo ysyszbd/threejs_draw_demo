@@ -63,7 +63,8 @@ export default class bevImgContorl {
   offscreen_ctx;
   imageBitmap;
   map = new Map();
-  
+  draw_time = [];
+
   constructor() {
     this.map.set(0, [80, 82, 79, 1]);
     this.map.set(1, [255, 255, 255, 1]);
@@ -91,21 +92,23 @@ export default class bevImgContorl {
         this.bev.dom.width = this.img_w;
         this.bev.dom.height = this.img_h;
       }
-        let imgData = new ImageData(w, h);
-        for (let i = 0; i < imgData.data.length; i += 4) {
-          let num = data.info[i / 4];
-          let color = this.map.get(num);
-          imgData.data[i + 0] = color[0];
-          imgData.data[i + 1] = color[1];
-          imgData.data[i + 2] = color[2];
-          imgData.data[i + 3] = 255;
-        }
-        this.bev.ctx.putImageData(imgData, 0, 0);
-        this.mapBg.needsUpdate = true;
-        this.handleObjs(data.objs).then((res) => {
-          // console.log(Date.now(), "---------bev渲染完毕", data.key);
-        });
-      // });
+      this.bev.ctx.drawImage(data.info, 0, 0);
+      this.mapBg.needsUpdate = true;
+      this.handleObjs(data.objs).then((res) => {
+        // this.draw_time.push({
+        //   time: Date.now(),
+        //   td: Date.now() - data.now_time.get(data.key),
+        //   key: data.key
+        // })
+        // if (data.num > 50) {
+        //   console.log(this.draw_time, "this.draw_time============从接受数据到渲染结束的时长统计");
+        //   let t = 0;
+        //   this.draw_time.filter(item => {
+        //     t = t + item.td;
+        //   })
+        //   console.log(`50次平均时长：${t / 50}`);
+        // }
+      });
     } catch (err) {
       console.log(err, "err---getData");
     }
@@ -115,12 +118,15 @@ export default class bevImgContorl {
     return new Promise((resolve, reject) => {
       if (objs_data.length <= 0) return;
       // console.error("````````````````````````````````````````````````````````开始更新障碍物")
-      // console.log(objs_data, "objs_data");
       for (let item in objs_data) {
-        // console.log(objs_data[item], "==========");
         if (objs_data[item].data.length > 0) {
-          // console.warn(objs_data[item].name, "==========", objs_data[item].data);
           this.handle3D(objs_data[item].name, objs_data[item].data);
+        } else {
+          let group = this.objs[`${objs_data[item].name}_group`];
+          group.children.forEach(item => {
+            this.scene.remove(item);
+            group.remove(item)
+          })
         }
       }
       resolve("---------");
@@ -460,19 +466,18 @@ export default class bevImgContorl {
   init() {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xf0f0f0);
-    var width = this.rgb_data.dom.clientWidth;
-    var height = this.rgb_data.dom.clientHeight;
-    this.camera = new THREE.PerspectiveCamera(62, width / height, 0.1, 1000);
-    this.camera.position.set(0, 0, 100);
+    let rect = this.rgb_data.dom.getBoundingClientRect();
+    var width = rect.width;
+    var height = rect.height;
+    this.camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
+    this.camera.position.set(0, -10, 80);
     this.camera.updateMatrix();
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
     });
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setSize(
-      this.rgb_data.dom.clientWidth,
-      this.rgb_data.dom.clientHeight
-    );
+    console.log(this.rgb_data.dom.getBoundingClientRect(), "rect");
+    this.renderer.setSize(width, height);
     this.rgb_data.dom.appendChild(this.renderer.domElement);
     this.renderer.toneMapping = THREE.ReinhardToneMapping;
     this.renderer.toneMappingExposure = 2.0;
@@ -573,13 +578,13 @@ export default class bevImgContorl {
           gltf.rotation.y = Math.PI;
           gltf.position.x = -123;
           gltf.position.y = -144;
-          gltf.scale.set(0.04, 0.04, 0.04);
+          gltf.scale.set(0.02, 0.02, 0.02);
         } else if (item.id === "pedestrian") {
           gltf.rotation.x = Math.PI / 2;
           gltf.rotation.y = Math.PI / 2 + Math.PI / 3;
           gltf.position.x = 120;
           gltf.position.y = -114;
-          gltf.scale.set(0.04, 0.04, 0.04);
+          gltf.scale.set(0.02, 0.02, 0.02);
         } else if (item.id === "street_cone") {
           gltf.rotation.x = Math.PI / 2;
           gltf.rotation.y = Math.PI / 2;
@@ -590,7 +595,7 @@ export default class bevImgContorl {
           gltf.rotation.y = Math.PI;
           gltf.position.x = 110;
           gltf.position.y = -105;
-          gltf.scale.set(0.04, 0.04, 0.04);
+          gltf.scale.set(0.02, 0.02, 0.02);
         }
         this.scene.add(gltf);
         gltf.matrixAutoUpdate = false;

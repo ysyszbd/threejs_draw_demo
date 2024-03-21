@@ -29,9 +29,10 @@ let chartDom = ref(),
 
 onMounted(() => {
   chartDom.value = document.getElementById("axis_echart");
+  let rect = document.getElementById("e_demos").getBoundingClientRect();
   myChart.value = echarts.init(chartDom.value, "light", {
-    width: document.getElementById("e_demos").clientWidth,
-    height: (document.getElementById("e_demos").clientHeight - 20) / 2,
+    width: rect.width,
+    height: (rect.height - 20) / 2,
   });
   myChart.value.setOption(option);
 });

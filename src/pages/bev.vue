@@ -1,10 +1,9 @@
 <!--
- * @LastEditTime: 2024-03-16 18:44:45
+ * @LastEditTime: 2024-03-21 11:58:25
  * @Description: 
 -->
 <template>
-  <div class="rbg_demo" id="bev_box">
-  </div>
+  <div class="rbg_demo" id="bev_box"></div>
 </template>
 
 <script setup>
@@ -13,6 +12,7 @@ import { onMounted, ref } from "vue";
 let Bev = ref(null);
 onMounted(() => {
   Bev.value = new bevImgControl();
+  console.log(document.getElementById("bev_box").getBoundingClientRect());
 });
 </script>
 
@@ -20,10 +20,14 @@ onMounted(() => {
 .rbg_demo {
   width: 100%;
   height: 100%;
-  background: radial-gradient(#0c97d2, #154c75);
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 8px !important;
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 8px !important;
+  }
 }
 </style>

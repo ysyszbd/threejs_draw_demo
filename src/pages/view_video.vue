@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-19 22:08:20
+ * @LastEditTime: 2024-03-21 17:26:11
  * @Description: 
 -->
 <template>
@@ -37,13 +37,13 @@ onMounted(() => {
   yh_video = new VIDEO(props.video_id);
   initVideoWork();
 });
-function postVideo(u8Array, key, view) {
+function postVideo(u8Array, key, view, video_objs_arr) {
   if (view != props.video_id) return;
-  // console.log(view, "view==============", props.video_id);
   video_work.postMessage({
     video_data: u8Array,
     view: props.video_id,
     key: key,
+    video_objs_arr: video_objs_arr
   });
 }
 function initVideoWork() {
