@@ -1,14 +1,6 @@
-<!--
- * @LastEditTime: 2024-03-20 16:52:58
- * @Description: 
--->
-<!--
- * @LastEditTime: 2024-03-13 17:16:43
- * @Description: 
--->
 <template>
   <div class="my_page">
-    <div class="key_css">{{ key_time }}</div>
+    <!-- <div class="key_css">{{ key_time }}</div> -->
     <!-- <canvas id="key_canvas" width="704" height="256"></canvas>
     <canvas id="objs_canvas" width="704" height="256"></canvas> -->
     <div class="bg_box"></div>
@@ -171,19 +163,18 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
       ) {
         object = decode(e.data);
         if (video_start.value) {
-          console.log(
-            Date.now(),
-            "----------开始处理bev",
-            object[0],
-            MemoryPool.video_bg
-          );
+          // console.log(
+          //   Date.now(),
+          //   "----------开始处理bev",
+          //   object[0]
+          // );
           MemoryPool.setKey(object[0]);
-          console.log(Date.now(), "----------开始处理111", object[4].length);
+          // console.log(Date.now(), "----------开始处理111", object[4].length);
           object[4] = await handleObjsPoints(object[2], object[4]);
           // 处理障碍物信息--给bev用
           let objs = await handleObjs(object[4]);
           MemoryPool.setData(object[0], objs, "obj");
-          console.log(Date.now(), "----------bev、障碍物信息处理完毕");
+          // console.log(Date.now(), "----------bev、障碍物信息处理完毕");
           // 障碍物--给视频使用
           MemoryPool.setData(object[0], object[4], "video_objs_arr");
           // 超参信息
@@ -191,7 +182,7 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
           // bev离屏canvas存放
           MemoryPool.setData(object[0], object[3], "bev");
         }
-        console.log(Date.now(), "-----------开始解码视频", object[0]);
+        // console.log(Date.now(), "-----------开始解码视频", object[0]);
         Promise.all([
           foresight.value.postVideo(object[1][0], object[0], "foresight"),
           rearview.value.postVideo(object[1][3], object[0], "rearview"),
@@ -217,7 +208,7 @@ function animate() {
 function updateVideo() {
   let key;
   if (MemoryPool.keyArr.length < 1) return;
-  console.log(MemoryPool.keyArr, "keyArr=============");
+  // console.log(MemoryPool.keyArr, "keyArr=============");
   key = MemoryPool.keyArr[0];
 
   // 判断6路视频是否都已经离屏渲染并存放完毕
@@ -232,7 +223,7 @@ function updateVideo() {
     key = MemoryPool.getKey();
     old_key.value = key;
     key_time.value = key;
-    console.log(Date.now(), "-----------通知视频、bev渲染", key);
+    // console.log(Date.now(), "-----------通知视频、bev渲染", key);
     Promise.all([
       noticeBev(key),
       noticeVideo(key, "foresight"),
@@ -242,19 +233,19 @@ function updateVideo() {
       noticeVideo(key, "right_back"),
       noticeVideo(key, "left_back"),
     ]).then((res) => {
-      console.log(Date.now(), "通知更新帧--------------------完毕", key);
-      // MemoryPool.delVideoValue(key, "video_bg", "foresight");
-      // MemoryPool.delVideoValue(key, "video_bg", "rearview");
-      // MemoryPool.delVideoValue(key, "video_bg", "right_front");
-      // MemoryPool.delVideoValue(key, "video_bg", "right_back");
-      // MemoryPool.delVideoValue(key, "video_bg", "left_back");
-      // MemoryPool.delVideoValue(key, "video_bg", "left_front");
-      // MemoryPool.delVideoValue(key, "video", "foresight");
-      // MemoryPool.delVideoValue(key, "video", "rearview");
-      // MemoryPool.delVideoValue(key, "video", "right_front");
-      // MemoryPool.delVideoValue(key, "video", "right_back");
-      // MemoryPool.delVideoValue(key, "video", "left_back");
-      // MemoryPool.delVideoValue(key, "video", "left_front");
+      // console.log(Date.now(), "通知更新帧--------------------完毕", key);
+      MemoryPool.delVideoValue(key, "video_bg", "foresight");
+      MemoryPool.delVideoValue(key, "video_bg", "rearview");
+      MemoryPool.delVideoValue(key, "video_bg", "right_front");
+      MemoryPool.delVideoValue(key, "video_bg", "right_back");
+      MemoryPool.delVideoValue(key, "video_bg", "left_back");
+      MemoryPool.delVideoValue(key, "video_bg", "left_front");
+      MemoryPool.delVideoValue(key, "video", "foresight");
+      MemoryPool.delVideoValue(key, "video", "rearview");
+      MemoryPool.delVideoValue(key, "video", "right_front");
+      MemoryPool.delVideoValue(key, "video", "right_back");
+      MemoryPool.delVideoValue(key, "video", "left_back");
+      MemoryPool.delVideoValue(key, "video", "left_front");
       MemoryPool.delObjsValue(key);
     });
   }
@@ -306,7 +297,7 @@ function handleObjs(objs_data) {
   });
 }
 function drawVideoBg(info, objs, view, key) {
-  console.log("info, objs, view-------------", key);
+  // console.log("info, objs, view-------------", key);
   return new Promise((resolve, reject) => {
     let canvas = new OffscreenCanvas(info.width, info.height);
     let context = canvas.getContext("2d");
@@ -324,6 +315,9 @@ function drawVideoBg(info, objs, view, key) {
         return item[0] === -1 && item[1] === -1;
       });
       if (arr.length === 8) return;
+      // if (view === "foresight") {
+      //   console.log(item, "item===============key", key);
+      // }
       context.beginPath();
       context.moveTo(obj_data[0][0], obj_data[0][1]); //移动到某个点；
       context.lineTo(obj_data[1][0], obj_data[1][1]);
@@ -369,7 +363,7 @@ function noticeVideo(key, view, objs_canvas) {
 function noticeBev(key) {
   return new Promise(async (resolve, reject) => {
     let info = MemoryPool.allocate(key, "bev");
-    console.log(Date.now(), "-----------------通知bev分割图渲染");
+    // console.log(Date.now(), "-----------------通知bev分割图渲染");
     ObserverInstance.emit("DRAW_BEV", {
       basic_data: MemoryPool.allocate(key, "basic"),
       objs: MemoryPool.allocate(key, "obj"),

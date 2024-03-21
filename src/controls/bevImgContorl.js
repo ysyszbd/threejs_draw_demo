@@ -83,9 +83,6 @@ export default class bevImgContorl {
   // 更新bev
   async getData(data) {
     try {
-      // 更新canvas图像
-      // console.log(data, "data");
-      // console.log(Date.now(), "key---------bev2", data.key);
       let w = data.basic_data[1],
         h = data.basic_data[2];
       if (this.img_w != w || this.img_h != h) {
@@ -94,22 +91,19 @@ export default class bevImgContorl {
         this.bev.dom.width = this.img_w;
         this.bev.dom.height = this.img_h;
       }
-      // requestAnimationFrame(async () => {
         let imgData = new ImageData(w, h);
         for (let i = 0; i < imgData.data.length; i += 4) {
           let num = data.info[i / 4];
           let color = this.map.get(num);
-          // console.log(color, "=========");
           imgData.data[i + 0] = color[0];
           imgData.data[i + 1] = color[1];
           imgData.data[i + 2] = color[2];
           imgData.data[i + 3] = 255;
         }
         this.bev.ctx.putImageData(imgData, 0, 0);
-        // this.bev.ctx.drawImage(data.info, 0, 0, w, h);
         this.mapBg.needsUpdate = true;
         this.handleObjs(data.objs).then((res) => {
-          console.log(Date.now(), "---------bev渲染完毕", data.key);
+          // console.log(Date.now(), "---------bev渲染完毕", data.key);
         });
       // });
     } catch (err) {
@@ -120,9 +114,14 @@ export default class bevImgContorl {
   async handleObjs(objs_data) {
     return new Promise((resolve, reject) => {
       if (objs_data.length <= 0) return;
+      // console.error("````````````````````````````````````````````````````````开始更新障碍物")
+      // console.log(objs_data, "objs_data");
       for (let item in objs_data) {
-        if (objs_data[item].data.length < 1) break;
-        this.handle3D(objs_data[item].name, objs_data[item].data);
+        // console.log(objs_data[item], "==========");
+        if (objs_data[item].data.length > 0) {
+          // console.warn(objs_data[item].name, "==========", objs_data[item].data);
+          this.handle3D(objs_data[item].name, objs_data[item].data);
+        }
       }
       resolve("---------");
     });
@@ -216,7 +215,7 @@ export default class bevImgContorl {
             }
           }
         }
-        console.log(road_empty, "road_empty");
+        // console.log(road_empty, "road_empty");
         resolve(road);
       });
     } catch (err) {
@@ -574,13 +573,13 @@ export default class bevImgContorl {
           gltf.rotation.y = Math.PI;
           gltf.position.x = -123;
           gltf.position.y = -144;
-          gltf.scale.set(0.02, 0.02, 0.02);
+          gltf.scale.set(0.04, 0.04, 0.04);
         } else if (item.id === "pedestrian") {
           gltf.rotation.x = Math.PI / 2;
           gltf.rotation.y = Math.PI / 2 + Math.PI / 3;
           gltf.position.x = 120;
           gltf.position.y = -114;
-          gltf.scale.set(0.02, 0.02, 0.02);
+          gltf.scale.set(0.04, 0.04, 0.04);
         } else if (item.id === "street_cone") {
           gltf.rotation.x = Math.PI / 2;
           gltf.rotation.y = Math.PI / 2;
@@ -591,7 +590,7 @@ export default class bevImgContorl {
           gltf.rotation.y = Math.PI;
           gltf.position.x = 110;
           gltf.position.y = -105;
-          gltf.scale.set(0.02, 0.02, 0.02);
+          gltf.scale.set(0.04, 0.04, 0.04);
         }
         this.scene.add(gltf);
         gltf.matrixAutoUpdate = false;
