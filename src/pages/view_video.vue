@@ -1,10 +1,16 @@
 <!--
- * @LastEditTime: 2024-03-20 16:47:01
+ * @LastEditTime: 2024-03-22 17:33:09
  * @Description: 
 -->
 <template>
   <div class="video_box">
-    <iframe ref="iframeDom" :id="props.video_id + '_iframe_yh'" :name="props.video_id + '_iframe'" class="iframe_css" src="/public/static/video_iframe.html" ></iframe>
+    <iframe
+      ref="iframeDom"
+      :id="props.video_id + '_iframe_yh'"
+      :name="props.video_id + '_iframe'"
+      class="iframe_css"
+      src="/public/static/video_iframe.html"
+    ></iframe>
     <div class="handle_box" :id="props.video_id + '_box'">
       <canvas
         class="handle_box_canvas"
@@ -31,7 +37,6 @@ const emits = defineEmits(["updataVideoStatus"]);
 let yh_video = null;
 let iframeDom = ref();
 let dom = ref(null);
-let video_265 = ref();
 let dom_box = ref();
 let objs = ref();
 let key = ref();
@@ -41,7 +46,6 @@ onMounted(() => {
   yh_video = new VIDEO(props.video_id);
   dom.value = document.getElementById(`${props.video_id}_helper_box`);
   dom_box.value = document.getElementById(`${props.video_id}_box`);
-  video_265.value = new libde265.Decoder(dom.value);
 });
 function update(data) {
   return new Promise((resolve, reject) => {
@@ -50,33 +54,34 @@ function update(data) {
       key: data.key,
       width: 704,
       height: 256,
-      view: props.video_id
+      view: props.video_id,
     });
   });
 }
-window.addEventListener("message", getIframe)
+window.addEventListener("message", getIframe);
 function getIframe(e) {
   if (e.data.view !== props.video_id) return;
-  update(e.data);
+  // update(e.data);
+  emits("updataVideoStatus", {
+    data: e.data.params,
+    key: e.data.key,
+    width: 704,
+    height: 256,
+    view: props.video_id,
+  });
 }
 async function getData(e) {
   try {
     return new Promise((resolve, reject) => {
-      if (props.video_id === "foresight") {
-        console.log(Date.now(), "-----------开始解码", e);
-      }
-
-      objs.value = e.objs;
       key.value = e.key;
       ifm.value.postMessage({
         cmd: "video",
         view: props.video_id,
         params: e,
         key: e.key,
-        objs: e.objs
-      })
+      });
       resolve("开始解码");
-    })
+    });
   } catch (err) {
     console.log(err, "err====getData");
   }
@@ -84,8 +89,7 @@ async function getData(e) {
 defineExpose({
   getData,
 });
-onUnmounted(() => {
-});
+onUnmounted(() => {});
 </script>
 
 <style lang="scss" scoped>
@@ -109,7 +113,7 @@ onUnmounted(() => {
   width: 0;
   height: 0;
   position: absolute;
-  top: -1; 
+  top: -1;
   left: -1;
   opacity: 0;
 }

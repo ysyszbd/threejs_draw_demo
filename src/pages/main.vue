@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-20 16:49:18
+ * @LastEditTime: 2024-03-22 17:26:27
  * @Description: 
 -->
 <!--
@@ -97,6 +97,10 @@ let foresight = ref(),
   left_front = ref(),
   BEV = ref(),
   MemoryPool = inject("$MemoryPool"),
+  drawWorker = new Worker(
+    new URL("../controls/demo_worker.js", import.meta.url)
+  ),
+  video_ok_key = ref(),
   video_status = ref({
     foresight: false,
     rearview: false,
@@ -119,76 +123,120 @@ let foresight = ref(),
       fn: handleVideoStatus.bind(this),
     },
   ];
+drawWorker.onmessage = (e) => {
+  if (e.data.sign === "draw_bev&objs") {
+    MemoryPool.setData(e.data.key, e.data.imageBitmap, "bev");
+    MemoryPool.setData(
+      e.data.key,
+      e.data.objs_imageBitmap["foresight"],
+      "video_objs",
+      "foresight"
+    );
+    MemoryPool.setData(
+      e.data.key,
+      e.data.objs_imageBitmap["rearview"],
+      "video_objs",
+      "rearview"
+    );
+    MemoryPool.setData(
+      e.data.key,
+      e.data.objs_imageBitmap["right_front"],
+      "video_objs",
+      "right_front"
+    );
+    MemoryPool.setData(
+      e.data.key,
+      e.data.objs_imageBitmap["right_back"],
+      "video_objs",
+      "right_back"
+    );
+    MemoryPool.setData(
+      e.data.key,
+      e.data.objs_imageBitmap["left_back"],
+      "video_objs",
+      "left_back"
+    );
+    MemoryPool.setData(
+      e.data.key,
+      e.data.objs_imageBitmap["left_front"],
+      "video_objs",
+      "left_front"
+    );
+  }
+};
 ObserverInstance.selfAddListenerList(observerListenerList, "yh_init");
-const props = defineProps(["initStatus"]);
-// animate();
 const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
   try {
-    // console.log(e, "eee");
-    // if (!props.initStatus) return;
     let object;
     if (e.data instanceof ArrayBuffer) {
       object = decode(e.data);
       let key = object[0];
+      // console.log(object, "object============");
       if (
         video_status_ok.value["foresight"] &&
         video_status_ok.value["rearview"] &&
         video_status_ok.value["right_front"] &&
         video_status_ok.value["right_back"] &&
         video_status_ok.value["left_back"] &&
-        video_status_ok.value["left_front"]
+        video_status_ok.value["left_front"] &&
+        object[0] > video_ok_key.value
       ) {
-        console.log(Date.now(), "------------开始处理");
-        MemoryPool.keyArr.push(object[0]);
-        object[4] = await handleObjsPoints(object[2], object[4]);
-        // 处理障碍物信息--给bev用
-        let objs = await handleObjs(object[4]);
-        MemoryPool.setData(object[0], object[4], "video_objs_arr");
-        MemoryPool.setData(object[0], objs, "obj");
-        MemoryPool.setData(object[0], object[2], "basic");
-        MemoryPool.setData(object[0], object[3], "bev");
-      } else {
-        object[4] = await handleObjsPoints(object[2], object[4]);
+        let key_res = MemoryPool.keyArr.includes(key);
+        if (!key_res) MemoryPool.setKey(key);
+        if (object[2][1] != 0 && object[2][2] != 0) {
+          if (!MemoryPool.objs.has(key)) {
+            object[4] = await handleObjsPoints(object[2], object[4]);
+            drawWorker.postMessage({
+              sign: "draw_bev&objs",
+              key: key,
+              bev_w: object[2][1],
+              bev_h: object[2][2],
+              bev: object[3],
+              objs: object[4],
+            });
+            // 处理障碍物信息--给bev用
+            let objs = await handleObjs(object[4]);
+            MemoryPool.setData(object[0], objs, "obj");
+            // 超参信息
+            MemoryPool.setData(object[0], object[2], "basic");
+          }
+        }
       }
-      Promise.all([
-        foresight.value.getData({
-          video: object[1][0],
-          objs: object[4],
-          key: key,
-        }),
-        rearview.value.getData({
-          video: object[1][3],
-          objs: object[4],
-          key: key,
-        }),
-        right_front.value.getData({
-          video: object[1][1],
-          objs: object[4],
-          key: key,
-        }),
-        right_back.value.getData({
-          video: object[1][5],
-          objs: object[4],
-          key: key,
-        }),
-        left_back.value.getData({
-          video: object[1][4],
-          objs: object[4],
-          key: key,
-        }),
-        left_front.value.getData({
-          video: object[1][2],
-          objs: object[4],
-          key: key,
-        }),
-      ]);
-      updateVideo();
+      if (object[1].length > 0) {
+        Promise.all([
+          foresight.value.getData({
+            video: object[1][0],
+            key: key,
+          }),
+          rearview.value.getData({
+            video: object[1][3],
+            key: key,
+          }),
+          right_front.value.getData({
+            video: object[1][1],
+            key: key,
+          }),
+          right_back.value.getData({
+            video: object[1][5],
+            key: key,
+          }),
+          left_back.value.getData({
+            video: object[1][4],
+            key: key,
+          }),
+          left_front.value.getData({
+            video: object[1][2],
+            key: key,
+          }),
+        ]);
+      }
+      // updateVideo();
     }
   } catch (err) {
     console.log(err, "err----WS");
   }
 });
-// animate();
+animate();
 function animate() {
   updateVideo();
   requestAnimationFrame(() => animate());
@@ -198,16 +246,16 @@ function updateVideo() {
   let key;
   if (MemoryPool.keyArr.length < 1) return;
   key = MemoryPool.keyArr[0];
+  console.log(key, "=======MemoryPool", MemoryPool);
   if (
-    MemoryPool.hasVideo(key, "foresight") &&
-    MemoryPool.hasVideo(key, "rearview") &&
-    MemoryPool.hasVideo(key, "right_front") &&
-    MemoryPool.hasVideo(key, "right_back") &&
-    MemoryPool.hasVideo(key, "left_back") &&
-    MemoryPool.hasVideo(key, "left_front")
+    MemoryPool.objs.has(key) &&
+    MemoryPool.bevs.has(key) &&
+    MemoryPool.basic_data.has(key) &&
+    MemoryPool.hasVideoObjs(key) &&
+    MemoryPool.hasVideo(key)
   ) {
     key = MemoryPool.getKey();
-    // console.log(Date.now(), "-----------通知视频、bev渲染", key);
+    // console.log(Date.now(), "-----------", MemoryPool);
     Promise.all([
       noticeBev(key),
       noticeVideo(key, "foresight"),
@@ -217,39 +265,27 @@ function updateVideo() {
       noticeVideo(key, "right_back"),
       noticeVideo(key, "left_back"),
     ]).then((res) => {
-      // console.log(Date.now(), "通知更新帧--------------------完毕", key);
-      MemoryPool.delVideoValue(key, "video_bg", "foresight");
-      MemoryPool.delVideoValue(key, "video_bg", "rearview");
-      MemoryPool.delVideoValue(key, "video_bg", "right_front");
-      MemoryPool.delVideoValue(key, "video_bg", "right_back");
-      MemoryPool.delVideoValue(key, "video_bg", "left_back");
-      MemoryPool.delVideoValue(key, "video_bg", "left_front");
-      MemoryPool.delVideoValue(key, "video", "foresight");
-      MemoryPool.delVideoValue(key, "video", "rearview");
-      MemoryPool.delVideoValue(key, "video", "right_front");
-      MemoryPool.delVideoValue(key, "video", "right_back");
-      MemoryPool.delVideoValue(key, "video", "left_back");
-      MemoryPool.delVideoValue(key, "video", "left_front");
       MemoryPool.delObjsValue(key);
     });
   }
 }
 // 接受视频解码的数据，通知去离屏渲染
 async function updataVideoStatus(message) {
+  // debugger
+  console.log(message, "message-------------")
+  let res = 0;
+  for (const [key, value] of Object.entries(video_status_ok.value)) {
+    if (!value) res++;
+  }
   if (!video_status_ok.value[message.view]) {
     video_status_ok.value[message.view] = true;
+  }
+  if (res > 1) return;
+  if (res === 1) {
+    video_ok_key.value = message.key; // 最后一个video也准备完毕了
     return;
   }
-  if (
-    !video_status_ok.value["foresight"] ||
-    !video_status_ok.value["rearview"] ||
-    !video_status_ok.value["right_front"] ||
-    !video_status_ok.value["right_back"] ||
-    !video_status_ok.value["left_back"] ||
-    !video_status_ok.value["left_front"]
-  )
-    return;
-  if (!MemoryPool.basic_data.has(message.key)) return;
+  
   MemoryPool.setData(
     message.key,
     { w: message.width, h: message.height },
@@ -266,6 +302,7 @@ function noticeVideo(key, view) {
       view: view,
       info: MemoryPool.allocate(key, "video", view),
       video_bg: MemoryPool.allocate(key, "video_bg", view),
+      video_objs: MemoryPool.allocate(key, "video_objs", view),
       key: key,
       sign: "通知视频渲染--main",
     });

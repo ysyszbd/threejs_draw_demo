@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-20 16:34:26
+ * @LastEditTime: 2024-03-22 17:21:18
  * @Description:./
  */
 import { ObserverInstance } from "@/controls/event/observer";
@@ -88,7 +88,7 @@ export default class Video {
   }
   drawVideo(data) {
     if (data.view !== this.id) return;
-    // console.log(data, "data");
+    console.log(data, "data-----------------------------");
     // if (this.id === "foresight") {
     //   // console.log(Date.now(), "-----------video开始渲染", data.key);
     // }
@@ -113,6 +113,7 @@ export default class Video {
     }
     this.helper_ctx.clearRect(0, 0, info.w, info.h);
     this.helper_ctx.drawImage(data.video_bg.info, 0, 0, info.w, info.h);
+    this.helper_ctx.drawImage(data.video_objs, 0, 0, info.w, info.h);
     // if (this.id === "foresight") {
     //   // console.log(Date.now(), "-----------video渲染完毕", data.key, this.id);
     // }

@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-20 16:44:59
+ * @LastEditTime: 2024-03-22 17:32:46
  * @Description: 
 -->
 <!DOCTYPE html>
@@ -26,30 +26,22 @@
         view;
       let video_265 = new libde265.Decoder(dom);
       video_265.set_image_callback((msg) => {
-        // console.log(msg, "msg");
-        // if (view === "foresight") {
-        //   console.log(Date.now(), "------------解码完成,开始渲染");
-        // }
         imageDataHandler(msg);
       });
       // 在发送方的代码中
       const imageDataHandler = async (data) => {
-        let imageBitmap = await drawVideoBg(data, objs, view, data.get_width(), data.get_height());
+        let imageBitmap = await drawVideoBg(data, view, data.get_width(), data.get_height());
         update({
           info: imageBitmap,
           key: key, 
           view: view
         });
-        // update(JSON.parse(JSON.stringify(data)));
         data.free();
       };
       function update(data) {
-        if (view === "foresight") {
-          // console.log(Date.now(), "------------video渲染完毕");
-        }
         window.parent.postMessage({ params: data, view: view, key: key }, "*");
       }
-      function drawVideoBg(info, objs, view, width, height) {
+      function drawVideoBg(info, view, width, height) {
         // console.log(info, objs, view, width, height, "==================");
         return new Promise((resolve, reject) => {
           let w = width,
@@ -57,38 +49,9 @@
           let canvas = new OffscreenCanvas(w, h);
           let context = canvas.getContext("2d");
           let imageBitmap;
-
           let imagesData = context.createImageData(w, h);
           info.display(imagesData, (data) => {
             context.putImageData(data, 0, 0);
-            objs.filter((item) => {
-              let obj_data = item[item.length - 1][view];
-              let arr = obj_data.filter((item) => {
-                return item[0] === -1 && item[1] === -1;
-              });
-              if (arr.length === 8) return;
-              context.beginPath();
-              context.moveTo(obj_data[0][0], obj_data[0][1]); //移动到某个点；
-              context.lineTo(obj_data[1][0], obj_data[1][1]);
-              context.lineTo(obj_data[5][0], obj_data[5][1]);
-              context.lineTo(obj_data[7][0], obj_data[7][1]);
-              context.lineTo(obj_data[6][0], obj_data[6][1]);
-              context.lineTo(obj_data[2][0], obj_data[2][1]);
-              context.lineTo(obj_data[3][0], obj_data[3][1]);
-              context.lineTo(obj_data[1][0], obj_data[1][1]);
-              context.moveTo(obj_data[0][0], obj_data[0][1]);
-              context.lineTo(obj_data[2][0], obj_data[2][1]);
-              context.moveTo(obj_data[0][0], obj_data[0][1]);
-              context.lineTo(obj_data[4][0], obj_data[4][1]);
-              context.lineTo(obj_data[6][0], obj_data[6][1]);
-              context.moveTo(obj_data[4][0], obj_data[4][1]);
-              context.lineTo(obj_data[5][0], obj_data[5][1]);
-              context.moveTo(obj_data[3][0], obj_data[3][1]);
-              context.lineTo(obj_data[7][0], obj_data[7][1]);
-              context.lineWidth = "1.4"; //线条 宽度
-              context.strokeStyle = "yellow";
-              context.stroke(); //描边
-            });
             imageBitmap = canvas.transferToImageBitmap();
             resolve(imageBitmap);
           });
@@ -100,7 +63,6 @@
           var data = event.data;
           key = data.key;
           view = data.view;
-          objs = data.objs;
           // 然后就可以获得vue传过来的数据
           // console.log("从vue中获得的数据", data);
           video_265.push_data(data.params.video);

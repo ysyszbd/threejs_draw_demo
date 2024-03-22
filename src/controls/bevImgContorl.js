@@ -83,9 +83,6 @@ export default class bevImgContorl {
   // 更新bev
   async getData(data) {
     try {
-      // 更新canvas图像
-      // console.log(data, "data");
-      // console.log(Date.now(), "key---------bev2", data.key);
       let w = data.basic_data[1],
         h = data.basic_data[2];
       if (this.img_w != w || this.img_h != h) {
@@ -94,26 +91,11 @@ export default class bevImgContorl {
         this.bev.dom.width = this.img_w;
         this.bev.dom.height = this.img_h;
       }
-      // requestAnimationFrame(async () => {
-      if (data.bev && data.bev.length > 0) {
-
-        // 渲染分割图
-        let imgData = new ImageData(w, h);
-        for (let i = 0; i < imgData.data.length; i += 4) {
-          let num = data.bev[i / 4];
-          let color = this.map.get(num);
-          imgData.data[i + 0] = color[0];
-          imgData.data[i + 1] = color[1];
-          imgData.data[i + 2] = color[2];
-          imgData.data[i + 3] = 255;
-        }
-        this.bev.ctx.putImageData(imgData, 0, 0);
-        this.mapBg.needsUpdate = true;
-        this.handleObjs(data.objs).then((res) => {
-          console.log(Date.now(), "---------bev渲染完毕");
-        });
-        // });
-      }
+      this.bev.ctx.drawImage(data.bev, 0, 0);
+      this.mapBg.needsUpdate = true;
+      this.handleObjs(data.objs).then((res) => {
+        console.log(Date.now(), "---------bev渲染完毕");
+      });
     } catch (err) {
       console.log(err, "err---getData");
     }
