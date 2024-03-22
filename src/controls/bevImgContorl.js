@@ -481,7 +481,7 @@ export default class bevImgContorl {
     this.rgb_data.dom.appendChild(this.renderer.domElement);
     this.renderer.toneMapping = THREE.ReinhardToneMapping;
     this.renderer.toneMappingExposure = 2.0;
-    this.setMesh();
+    // this.setMesh();
     this.setAmbientLight();
     this.setControls();
     this.load3D();

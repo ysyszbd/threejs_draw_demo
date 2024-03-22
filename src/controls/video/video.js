@@ -1,9 +1,9 @@
 /*
- * @LastEditTime: 2024-03-19 14:01:04
+ * @LastEditTime: 2024-03-22 13:37:37
  * @Description:./
  */
 import { ObserverInstance } from "@/controls/event/observer";
-
+import { drawVideoObjs } from "@/controls/box2img.js";
 export default class Video {
   observerListenerList = [
     {
@@ -86,12 +86,9 @@ export default class Video {
     this.offscreen_ctx.strokeStyle = color;
     this.offscreen_ctx.stroke(); //描边
   }
-  drawVideo(data) {
+  async drawVideo(data) {
     if (data.view !== this.id) return;
-    // if (this.id === "foresight") {
-    //   console.log(Date.now(), "-----------video开始渲染", data.key);
-    //   // console.log(data, "data=================");
-    // }
+    // console.log(data, "data=======");
     let info = data.info;
     this.objs_data = data.objs;
     let rect = this.dom.getBoundingClientRect();
@@ -102,6 +99,7 @@ export default class Video {
       rect.width,
       rect.height
     );
+    let imageBitmap = await drawVideoObjs(data.objs, data.view, info.width, info.height);
     this.handle_box.style.width = wh_obj.w + "px";
     this.handle_box.style.height = wh_obj.h + "px";
 
@@ -112,34 +110,10 @@ export default class Video {
       this.helper_dom.width = info.width;
       this.helper_dom.height = info.height;
     }
-
-    // if (
-    //   this.offscreen.width != info.width ||
-    //   this.offscreen.height != info.height
-    // ) {
-    //   this.offscreen.width = info.width;
-    //   this.offscreen.height = info.height;
-    // }
     this.helper_ctx.clearRect(0, 0, info.width, info.height);
-    // requestAnimationFrame(() => {
-    // // 如果还没有渲染，则先渲染离屏数据
-    // let imgData = new ImageData(info.rgb, info.width, info.height);
-    // for (let i = 0; i < imgData.data.length; i += 4) {
-    //   let data0 = imgData.data[i + 0];
-    //   imgData.data[i + 0] = imgData.data[i + 2];
-    //   imgData.data[i + 2] = data0;
-    // }
-    // this.offscreen_ctx.putImageData(imgData, 0, 0);
-    // for (let i = 0; i < this.objs_data.length; i++) {
-    //   let item = this.objs_data[i];
-    //   this.handleHelper(item[item.length - 1][this.id]);
-    // }
-    // this.imageBitmap = this.offscreen.transferToImageBitmap();
-    
+
     this.helper_ctx.drawImage(data.video_bg, 0, 0, info.width, info.height);
-    // this.helper_ctx.drawImage(data.objs_canvas, 0, 0, info.width, info.height);
-    // console.log(Date.now(), "-----------video渲染完毕", data.key, this.id);
-    // });
+    this.helper_ctx.drawImage(imageBitmap, 0, 0, info.width, info.height);
   }
   // 计算视频要放置在dom元素中的宽高--按照视频帧的比例来
   handleWH(imgW, imgH, domW, domH) {

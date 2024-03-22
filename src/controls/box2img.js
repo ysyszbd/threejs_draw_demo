@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-21 17:44:41
+ * @LastEditTime: 2024-03-22 10:20:35
  * @Description:
  */
 // import { K, D, ext_lidar2cam } from "../assets/demo_data/data";
@@ -223,8 +223,7 @@ let box_color = {
   "5-1": "rgb(0,  128, 128)",
 };
 // 渲染视频
-export function drawVideoBg(info, objs, view, key) {
-  // console.log("info, objs, view-------------", key);
+export function drawVideoBg(info) {
   return new Promise((resolve, reject) => {
     let canvas = new OffscreenCanvas(info.width, info.height);
     let context = canvas.getContext("2d");
@@ -236,6 +235,15 @@ export function drawVideoBg(info, objs, view, key) {
       imgData.data[i + 2] = data0;
     }
     context.putImageData(imgData, 0, 0);
+    imageBitmap = canvas.transferToImageBitmap();
+    resolve(imageBitmap);
+  });
+}
+export async function drawVideoObjs(objs, view, w, h) {
+  return new Promise((resolve, reject) => {
+    let canvas = new OffscreenCanvas(w, h);
+    let context = canvas.getContext("2d");
+    let imageBitmap;
     objs.filter((item) => {
       let color = box_color[`${item[7]}-${item[8]}`];
       let obj_data = item[item.length - 1][view];
@@ -267,7 +275,7 @@ export function drawVideoBg(info, objs, view, key) {
     });
     imageBitmap = canvas.transferToImageBitmap();
     resolve(imageBitmap);
-  });
+  })
 }
 let map = new Map();
 map.set(0, [80, 82, 79, 1]);
@@ -294,7 +302,7 @@ export function drawBev(data) {
     context.putImageData(imgData, 0, 0);
     imageBitmap = canvas.transferToImageBitmap();
     resolve(imageBitmap);
-  })
+  });
 }
 
 // 深拷贝

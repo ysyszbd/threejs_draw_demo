@@ -106,6 +106,7 @@ let foresight = ref(),
   drawWorker = new Worker(
     new URL("../controls/demo_worker.js", import.meta.url)
   ),
+  video_ok_key = ref(),
   video_start = ref(false),
   video_status = ref({
     foresight: false,
@@ -115,7 +116,7 @@ let foresight = ref(),
     left_back: false,
     left_front: false,
   }),
-  video_start_sign = ref({
+  video_status_ok = ref({
     foresight: false,
     rearview: false,
     right_front: false,
@@ -123,22 +124,6 @@ let foresight = ref(),
     left_back: false,
     left_front: false,
   }),
-  box_color = {
-    "0-0": "rgb(255, 0, 128)",
-    "1-0": "rgb(0, 128, 255)",
-    "1-1": "rgb(0,  255,  255)",
-    "2-0": "rgb(150,  30, 150)",
-    "2-1": "rgb(255,  0,  128)",
-    "3-0": "rgb(192, 67, 100)",
-    "4-0": "rgb(255, 255, 0)",
-    "4-1": "rgb(255,  128,   0)",
-    "5-0": "rgb(0, 255,  0)",
-    "5-1": "rgb(0,  128, 128)",
-  },
-  key_canvas = ref(),
-  key_ctx = ref(),
-  objs_canvas = ref(),
-  objs_ctx = ref(),
   num = ref(0),
   now_time = ref(new Map()),
   now_decode_time = ref(new Map()),
@@ -157,40 +142,61 @@ let objsMap = new Map(),
   key_arr = ref([]),
   old_key = ref();
 const props = defineProps(["initStatus"]);
+// drawWorker.onmessage = (e) => {
+//   console.log(e.data, "ppppppppppppppp");
+//   if (e.data.sign === "draw_bev") {
+//     MemoryPool.setData(e.data.key, bev_imageBitmap, "bev");
+//   }
+//   console.log(Date.now(), "--------拿到worker处理的bev图形");
+// }
 const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
   try {
     if (!props.initStatus) return;
     let object;
     if (e.data instanceof ArrayBuffer) {
+      object = decode(e.data);
+      let key = object[0];
       if (
-        video_status.value["foresight"] &&
-        video_status.value["rearview"] &&
-        video_status.value["right_front"] &&
-        video_status.value["right_back"] &&
-        video_status.value["left_back"] &&
-        video_status.value["left_front"]
+        video_status_ok.value["foresight"] &&
+        video_status_ok.value["rearview"] &&
+        video_status_ok.value["right_front"] &&
+        video_status_ok.value["right_back"] &&
+        video_status_ok.value["left_back"] &&
+        video_status_ok.value["left_front"] &&
+        object[0] > video_ok_key.value
       ) {
-        object = decode(e.data);
-        if (video_start.value) {
-          // now_time.value.set(object[0], Date.now());
-          MemoryPool.setKey(object[0]);
-          object[4] = await handleObjsPoints(object[2], object[4]);
-          // 处理障碍物信息--给bev用
-          let objs = await handleObjs(object[4]);
-          MemoryPool.setData(object[0], objs, "obj");
-          // 障碍物--给视频使用
-          MemoryPool.setData(object[0], object[4], "video_objs_arr");
-          // 超参信息
-          MemoryPool.setData(object[0], object[2], "basic");
-          // bev离屏canvas存放
-          let bev_imageBitmap = await drawBev({
-            basic_data: object[2],
-            info: object[3],
-          });
-          MemoryPool.setData(object[0], bev_imageBitmap, "bev");
+        let key_res = MemoryPool.keyArr.includes(key);
+        if (!key_res) MemoryPool.setKey(key);
+        if (object[2][1] != 0 && object[2][2] != 0) {
+          if (!MemoryPool.objs.has(key)) {
+            object[4] = await handleObjsPoints(object[2], object[4]);
+            // console.log(Date.now(), "--------发送消息给worker处理bev图形");
+            // drawWorker.postMessage({
+            //   sign: "draw_bev",
+            //   key: key,
+            //   w: object[2][1],
+            //   h: object[2][2],
+            //   bev: object[3]
+            // })
+            // 处理障碍物信息--给bev用
+            let objs = await handleObjs(object[4]);
+            MemoryPool.setData(object[0], objs, "obj");
+            // 障碍物--给视频使用
+            MemoryPool.setData(object[0], object[4], "video_objs_arr");
+            // 超参信息
+            MemoryPool.setData(object[0], object[2], "basic");
+            // bev离屏canvas存放
+            console.log(Date.now(), "--------0");
+            let bev_imageBitmap = await drawBev({
+              basic_data: object[2],
+              info: object[3],
+            });
+            console.log(Date.now(), "--------1");
+            MemoryPool.setData(object[0], bev_imageBitmap, "bev");
+          }
         }
-        now_decode_time.value.set(object[0], Date.now());
-
+      }
+      if (object[1].length > 0) {
         Promise.all([
           foresight.value.postVideo(object[1][0], object[0], "foresight"),
           rearview.value.postVideo(object[1][3], object[0], "rearview"),
@@ -199,9 +205,6 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
           right_front.value.postVideo(object[1][1], object[0], "right_front"),
           right_back.value.postVideo(object[1][5], object[0], "right_back"),
         ]);
-        // updateVideo();
-        // if (num.value <= 52) {
-        // }
       }
     }
   } catch (err) {
@@ -220,20 +223,14 @@ function animate() {
 // 更新视频--按照视频帧
 function updateVideo() {
   let key;
-  // if (num.value > 51) {
-  //   console.log(decode_time.value, "decode_time.value-----解码时长统计");
-  //   let t = 0;
-  //   decode_time.value.filter((item) => {
-  //     t = t + item.td;
-  //   });
-  //   console.log(`51次平均时长：${t / 51}`);
-  //   return;
-  // }
   if (MemoryPool.keyArr.length < 1) return;
   key = MemoryPool.keyArr[0];
-
   // 判断6路视频是否都已经离屏渲染并存放完毕
   if (
+    MemoryPool.objs.has(key) &&
+    MemoryPool.bevs.has(key) &&
+    MemoryPool.basic_data.has(key) &&
+    MemoryPool.video_objs_arr.has(key) &&
     MemoryPool.hasVideo(key, "foresight") &&
     MemoryPool.hasVideo(key, "rearview") &&
     MemoryPool.hasVideo(key, "right_front") &&
@@ -242,7 +239,6 @@ function updateVideo() {
     MemoryPool.hasVideo(key, "left_front")
   ) {
     key = MemoryPool.getKey();
-    num.value++;
     Promise.all([
       noticeBev(key),
       noticeVideo(key, "foresight"),
@@ -252,54 +248,38 @@ function updateVideo() {
       noticeVideo(key, "right_back"),
       noticeVideo(key, "left_back"),
     ]).then((res) => {
-      MemoryPool.delVideoValue(key, "video_bg", "foresight");
-      MemoryPool.delVideoValue(key, "video_bg", "rearview");
-      MemoryPool.delVideoValue(key, "video_bg", "right_front");
-      MemoryPool.delVideoValue(key, "video_bg", "right_back");
-      MemoryPool.delVideoValue(key, "video_bg", "left_back");
-      MemoryPool.delVideoValue(key, "video_bg", "left_front");
-      MemoryPool.delVideoValue(key, "video", "foresight");
-      MemoryPool.delVideoValue(key, "video", "rearview");
-      MemoryPool.delVideoValue(key, "video", "right_front");
-      MemoryPool.delVideoValue(key, "video", "right_back");
-      MemoryPool.delVideoValue(key, "video", "left_back");
-      MemoryPool.delVideoValue(key, "video", "left_front");
       MemoryPool.delObjsValue(key);
     });
   }
 }
 // 接受视频解码的数据，通知去离屏渲染
 async function updataVideoStatus(message) {
-  if (!video_start.value) {
-    video_start.value = true;
+  let res = 0;
+  for (const [key, value] of Object.entries(video_status_ok.value)) {
+    if (!value) res++;
+  }
+  if (!video_status_ok.value[message.view]) {
+    video_status_ok.value[message.view] = true;
+  }
+  if (res > 1) return;
+  if (res === 1) {
+    video_ok_key.value = message.key;// 最后一个video也准备完毕了
     return;
   }
-  if (!MemoryPool.allocate(message.key, "video_objs_arr")) return;
   MemoryPool.setData(message.key, message.info, "video", message.view);
-  if (message.view === "foresight") {
-    decode_time.value.push({
-      time: Date.now(),
-      td: Date.now() - now_decode_time.value.get(message.key),
-      key: message.key,
-    });
-  }
   await drawVideoBg(
-    message.info,
-    MemoryPool.allocate(message.key, "video_objs_arr"),
-    message.view,
-    message.key
+    message.info
   ).then((imageBitmap) => {
     MemoryPool.setData(message.key, imageBitmap, "video_bg", message.view);
   });
 }
 // 通知视频渲染
-function noticeVideo(key, view, objs_canvas) {
+function noticeVideo(key, view) {
   return new Promise(async (resolve, reject) => {
     ObserverInstance.emit("VIDEO_DRAW", {
       view: view,
       objs: MemoryPool.allocate(key, "video_objs_arr"),
       info: MemoryPool.allocate(key, "video", view),
-      objs_canvas: objs_canvas,
       video_bg: MemoryPool.allocate(key, "video_bg", view),
       key: key,
       sign: "通知视频渲染--main",
@@ -316,8 +296,6 @@ function noticeBev(key) {
       objs: MemoryPool.allocate(key, "obj"),
       info: info,
       key: key,
-      // now_time: now_time.value,
-      // num: num.value,
     });
     resolve(`通知 bev 完毕`);
   });

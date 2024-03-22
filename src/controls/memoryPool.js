@@ -20,7 +20,14 @@ export default class MemoryPool {
       left_back: new Map(),
       left_front: new Map(),
     };
-    this.video_objs = new Map();
+    this.video_objs = {
+      foresight: new Map(),
+      rearview: new Map(),
+      right_front: new Map(),
+      right_back: new Map(),
+      left_back: new Map(),
+      left_front: new Map(),
+    };
     this.video_bg = {
       foresight: new Map(),
       rearview: new Map(),
@@ -46,7 +53,7 @@ export default class MemoryPool {
     let res;
     if (sign === "video") {
       res = this.video[view].get(key);
-      // this.video[view].delete(key);
+      this.video[view].delete(key);
     } else if (sign === "obj") {
       res = this.objs.get(key);
     } else if (sign === "bev") {
@@ -54,8 +61,8 @@ export default class MemoryPool {
     } else if (sign === "basic") {
       res = this.basic_data.get(key);
     } else if (sign === "video_objs") {
-      res = this.video_objs.get(key);
-      
+      res = this.video_objs[view].get(key);
+      this.video_objs[view].delete(key);
     } else if (sign === "video_objs_arr") {
       res = this.video_objs_arr.get(key);
     } else if (sign === "video_bg") {
@@ -69,14 +76,13 @@ export default class MemoryPool {
     this.bevs.delete(key);
     this.basic_data.delete(key);
     this.video_objs_arr.delete(key);
-    this.video_objs.delete(key);
   }
   delVideoValue(key, sign, view) {
     if (sign === "video") {
       this.video[view].delete(key);
     } else if (sign === "video_bg") {
       this.video_bg[view].delete(key);
-    }
+    } 
   }
   // 将内存块放入内存池
   setData(key, block, sign, view) {
