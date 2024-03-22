@@ -82,7 +82,7 @@ export default class MemoryPool {
       this.video[view].delete(key);
     } else if (sign === "video_bg") {
       this.video_bg[view].delete(key);
-    } 
+    }
   }
   // 将内存块放入内存池
   setData(key, block, sign, view) {
@@ -95,7 +95,7 @@ export default class MemoryPool {
     } else if (sign === "basic") {
       this.basic_data.set(key, block);
     } else if (sign === "video_objs") {
-      this.video_objs.set(key, block);
+      this.video_objs[view].set(key, block);
     } else if (sign === "video_objs_arr") {
       this.video_objs_arr.set(key, block);
     } else if (sign === "video_bg") {
@@ -110,7 +110,24 @@ export default class MemoryPool {
     return res;
   }
   // 判断video对应视角中是否已有解码后的视频数据了
-  hasVideo(key, view) {
-    return this.video_bg[view].has(key);
+  hasVideo(key) {
+    return (
+      this.video_bg["foresight"].has(key) &&
+      this.video_bg["rearview"].has(key) &&
+      this.video_bg["right_front"].has(key) &&
+      this.video_bg["right_back"].has(key) &&
+      this.video_bg["left_back"].has(key) &&
+      this.video_bg["left_front"].has(key)
+    );
+  }
+  hasVideoObjs(key) {
+    return (
+      this.video_objs["foresight"].has(key) &&
+      this.video_objs["rearview"].has(key) &&
+      this.video_objs["right_front"].has(key) &&
+      this.video_objs["right_back"].has(key) &&
+      this.video_objs["left_back"].has(key) &&
+      this.video_objs["left_front"].has(key)
+    );
   }
 }
