@@ -84,8 +84,8 @@ export default class bevImgContorl {
   // 更新bev
   async getData(data) {
     try {
-      let w = data.basic_data[1],
-        h = data.basic_data[2];
+      let w = data.info.width,
+        h = data.info.height;
       if (this.img_w != w || this.img_h != h) {
         this.img_w = w;
         this.img_h = h;
@@ -95,19 +95,6 @@ export default class bevImgContorl {
       this.bev.ctx.drawImage(data.info, 0, 0);
       this.mapBg.needsUpdate = true;
       this.handleObjs(data.objs).then((res) => {
-        // this.draw_time.push({
-        //   time: Date.now(),
-        //   td: Date.now() - data.now_time.get(data.key),
-        //   key: data.key
-        // })
-        // if (data.num > 50) {
-        //   console.log(this.draw_time, "this.draw_time============从接受数据到渲染结束的时长统计");
-        //   let t = 0;
-        //   this.draw_time.filter(item => {
-        //     t = t + item.td;
-        //   })
-        //   console.log(`50次平均时长：${t / 50}`);
-        // }
       });
     } catch (err) {
       console.log(err, "err---getData");
@@ -468,7 +455,7 @@ export default class bevImgContorl {
     this.scene.background = new THREE.Color(0xf0f0f0);
     let rect = this.rgb_data.dom.getBoundingClientRect();
     var width = rect.width;
-    var height = rect.height;
+    var height = rect.height - 40 - document.getElementById("page_title").getBoundingClientRect().height;
     this.camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
     this.camera.position.set(0, -10, 80);
     this.camera.updateMatrix();
@@ -476,7 +463,6 @@ export default class bevImgContorl {
       antialias: true,
     });
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    console.log(this.rgb_data.dom.getBoundingClientRect(), "rect");
     this.renderer.setSize(width, height);
     this.rgb_data.dom.appendChild(this.renderer.domElement);
     this.renderer.toneMapping = THREE.ReinhardToneMapping;

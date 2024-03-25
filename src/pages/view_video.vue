@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-21 17:26:11
+ * @LastEditTime: 2024-03-25 11:15:42
  * @Description: 
 -->
 <template>
@@ -21,13 +21,12 @@ import {
   defineExpose,
   onUnmounted,
   ref,
-  inject,
 } from "vue";
 import VIDEO from "../controls/video/video.js";
 import { ObserverInstance } from "@/controls/event/observer";
 
 const props = defineProps(["video_id"]);
-const emits = defineEmits(["updataVideoStatus"]);
+const emits = defineEmits(["updataVideoStatus", "handleVideoInit"]);
 let yh_video = null;
 let video_start = ref(false);
 let video_work = new Worker(
@@ -37,13 +36,12 @@ onMounted(() => {
   yh_video = new VIDEO(props.video_id);
   initVideoWork();
 });
-function postVideo(u8Array, key, view, video_objs_arr) {
+function postVideo(u8Array, key, view) {
   if (view != props.video_id) return;
   video_work.postMessage({
     video_data: u8Array,
     view: props.video_id,
     key: key,
-    video_objs_arr: video_objs_arr
   });
 }
 function initVideoWork() {
@@ -56,12 +54,10 @@ function initVideoWork() {
         changeCodecId(173);
       }
     } else if (event.data.type === "video_init") {
-      if (!video_start.value) {
-        ObserverInstance.emit("VIDEO_OK", {
-          id: props.video_id,
-        });
-      }
-      video_start.value = true;
+      // if (!video_start.value) {
+      //   emits("handleVideoInit", props.video_id);
+      // }
+      // video_start.value = true;
     } else {
       let message = event.data,
         info = message.info;

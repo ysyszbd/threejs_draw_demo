@@ -14,12 +14,13 @@ let codecId = 0;
 // let video_sign = "init";
 let postData = {};
 
-async function decodeArray(u8Array, video_sign, key, view) {
+async function decodeArray(u8Array, key, view) {
   // dataArray = u8Array;
   var ptr = Module._malloc(u8Array.length * u8Array.BYTES_PER_ELEMENT);
   Module.HEAPU8.set(u8Array, ptr);
   Module._parsePkt(ptr, u8Array.length);
   Module._parsePkt(ptr, u8Array.length);
+  // Module._parsePkt(ptr, u8Array.length);
   let outputPtr = Module._getFrame();
   Module._free(ptr);
   if (outputPtr === 0) return;
@@ -61,7 +62,7 @@ onmessage = function (e) {
       Module._close();
       Module._init(codecId);
     }
-    decodeArray(e.data.video_data, e.data?.sign, e.data.key, e.data.view);
+    decodeArray(e.data.video_data, e.data.key, e.data.view);
   }
 };
 // 渲染视频

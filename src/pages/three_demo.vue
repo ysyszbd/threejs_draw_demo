@@ -1,28 +1,28 @@
 <!--
- * @LastEditTime: 2024-03-05 14:36:59
+ * @LastEditTime: 2024-03-25 09:57:00
  * @Description: 
 -->
 <script setup>
 import { onMounted, inject, ref, onUnmounted } from "vue";
 
 let mapDOM = ref(null),
-base = inject("$Base"),
+// base = inject("$Base"),
   ws = ref(null),
   wsStatus = ref(false);
 initWS();
 onMounted(() => {
-  base.start(mapDOM.value);
+  // base.start(mapDOM.value);
   update();
   window.addEventListener("resize", resize);
 });
 onUnmounted(() => {
-  base.clear();
+  // base.clear();
 });
 function update() {
-  base.update();
+  // base.update();
 }
 function resize() {
-  base.resize();
+  // base.resize();
 }
 function initWS() {
   ws.value = new WebSocket("ws://192.168.30.9:12346");
@@ -43,28 +43,28 @@ function initWS() {
   // };
 }
 function drawLines(data) {
-  try {
-    let cmd = {
-      egoTrjs: "车头指示线",
-      objs: "障碍物",
-      lanes: "车道线",
-    };
-    // console.log(data, `${cmd[data.cmd]} data`);
-    // return
-    if (data.cmd === "egoTrjs") {
-      // 车头线是只有一根线，所以直接修改线坐标
-      base.drawHeadLine(data.points);
-    } else if (data.cmd === "lanes") {
-      // console.log(data, `${cmd[data.cmd]} data`);
-      base.drawLanes(data.info);
-    } else if (data.cmd === "objs") {
-      base.handleObj(data.info);
-      base.drawBoxs(data.info);
-    }
-    base.lineNum++;
-  } catch (err) {
-    console.log(err, "err---drawLines");
-  }
+  // try {
+  //   let cmd = {
+  //     egoTrjs: "车头指示线",
+  //     objs: "障碍物",
+  //     lanes: "车道线",
+  //   };
+  //   // console.log(data, `${cmd[data.cmd]} data`);
+  //   // return
+  //   if (data.cmd === "egoTrjs") {
+  //     // 车头线是只有一根线，所以直接修改线坐标
+  //     base.drawHeadLine(data.points);
+  //   } else if (data.cmd === "lanes") {
+  //     // console.log(data, `${cmd[data.cmd]} data`);
+  //     base.drawLanes(data.info);
+  //   } else if (data.cmd === "objs") {
+  //     base.handleObj(data.info);
+  //     base.drawBoxs(data.info);
+  //   }
+  //   base.lineNum++;
+  // } catch (err) {
+  //   console.log(err, "err---drawLines");
+  // }
 }
 </script>
 

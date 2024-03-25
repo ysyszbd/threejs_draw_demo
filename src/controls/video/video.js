@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-22 14:41:04
+ * @LastEditTime: 2024-03-25 11:49:09
  * @Description:./
  */
 import { ObserverInstance } from "@/controls/event/observer";
@@ -34,9 +34,6 @@ export default class Video {
   init(id) {
     this.dom = document.getElementById(id);
     this.handle_box = document.getElementById(id + "_box");
-    // 离屏渲染
-    this.offscreen = new OffscreenCanvas(256, 256);
-    this.offscreen_ctx = this.offscreen.getContext("2d");
 
     this.helper_dom = document.getElementById(id + "_helper_box");
     this.helper_ctx = this.helper_dom.getContext("2d", {
@@ -44,75 +41,24 @@ export default class Video {
     });
     this.id = id;
   }
-  // 绘制3D线框
-  handleHelper(data) {
-    try {
-      let arr = data.filter((item) => {
-        return item[0] === -1 && item[1] === -1;
-      });
-      if (arr.length === 8) return;
-      // data.forEach((item, index) => {
-      //   this.drawCircle(item, "yellow");
-      // });
-      this.drawLine([data[0], data[1]]);
-      this.drawLine([data[0], data[2]]);
-      this.drawLine([data[0], data[4]]);
-      this.drawLine([data[3], data[2]]);
-      this.drawLine([data[3], data[1]]);
-      this.drawLine([data[3], data[7]]);
-      this.drawLine([data[6], data[2]]);
-      this.drawLine([data[6], data[4]]);
-      this.drawLine([data[6], data[7]]);
-      this.drawLine([data[5], data[4]]);
-      this.drawLine([data[5], data[1]]);
-      this.drawLine([data[5], data[7]]);
-    } catch (err) {
-      console.log(err, "err-----handleHelper");
-    }
-  }
-  // 绘制点
-  drawCircle(points, color = "yellow") {
-    this.offscreen_ctx.beginPath();
-    this.offscreen_ctx.arc(points[0], points[1], 4, 0, 2 * Math.PI, false);
-    this.offscreen_ctx.fillStyle = color;
-    this.offscreen_ctx.fill();
-  }
-  // 划线
-  drawLine(points, color = "yellow") {
-    this.offscreen_ctx.beginPath();
-    this.offscreen_ctx.moveTo(points[0][0], points[0][1]); //移动到某个点；
-    this.offscreen_ctx.lineTo(points[1][0], points[1][1]); //终点坐标；
-    this.offscreen_ctx.lineWidth = "1.4"; //线条 宽度
-    this.offscreen_ctx.strokeStyle = color;
-    this.offscreen_ctx.stroke(); //描边
-  }
   async drawVideo(data) {
     if (data.view !== this.id) return;
-    // console.log(data, "data=======");
-    let info = data.info;
+    let w = data.video_bg.width,
+      h = data.video_bg.height;
     this.objs_data = data.objs;
     let rect = this.dom.getBoundingClientRect();
     // 使用canvas外部的元素来控制canvas的大小
-    let wh_obj = this.handleWH(
-      info.width,
-      info.height,
-      rect.width,
-      rect.height
-    );
+    let wh_obj = this.handleWH(w, h, rect.width, rect.height);
     this.handle_box.style.width = wh_obj.w + "px";
     this.handle_box.style.height = wh_obj.h + "px";
 
-    if (
-      this.helper_dom.width != info.width ||
-      this.helper_dom.height != info.height
-    ) {
-      this.helper_dom.width = info.width;
-      this.helper_dom.height = info.height;
+    if (this.helper_dom.width != w || this.helper_dom.height != h) {
+      this.helper_dom.width = w;
+      this.helper_dom.height = h;
     }
-    this.helper_ctx.clearRect(0, 0, info.width, info.height);
-
-    this.helper_ctx.drawImage(data.video_bg, 0, 0, info.width, info.height);
-    this.helper_ctx.drawImage(data.video_objs, 0, 0, info.width, info.height);
+    this.helper_ctx.clearRect(0, 0, w, h);
+    this.helper_ctx.drawImage(data.video_bg, 0, 0, w, h);
+    if (data.video_objs) this.helper_ctx.drawImage(data.video_objs, 0, 0, w, h);
   }
   // 计算视频要放置在dom元素中的宽高--按照视频帧的比例来
   handleWH(imgW, imgH, domW, domH) {

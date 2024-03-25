@@ -1,7 +1,7 @@
 onmessage = async (e) => {
   // console.log(e.data, "-----------------");
   if (e.data.sign === "draw_bev&objs") {
-    let bev_imageBitmap = await drawBev(e.data.bev_w, e.data.bev_h, e.data.bev);
+    let bev_imageBitmap = await drawBev(e.data.bev_w, e.data.bev_h, e.data.bev, e.data.key);
     let view = {
       foresight: await drawVideoObjs(
         e.data.objs,
@@ -60,7 +60,7 @@ map.set(1, [255, 255, 255, 1]);
 map.set(2, [0, 255, 0, 1]);
 map.set(3, [255, 0, 0, 1]);
 // 渲染bev
-function drawBev(w, h, bev) {
+function drawBev(w, h, bev, key) {
   return new Promise((resolve, reject) => {
     let canvas = new OffscreenCanvas(w, h);
     let context = canvas.getContext("2d");
@@ -75,6 +75,11 @@ function drawBev(w, h, bev) {
       imgData.data[i + 3] = 255;
     }
     context.putImageData(imgData, 0, 0);
+    context.fillStyle = "white";
+    context.fillRect(10, 20, 180, 30);
+    context.font = "24px serif";
+    context.fillStyle = "blue";
+    context.fillText(key, 10, 40);
     imageBitmap = canvas.transferToImageBitmap();
     resolve(imageBitmap);
   });

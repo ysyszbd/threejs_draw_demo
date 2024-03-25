@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-21 11:58:25
+ * @LastEditTime: 2024-03-25 11:30:10
  * @Description: 
 -->
 <template>
@@ -12,7 +12,6 @@ import { onMounted, ref } from "vue";
 let Bev = ref(null);
 onMounted(() => {
   Bev.value = new bevImgControl();
-  console.log(document.getElementById("bev_box").getBoundingClientRect());
 });
 </script>
 
@@ -24,6 +23,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 8px !important;
+  box-sizing: border-box;
   canvas {
     width: 100% !important;
     height: 100% !important;
