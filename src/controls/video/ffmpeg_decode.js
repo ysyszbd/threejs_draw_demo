@@ -1,24 +1,18 @@
 var Module = typeof Module != "undefined" ? Module : {};
 Module = {};
 Module.onRuntimeInitialized = function () {
-  let message = {
+  postMessage({
     type: "message",
     info: "init",
-  };
-  postMessage(message);
+  });
 };
 
-// let u8Array;
 let dataArray;
 let codecId = 0;
-// let video_sign = "init";
-let postData = {};
-
+let imageBitmap;
 async function decodeArray(u8Array, key, view) {
-  // dataArray = u8Array;
   var ptr = Module._malloc(u8Array.length * u8Array.BYTES_PER_ELEMENT);
   Module.HEAPU8.set(u8Array, ptr);
-  Module._parsePkt(ptr, u8Array.length);
   Module._parsePkt(ptr, u8Array.length);
   // Module._parsePkt(ptr, u8Array.length);
   let outputPtr = Module._getFrame();
@@ -36,27 +30,20 @@ async function decodeArray(u8Array, key, view) {
     height: Module._getHeight(),
     rgb: rgbData,
   };
-  let imageBitmap = await drawVideoBg(rgbObj, key);
+  imageBitmap = await drawVideoBg(rgbObj, key);
   let message = {
     type: "image",
     info: imageBitmap,
-    // info: rgbObj,
     key: key,
     view: view,
   };
   postMessage(message, [rgbObj.rgb.buffer]);
-  // postMessage(message, [message.info.rgb.buffer]);
 }
 onmessage = function (e) {
   if ("updateCodecId" == e.data.type) {
     codecId = e.data.info;
     Module._close();
     Module._init(codecId);
-    let message = {
-      type: "video_init",
-      id: e.data.id,
-    };
-    postMessage(message);
   } else {
     if (codecId != 173) {
       Module._close();
@@ -65,26 +52,25 @@ onmessage = function (e) {
     decodeArray(e.data.video_data, e.data.key, e.data.view);
   }
 };
+let v_canvas = new OffscreenCanvas(960, 480),
+  v_context = v_canvas.getContext("2d"),
+  imgData;
 // 渲染视频
 function drawVideoBg(info, key) {
   return new Promise((resolve, reject) => {
-    let canvas = new OffscreenCanvas(info.width, info.height);
-    let context = canvas.getContext("2d");
-    let imageBitmap;
-    let imgData = new ImageData(info.rgb, info.width, info.height);
+    imgData = new ImageData(info.rgb, info.width, info.height);
     for (let i = 0; i < imgData.data.length; i += 4) {
       let data0 = imgData.data[i + 0];
       imgData.data[i + 0] = imgData.data[i + 2];
       imgData.data[i + 2] = data0;
     }
-    context.putImageData(imgData, 0, 0);
-    context.fillStyle = "white";
-    context.fillRect(10, 0, 180, 30);
-    context.font = "24px serif";
-    context.fillStyle = "red";
-    context.fillText(key, 10, 20);
-    imageBitmap = canvas.transferToImageBitmap();
-    resolve(imageBitmap);
+    v_context.putImageData(imgData, 0, 0);
+    v_context.fillStyle = "white";
+    v_context.fillRect(10, 0, 180, 30);
+    v_context.font = "24px serif";
+    v_context.fillStyle = "red";
+    v_context.fillText(key, 10, 20);
+    resolve(v_canvas.transferToImageBitmap());
   });
 }
 

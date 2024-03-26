@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-25 11:15:42
+ * @LastEditTime: 2024-03-26 14:26:43
  * @Description: 
 -->
 <template>
@@ -21,21 +21,28 @@ import {
   defineExpose,
   onUnmounted,
   ref,
+  inject,
 } from "vue";
-import VIDEO from "../controls/video/video.js";
-import { ObserverInstance } from "@/controls/event/observer";
+import VIDEO from "@/controls/video/video.js";
 
 const props = defineProps(["video_id"]);
 const emits = defineEmits(["updataVideoStatus", "handleVideoInit"]);
-let yh_video = null;
+let yh_video = ref(null);
 let video_start = ref(false);
 let video_work = new Worker(
   new URL("../controls/video/ffmpeg_decode.js", import.meta.url).href
 );
+const initAll = inject("initAll");
 onMounted(() => {
-  yh_video = new VIDEO(props.video_id);
+  yh_video.value = new VIDEO(props.video_id);
   initVideoWork();
 });
+function drawVideo(data) {
+  return new Promise((resolve, reject) => {
+    yh_video.value.drawVideo(data);
+    resolve(`渲染${props.video_id}完毕`);
+  });
+}
 function postVideo(u8Array, key, view) {
   if (view != props.video_id) return;
   video_work.postMessage({
@@ -48,16 +55,11 @@ function initVideoWork() {
   video_work.onmessage = (event) => {
     if (event.data.type === "message") {
       if (event.data.info == "init") {
-        ObserverInstance.emit("INIT_OK", {
+        initAll({
           id: props.video_id,
         });
         changeCodecId(173);
       }
-    } else if (event.data.type === "video_init") {
-      // if (!video_start.value) {
-      //   emits("handleVideoInit", props.video_id);
-      // }
-      // video_start.value = true;
     } else {
       let message = event.data,
         info = message.info;
@@ -67,6 +69,13 @@ function initVideoWork() {
       emits("updataVideoStatus", message);
     }
   };
+}
+// 清除视频占用内存
+function clearVideo() {
+  yh_video.value.clear();
+  yh_video.value = null;
+  video_work.terminate();
+  video_work = null;
 }
 function changeCodecId(val) {
   let data = {
@@ -78,8 +87,10 @@ function changeCodecId(val) {
 }
 defineExpose({
   postVideo,
+  drawVideo,
 });
 onUnmounted(() => {
+  clearVideo();
   video_work.terminate();
 });
 </script>
@@ -91,8 +102,6 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
   .handle_box_canvas {
-    // width: 0;
-    // height: 0;
     width: 100%;
     height: 100%;
     color: rgb(255, 255, 0);

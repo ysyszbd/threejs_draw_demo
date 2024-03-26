@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-22 10:20:35
+ * @LastEditTime: 2024-03-25 17:14:44
  * @Description:
  */
 // import { K, D, ext_lidar2cam } from "../assets/demo_data/data";
@@ -38,8 +38,6 @@ export function project_lidar2img(pts, ext_lidar2cam, K, scale, crop) {
     pts[1] * ext_lidar2cam[2][1] +
     pts[2] * ext_lidar2cam[2][2] +
     ext_lidar2cam[2][3];
-  // if (Math.abs(Math.atan(pt_cam_x / pt_cam_z)) > 70) return [-1, -1];
-  // if (pt_cam_z < 0.2) return [-1, -1];
   const x_u = pt_cam_x / Math.abs(pt_cam_z);
   const y_u = pt_cam_y / Math.abs(pt_cam_z);
 
@@ -210,175 +208,6 @@ export function handleObjs(objs_data) {
     resolve(obj_index);
   });
 }
-let box_color = {
-  "0-0": "rgb(255, 0, 128)",
-  "1-0": "rgb(0, 128, 255)",
-  "1-1": "rgb(0,  255,  255)",
-  "2-0": "rgb(150,  30, 150)",
-  "2-1": "rgb(255,  0,  128)",
-  "3-0": "rgb(192, 67, 100)",
-  "4-0": "rgb(255, 255, 0)",
-  "4-1": "rgb(255,  128,   0)",
-  "5-0": "rgb(0, 255,  0)",
-  "5-1": "rgb(0,  128, 128)",
-};
-// 渲染视频
-export function drawVideoBg(info) {
-  return new Promise((resolve, reject) => {
-    let canvas = new OffscreenCanvas(info.width, info.height);
-    let context = canvas.getContext("2d");
-    let imageBitmap;
-    let imgData = new ImageData(info.rgb, info.width, info.height);
-    for (let i = 0; i < imgData.data.length; i += 4) {
-      let data0 = imgData.data[i + 0];
-      imgData.data[i + 0] = imgData.data[i + 2];
-      imgData.data[i + 2] = data0;
-    }
-    context.putImageData(imgData, 0, 0);
-    imageBitmap = canvas.transferToImageBitmap();
-    resolve(imageBitmap);
-  });
-}
-export async function drawVideoObjs(objs, view, w, h) {
-  return new Promise((resolve, reject) => {
-    let canvas = new OffscreenCanvas(w, h);
-    let context = canvas.getContext("2d");
-    let imageBitmap;
-    objs.filter((item) => {
-      let color = box_color[`${item[7]}-${item[8]}`];
-      let obj_data = item[item.length - 1][view];
-      let arr = obj_data.filter((item) => {
-        return item[0] === -1 && item[1] === -1;
-      });
-      if (arr.length === 8) return;
-      context.beginPath();
-      context.moveTo(obj_data[0][0], obj_data[0][1]); //移动到某个点；
-      context.lineTo(obj_data[1][0], obj_data[1][1]);
-      context.lineTo(obj_data[5][0], obj_data[5][1]);
-      context.lineTo(obj_data[7][0], obj_data[7][1]);
-      context.lineTo(obj_data[6][0], obj_data[6][1]);
-      context.lineTo(obj_data[2][0], obj_data[2][1]);
-      context.lineTo(obj_data[3][0], obj_data[3][1]);
-      context.lineTo(obj_data[1][0], obj_data[1][1]);
-      context.moveTo(obj_data[0][0], obj_data[0][1]);
-      context.lineTo(obj_data[2][0], obj_data[2][1]);
-      context.moveTo(obj_data[0][0], obj_data[0][1]);
-      context.lineTo(obj_data[4][0], obj_data[4][1]);
-      context.lineTo(obj_data[6][0], obj_data[6][1]);
-      context.moveTo(obj_data[4][0], obj_data[4][1]);
-      context.lineTo(obj_data[5][0], obj_data[5][1]);
-      context.moveTo(obj_data[3][0], obj_data[3][1]);
-      context.lineTo(obj_data[7][0], obj_data[7][1]);
-      context.lineWidth = "1.4"; //线条 宽度
-      context.strokeStyle = color;
-      context.stroke(); //描边
-    });
-    imageBitmap = canvas.transferToImageBitmap();
-    resolve(imageBitmap);
-  })
-}
-let map = new Map();
-map.set(0, [80, 82, 79, 1]);
-map.set(1, [255, 255, 255, 1]);
-map.set(2, [0, 255, 0, 1]);
-map.set(3, [255, 0, 0, 1]);
-// 渲染bev
-export function drawBev(data) {
-  return new Promise((resolve, reject) => {
-    let w = data.basic_data[1],
-      h = data.basic_data[2];
-    let canvas = new OffscreenCanvas(w, h);
-    let context = canvas.getContext("2d");
-    let imageBitmap;
-    let imgData = new ImageData(w, h);
-    for (let i = 0; i < imgData.data.length; i += 4) {
-      let num = data.info[i / 4];
-      let color = map.get(num);
-      imgData.data[i + 0] = color[0];
-      imgData.data[i + 1] = color[1];
-      imgData.data[i + 2] = color[2];
-      imgData.data[i + 3] = 255;
-    }
-    context.putImageData(imgData, 0, 0);
-    imageBitmap = canvas.transferToImageBitmap();
-    resolve(imageBitmap);
-  });
-}
 
-// 深拷贝
-// 这里重写了用is对象来判断类型
-const is = {
-  Array: Array.isArray,
-  Date: (val) => val instanceof Date,
-  Set: (val) => Object.prototype.toString.call(val) === "[object Set]",
-  Map: (val) => Object.prototype.toString.call(val) === "[object Map]",
-  Object: (val) => Object.prototype.toString.call(val) === "[object Object]",
-  Symbol: (val) => Object.prototype.toString.call(val) === "[object Symbol]",
-  Function: (val) =>
-    Object.prototype.toString.call(val) === "[object Function]",
-};
 
-export function deepClone(value) {
-  // 2.1 函数浅拷贝
-  /* if (is.Function(value)) return value */
 
-  // 2.2 函数深拷贝
-  if (is.Function(value)) {
-    if (/^function/.test(value.toString()) || /^\(\)/.test(value.toString()))
-      return new Function("return " + value.toString())();
-
-    return new Function("return function " + value.toString())();
-  }
-
-  // 3.Date 深拷贝
-  if (is.Date(value)) return new Date(value.valueOf());
-
-  // 4.判断如果是Symbol的value, 那么创建一个新的Symbol
-  if (is.Symbol(value)) return Symbol(value.description);
-
-  // 5.判断是否是Set类型 进行深拷贝
-  if (is.Set(value)) {
-    // 5.1 浅拷贝 直接进行解构即可
-    // return new Set([...value])
-
-    // 5.2 深拷贝
-    const newSet = new Set();
-    for (const item of value) newSet.add(deepClone(item));
-    return newSet;
-  }
-
-  // 6.判断是否是Map类型
-  if (is.Map(value)) {
-    // 6.1 浅拷贝 直接进行解构即可
-    // return new Map([...value])
-
-    // 6.2 深拷贝
-    const newMap = new Map();
-    for (const item of value)
-      newMap.set(deepClone(item[0]), deepClone(item[1]));
-    return newMap;
-  }
-
-  // 1.如果不是对象类型则直接将当前值返回
-  if (!is.Object(value)) return value;
-
-  // 7.判断传入的对象是数组, 还是对象
-  const newObject = is.Array(value) ? [] : {};
-
-  for (const key in value) {
-    // 8 进行递归调用
-    newObject[key] = deepClone(value[key]);
-  }
-
-  // 4.1 对Symbol作为key进行特殊的处理 拿到对象上面的所有Symbol key，以数组形式返回
-  const symbolKeys = Object.getOwnPropertySymbols(value);
-  for (const sKey of symbolKeys) {
-    // 4.2 这里没有必要创建一个新的Symbol
-    // const newSKey = Symbol(sKey.description)
-
-    // 4.3 直接将原来的Symbol key 拷贝到新对象上就可以了
-    newObject[sKey] = deepClone(value[sKey]);
-  }
-
-  return newObject;
-}

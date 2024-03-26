@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-25 11:30:10
+ * @LastEditTime: 2024-03-26 14:27:33
  * @Description: 
 -->
 <template>
@@ -7,11 +7,16 @@
 </template>
 
 <script setup>
-import bevImgControl from "../controls/bevImgContorl.js";
-import { onMounted, ref } from "vue";
+import bevImgControl from "@/controls/bev/bevImgContorl.js";
+import { onMounted, ref, onUnmounted } from "vue";
 let Bev = ref(null);
 onMounted(() => {
   Bev.value = new bevImgControl();
+});
+onUnmounted(() => {
+  Bev.value.ObserverInstance.removeAll();
+  Bev.value.clearFun();
+  Bev.value = null;
 });
 </script>
 

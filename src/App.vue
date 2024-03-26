@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-11 16:24:18
+ * @LastEditTime: 2024-03-26 14:33:22
  * @Description: 
 -->
 <!--
@@ -10,7 +10,7 @@
 import mainPage from "./pages/main.vue";
 import loading from "./pages/loading.vue";
 import { ObserverInstance } from "@/controls/event/observer";
-import { ref } from "vue";
+import { ref, onUnmounted, provide } from "vue";
 let work_init_arr = ref([]),
   work_status = ref(false),
   model3D_status = ref(false),
@@ -22,8 +22,10 @@ let work_init_arr = ref([]),
       fn: initAll.bind(this),
     },
   ];
+provide("initAll", initAll);
 ObserverInstance.selfAddListenerList(observerListenerList, "yh_init");
 function initAll(data) {
+  // console.log(data, "---------");
   if (data.id === "objs") {
     model3D_status.value = true;
   } else if (data.id === "video") {
@@ -31,7 +33,7 @@ function initAll(data) {
   } else {
     work_init_arr.value.push(data.id);
     if (work_init_arr.value.length === 1) {
-    // if (work_init_arr.value.length === 6) {
+      // if (work_init_arr.value.length === 6) {
       work_status.value = true;
     }
   }
@@ -41,13 +43,16 @@ function initAll(data) {
     all_status.value = false;
   }
 }
+onUnmounted(() => {
+  ObserverInstance.removeAll();
+});
 </script>
 
 <template>
   <div class="main_box">
     <!-- <loading /> -->
     <!-- <loading v-if="!all_status" class="loading_page"/> -->
-    <mainPage :initStatus="all_status" class="main_page"/>
+    <mainPage :initStatus="all_status" class="main_page" />
   </div>
 </template>
 
