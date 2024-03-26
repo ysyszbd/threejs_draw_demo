@@ -95,18 +95,18 @@ export default class MemoryPool {
   // 判断video对应视角中是否已有解码后的视频数据了
   hasVideo(key) {
     return (
-      this.video_bgs["foresight"].has(key) &&
-      this.video_bgs["rearview"].has(key) &&
-      this.video_bgs["right_front"].has(key) &&
-      this.video_bgs["right_back"].has(key) &&
-      this.video_bgs["left_back"].has(key) &&
-      this.video_bgs["left_front"].has(key)
-      // this.v_bgs["foresight"].has(key) &&
-      // this.v_bgs["rearview"].has(key) &&
-      // this.v_bgs["right_front"].has(key) &&
-      // this.v_bgs["right_back"].has(key) &&
-      // this.v_bgs["left_back"].has(key) &&
-      // this.v_bgs["left_front"].has(key)
+      // this.video_bgs["foresight"].has(key) &&
+      // this.video_bgs["rearview"].has(key) &&
+      // this.video_bgs["right_front"].has(key) &&
+      // this.video_bgs["right_back"].has(key) &&
+      // this.video_bgs["left_back"].has(key) &&
+      // this.video_bgs["left_front"].has(key)
+      this.v_bgs["foresight"].has(key) &&
+      this.v_bgs["rearview"].has(key) &&
+      this.v_bgs["right_front"].has(key) &&
+      this.v_bgs["right_back"].has(key) &&
+      this.v_bgs["left_back"].has(key) &&
+      this.v_bgs["left_front"].has(key)
     );
   }
   hasVideoObjs(key) {

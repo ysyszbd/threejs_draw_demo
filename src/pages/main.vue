@@ -214,10 +214,10 @@ function animate() {
 }
 // 更新视频--按照视频帧
 async function updateVideo() {
-  if (MemoryPool.keyArr[0] > video_ok_key.value) {
-  // if (MemoryPool.weakKeys[0]?.id > video_ok_key.value) {
-    let key = MemoryPool.keyArr[0];
-    // let key = MemoryPool.weakKeys[0];
+  // if (MemoryPool.keyArr[0] > video_ok_key.value) {
+  if (MemoryPool.weakKeys[0]?.id > video_ok_key.value) {
+    // let key = MemoryPool.keyArr[0];
+    let key = MemoryPool.weakKeys[0];
     // 判断6路视频是否都已经离屏渲染并存放完毕
     if (
       // MemoryPool.objs.has(key) &&
@@ -225,33 +225,33 @@ async function updateVideo() {
       // MemoryPool.hasVideoObjs(key) &&
       MemoryPool.hasVideo(key)
     ) {
-      key = MemoryPool.getKey();
-      // key = MemoryPool.getWeakKeys();
+      // key = MemoryPool.getKey();
+      key = MemoryPool.getWeakKeys();
       Promise.all([
         // noticeBev(key),
         await foresight.value.drawVideo({
-          bg: MemoryPool.allocate(key, "video_bgs", "foresight"),
-          // bg: MemoryPool.allocate(key, "v_bgs", "foresight"),
+          // bg: MemoryPool.allocate(key, "video_bgs", "foresight"),
+          bg: MemoryPool.allocate(key, "v_bgs", "foresight"),
         }),
         await right_front.value.drawVideo({
-          bg: MemoryPool.allocate(key, "video_bgs", "right_front"),
-          // bg: MemoryPool.allocate(key, "v_bgs", "right_front"),
+          // bg: MemoryPool.allocate(key, "video_bgs", "right_front"),
+          bg: MemoryPool.allocate(key, "v_bgs", "right_front"),
         }),
         await left_front.value.drawVideo({
-          bg: MemoryPool.allocate(key, "video_bgs", "left_front"),
-          // bg: MemoryPool.allocate(key, "v_bgs", "left_front"),
+          // bg: MemoryPool.allocate(key, "video_bgs", "left_front"),
+          bg: MemoryPool.allocate(key, "v_bgs", "left_front"),
         }),
         await rearview.value.drawVideo({
-          bg: MemoryPool.allocate(key, "video_bgs", "rearview"),
-          // bg: MemoryPool.allocate(key, "v_bgs", "rearview"),
+          // bg: MemoryPool.allocate(key, "video_bgs", "rearview"),
+          bg: MemoryPool.allocate(key, "v_bgs", "rearview"),
         }),
         await left_back.value.drawVideo({
-          bg: MemoryPool.allocate(key, "video_bgs", "left_back"),
-          // bg: MemoryPool.allocate(key, "v_bgs", "left_back"),
+          // bg: MemoryPool.allocate(key, "video_bgs", "left_back"),
+          bg: MemoryPool.allocate(key, "v_bgs", "left_back"),
         }),
         await right_back.value.drawVideo({
-          bg: MemoryPool.allocate(key, "video_bgs", "right_back"),
-          // bg: MemoryPool.allocate(key, "v_bgs", "right_back"),
+          // bg: MemoryPool.allocate(key, "video_bgs", "right_back"),
+          bg: MemoryPool.allocate(key, "v_bgs", "right_back"),
         }),
       ]).then((res) => {
         key = null;
@@ -274,25 +274,25 @@ async function updataVideoStatus(message) {
     video_ok_key.value = message.key;
     return;
   }
-  let weak_key_res = MemoryPool.keyArr.find((item) => {
-    return item === message.key;
-  });
-  // 这里要确保键对象地址一致
-  if (!weak_key_res) {
-    MemoryPool.setKey(message.key);
-  }
-  MemoryPool.setData(message.key, message.info, "video_bgs", message.view);
-  // let weak_id = { id: message.key };
-  // let weak_key_res = MemoryPool.weakKeys.find((item) => {
-  //   return item.id === message.key;
+  // let weak_key_res = MemoryPool.keyArr.find((item) => {
+  //   return item === message.key;
   // });
   // // 这里要确保键对象地址一致
   // if (!weak_key_res) {
-  //   MemoryPool.setWeakKeys(weak_id);
-  // } else {
-  //   weak_id = weak_key_res;
+  //   MemoryPool.setKey(message.key);
   // }
-  // MemoryPool.setData(weak_id, message.info, "v_bgs", message.view);
+  // MemoryPool.setData(message.key, message.info, "video_bgs", message.view);
+  let weak_id = { id: message.key };
+  let weak_key_res = MemoryPool.weakKeys.find((item) => {
+    return item.id === message.key;
+  });
+  // 这里要确保键对象地址一致
+  if (!weak_key_res) {
+    MemoryPool.setWeakKeys(weak_id);
+  } else {
+    weak_id = weak_key_res;
+  }
+  MemoryPool.setData(weak_id, message.info, "v_bgs", message.view);
 }
 // 通知bev分割图渲染
 function noticeBev(key) {
