@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-25 18:21:22
+ * @LastEditTime: 2024-03-26 18:02:48
  * @Description:
  */
 import * as THREE from "three";
@@ -7,6 +7,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { ObserverInstance } from "@/controls/event/observer";
 import ResourceTracker from "../resourceTracker";
+import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
 
 export default class bevImgContorl {
   resTracker = new ResourceTracker();
@@ -372,6 +373,28 @@ export default class bevImgContorl {
           reject(err);
         }
       );
+    });
+  }
+  // 加载obj格式的3d模型
+  async loadObj3D() {
+    try {
+      let obj = await this.loadObjFile("A/SM_MercedesBenzCoupeC");
+      obj.scale.set(0.01, 0.01, 0.01);
+      obj.rotation.x = Math.PI / 2;
+      obj.rotation.y = Math.PI / 2;
+      obj.position.x = 10;
+      obj.position.y = -15;
+      this.scene.add(obj);
+    } catch (err) {
+      console.log(err, "err===loadObj3D");
+    }
+  }
+  // 加载obj格式的3d模型
+  loadObjFile(name) {
+    return new Promise((resolve, reject) => {
+      new OBJLoader().load(`src/assets/objs_model/${name}.obj`, (root) => {
+        resolve(root);
+      });
     });
   }
   // 创建环境光

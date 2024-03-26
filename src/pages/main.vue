@@ -154,7 +154,7 @@ drawWorker.onmessage = (e) => {
   }
 };
 const props = defineProps(["initStatus"]);
-const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
+const ws = new Ws("ws://192.168.1.161:1234", true, async (e) => {
   try {
     if (!props.initStatus) return;
     let object;
