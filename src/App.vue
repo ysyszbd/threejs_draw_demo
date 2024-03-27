@@ -1,14 +1,6 @@
-<!--
- * @LastEditTime: 2024-03-26 14:33:22
- * @Description: 
--->
-<!--
- * @LastEditTime: 2024-03-11 14:33:48
- * @Description: 
--->
 <script setup>
-import mainPage from "./pages/main.vue";
-import loading from "./pages/loading.vue";
+import mainPage from "@/components/bevShow/main.vue";
+import loading from "@/components/bevShow/loading.vue";
 import { ObserverInstance } from "@/controls/event/observer";
 import { ref, onUnmounted, provide } from "vue";
 let work_init_arr = ref([]),
@@ -64,9 +56,7 @@ body {
 .main_box {
   width: 100vw;
   height: 100vh;
-  // position: relative;
   box-sizing: border-box;
-  // overflow: hidden;
   .loading_page {
     position: absolute;
     top: 0;

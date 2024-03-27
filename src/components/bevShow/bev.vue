@@ -15,8 +15,8 @@ onMounted(() => {
 });
 onUnmounted(() => {
   Bev.value.ObserverInstance.removeAll();
-  Bev.value.clearFun();
-  Bev.value = null;
+  // Bev.value.clearFun();
+  // Bev.value = null;
 });
 </script>
 
@@ -31,7 +31,7 @@ onUnmounted(() => {
   box-sizing: border-box;
   canvas {
     width: 100% !important;
-    height: 100% !important;
+    height: 100% !important;  
     border-radius: 8px !important;
   }
 }

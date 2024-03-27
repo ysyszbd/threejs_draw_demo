@@ -1,18 +1,16 @@
 /*
- * @LastEditTime: 2024-03-16 17:38:43
+ * @LastEditTime: 2024-03-27 14:52:08
  * @Description:
  */
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { resolve } from "path"
-import postcssPx2Rem from 'postcss-pxtorem'
-import autoprefixer from 'autoprefixer'
-import { comlink } from "vite-plugin-comlink";
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import { resolve } from "path";
+import postcssPx2Rem from "postcss-pxtorem";
+import autoprefixer from "autoprefixer";
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  base: './',
-  plugins: [vue(), comlink()],
+  base: "/",
+  plugins: [vue()],
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
@@ -26,7 +24,7 @@ export default defineConfig({
         `,
         charset: false,
         javascriptEnabled: true,
-      }
+      },
     },
     postcss: {
       plugins: [
@@ -36,12 +34,9 @@ export default defineConfig({
           mediaQuery: false,
           unitPrecision: 3,
           minPixelValue: 0,
-          propList: ['*'],
-        })
-      ]
+          propList: ["*"],
+        }),
+      ],
     },
-  },
-  worker: {
-    plugins: () => [comlink()],
   },
 });

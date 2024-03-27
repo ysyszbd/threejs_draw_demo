@@ -71,10 +71,10 @@
 </template>
 
 <script setup>
-import videoYH from "@/components/view_video.vue";
-import Bev from "@/components/bev.vue";
-import echartsYH from "@/components/echarts.vue";
-import echartAxis from "@/components/echartAxis.vue";
+import videoYH from "@/components/bevShow/view_video.vue";
+import Bev from "@/components/bevShow/bev.vue";
+import echartsYH from "@/components/bevShow/echarts.vue";
+import echartAxis from "@/components/bevShow/echartAxis.vue";
 import {
   ref,
   inject,
@@ -84,7 +84,7 @@ import {
   onMounted,
 } from "vue";
 import { ObserverInstance } from "@/controls/event/observer";
-import Ws from "../controls/ws.js";
+import Ws from "@/controls/ws.js";
 import { decode } from "@msgpack/msgpack";
 import memoryPool from "@/controls/memoryPool.js";
 import { handleObjsPoints, handleObjs } from "@/controls/box2img.js";
@@ -98,7 +98,7 @@ let foresight = ref(),
   BEV = ref(),
   MemoryPool = new memoryPool(),
   drawWorker = new Worker(
-    new URL("../controls/draw_worker.js", import.meta.url)
+    new URL("../../controls/draw_worker.js", import.meta.url)
   ),
   stop = ref(false),
   video_ok_key = ref(),
@@ -154,8 +154,8 @@ drawWorker.onmessage = (e) => {
   }
 };
 const props = defineProps(["initStatus"]);
-const ws = new Ws("ws://192.168.1.161:1234", true, async (e) => {
-  try {
+const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
+  try {0
     if (!props.initStatus) return;
     let object;
     if (e.data instanceof ArrayBuffer) {

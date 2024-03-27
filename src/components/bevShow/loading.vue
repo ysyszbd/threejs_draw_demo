@@ -4,7 +4,7 @@
 -->
 <template>
   <div class="loading_page">
-    <img src="../assets/imgs/logo.png" class="logo" alt="">
+    <img src="../assets/images/logo.png" class="logo" alt="">
     <div class="loader"></div>
   </div>
 </template>

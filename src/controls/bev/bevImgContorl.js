@@ -1,13 +1,16 @@
 /*
- * @LastEditTime: 2024-03-26 18:02:48
+ * @LastEditTime: 2024-03-27 15:06:56
  * @Description:
  */
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { ObserverInstance } from "@/controls/event/observer";
-import ResourceTracker from "../resourceTracker";
+import ResourceTracker from "@/controls/resourceTracker";
 import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
+import skyVertexShader from '@/assets/shader/skyVertexShader.vs?raw'
+import skyFragmentShader from '@/assets/shader/skyFragmentShader.fs?raw'
+import roadFragmentShader from '@/assets/shader/roadFragmentShader.fs?raw'
 
 export default class bevImgContorl {
   resTracker = new ResourceTracker();
@@ -217,14 +220,17 @@ export default class bevImgContorl {
   init() {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xf0f0f0);
+    this.scene.background = new THREE.Color().setHSL(0.6, 0, 1);
+    this.scene.fog = new THREE.Fog(this.scene.background, 1, 5000);
     let rect = this.rgb_data.dom.getBoundingClientRect();
     var width = rect.width;
     var height =
       rect.height -
       40 -
       document.getElementById("page_title").getBoundingClientRect().height;
-    this.camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
-    this.camera.position.set(0, -10, 80);
+    this.camera = new THREE.PerspectiveCamera(80, width / height, 1, 10000);
+    this.camera.position.set(0, -15, 6);
+    this.camera.lookAt(0, 0, 0);
     this.camera.updateMatrix();
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -237,6 +243,7 @@ export default class bevImgContorl {
     // this.setMesh();
     this.setAmbientLight();
     this.setControls();
+    this.addSky();
     this.load3D();
   }
   // 初始化bev的canvas
@@ -252,7 +259,7 @@ export default class bevImgContorl {
     this.bev.ctx.scale(devicePixelRatio, devicePixelRatio);
     this.bev.ctx.imageSmoothingEnabled = true;
     this.bev.ctx.imageSmoothingQuality = "high";
-    this.bev.ctx.fillStyle = `pink`;
+    this.bev.ctx.fillStyle = `#50524f`;
     this.bev.ctx.fillRect(0, 0, this.bev.dom.width, this.bev.dom.height);
     this.mapBg = this.track(new THREE.CanvasTexture(this.bev.dom));
     this.mapBg.colorSpace = THREE.SRGBColorSpace;
@@ -269,7 +276,27 @@ export default class bevImgContorl {
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.scene.add(this.mesh);
   }
+  addSky() {
+    const uniforms = {
+      topColor: { value: new THREE.Color(0x0077ff) },
+      bottomColor: { value: new THREE.Color(0xffffff) },
+      offset: { value: 33 },
+      exponent: { value: 0.8 },
+    };
+    uniforms["topColor"].value.copy(this.hemiLight.color);
 
+    this.scene.fog.color.copy(uniforms["bottomColor"].value);
+    const skyGeo = new THREE.SphereGeometry(4000, 32, 15);
+    const skyMat = new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      vertexShader: skyVertexShader,
+      fragmentShader: skyFragmentShader,
+      side: THREE.BackSide,
+    });
+
+    const sky = new THREE.Mesh(skyGeo, skyMat);
+    this.scene.add(sky);
+  }
   // 加载3D车模型
   async load3D() {
     try {
@@ -340,6 +367,7 @@ export default class bevImgContorl {
         } else if (item.id === "street_cone") {
           gltf.rotation.x = Math.PI / 2;
           gltf.rotation.y = Math.PI / 2;
+          gltf.scale.set(0.2, 0.2, 0.2);
           gltf.position.x = 100;
           gltf.position.y = -147;
         } else if (item.id === "construction_vehicle") {
@@ -401,6 +429,17 @@ export default class bevImgContorl {
   setAmbientLight(intensity = 1, color = 0xffffff) {
     const light = new THREE.AmbientLight(color, intensity);
     this.scene.add(light);
+    this.hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 2);
+    this.hemiLight.color.setHSL(0.6, 1, 0.6);
+    this.hemiLight.position.set(0, 0, 50);
+    this.scene.add(this.hemiLight);
+    const hemiLightHelper = new THREE.HemisphereLightHelper(this.hemiLight, 10);
+    this.scene.add(hemiLightHelper);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 3);
+    dirLight.color.setHSL(0.1, 1, 0.95);
+    dirLight.position.set(-1, 1, 1.75);
+    dirLight.position.multiplyScalar(30);
+    this.scene.add(dirLight);
   }
   // 添加控制器
   setControls() {

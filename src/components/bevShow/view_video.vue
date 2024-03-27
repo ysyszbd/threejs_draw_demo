@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-26 14:26:43
+ * @LastEditTime: 2024-03-27 11:51:13
  * @Description: 
 -->
 <template>
@@ -30,7 +30,7 @@ const emits = defineEmits(["updataVideoStatus", "handleVideoInit"]);
 let yh_video = ref(null);
 let video_start = ref(false);
 let video_work = new Worker(
-  new URL("../controls/video/ffmpeg_decode.js", import.meta.url).href
+  new URL("../../controls/video/ffmpeg_decode.js", import.meta.url).href
 );
 const initAll = inject("initAll");
 onMounted(() => {
