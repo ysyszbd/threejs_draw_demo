@@ -1,10 +1,10 @@
 <!--
- * @LastEditTime: 2024-03-04 18:13:45
+ * @LastEditTime: 2024-03-27 15:20:39
  * @Description: 
 -->
 <template>
   <div class="loading_page">
-    <img src="../assets/images/logo.png" class="logo" alt="">
+    <img src="../../assets/images/logo.png" class="logo" alt="">
     <div class="loader"></div>
   </div>
 </template>

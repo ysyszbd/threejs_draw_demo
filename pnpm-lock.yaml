@@ -11,15 +11,15 @@ dependencies:
   autoprefixer:
     specifier: ^10.4.18
     version: 10.4.18(postcss@8.4.35)
-  comlink:
-    specifier: ^4.4.1
-    version: 4.4.1
   echarts:
     specifier: ^5.5.0
     version: 5.5.0
   eventemitter3:
     specifier: ^5.0.1
     version: 5.0.1
+  gl-matrix:
+    specifier: ^3.4.3
+    version: 3.4.3
   mathjs:
     specifier: ^12.4.0
     version: 12.4.0
@@ -58,9 +58,6 @@ devDependencies:
   vite:
     specifier: ^5.0.8
     version: registry.npmmirror.com/vite@5.0.8(@types/node@20.11.28)(sass@1.70.0)
-  vite-plugin-comlink:
-    specifier: ^4.0.2
-    version: 4.0.2(comlink@4.4.1)(vite@5.0.8)
 
 packages:
 
@@ -486,9 +483,6 @@ packages:
     resolution: {integrity: sha512-7LjJvmQU6Sj7bL0j5b5WY/3n7utXUJvAe1lxhsHDbLmwX9mdL86Yjtr+5SRCyf8qME4M7pU2hswj0FpyBVCv9w==}
     dev: false
 
-  /comlink@4.4.1:
-    resolution: {integrity: sha512-+1dlx0aY5Jo1vHy/tSsIGpSkN4tS9rZSW8FIhG0JH/crs9wwweswIo/POr451r7bZww3hFbPAKnTpimzL/mm4Q==, tarball: https://registry.npmmirror.com/comlink/-/comlink-4.4.1.tgz}
-
   /complex.js@2.1.1:
     resolution: {integrity: sha512-8njCHOTtFFLtegk6zQo0kkVX1rngygb/KQI6z1qZxlFI3scluC+LVTCFbrkWjBv4vvLlbQ9t88IPMC6k95VTTg==, tarball: https://registry.npmmirror.com/complex.js/-/complex.js-2.1.1.tgz}
     dev: false
@@ -537,22 +531,13 @@ packages:
     dev: true
     optional: true
 
+  /gl-matrix@3.4.3:
+    resolution: {integrity: sha512-wcCp8vu8FT22BnvKVPjXa/ICBWRq/zjFfdofZy1WSpQZpphblv12/bOQLBC1rMM7SGOFS9ltVmKOHil5+Ml7gA==, tarball: https://registry.npmmirror.com/gl-matrix/-/gl-matrix-3.4.3.tgz}
+    dev: false
+
   /javascript-natural-sort@0.7.1:
     resolution: {integrity: sha512-nO6jcEfZWQXDhOiBtG2KvKyEptz7RVbpGP4vTD2hLBdmNQSsCiicO2Ioinv6UI4y9ukqnBpy+XZ9H6uLNgJTlw==, tarball: https://registry.npmmirror.com/javascript-natural-sort/-/javascript-natural-sort-0.7.1.tgz}
     dev: false
-
-  /json5@2.2.3:
-    resolution: {integrity: sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==, tarball: https://registry.npmmirror.com/json5/-/json5-2.2.3.tgz}
-    engines: {node: '>=6'}
-    hasBin: true
-    dev: true
-
-  /magic-string@0.30.5:
-    resolution: {integrity: sha512-7xlpfBaQaP/T6Vh8MO/EqXSW5En6INHEvEXQiuff7Gku0PWjU3uf6w/j9o7O+SpB5fOAkrI5HeoNgwjEO0pFsA==, tarball: https://registry.npmmirror.com/magic-string/-/magic-string-0.30.5.tgz}
-    engines: {node: '>=12'}
-    dependencies:
-      '@jridgewell/sourcemap-codec': 1.4.15
-    dev: true
 
   /magic-string@0.30.8:
     resolution: {integrity: sha512-ISQTe55T2ao7XtlAStud6qwYPZjE4GK1S/BeVPus4jrq6JuOnQ00YKQC581RWhR122W7msZV263KzVeLoqidyQ==, tarball: https://registry.npmmirror.com/magic-string/-/magic-string-0.30.8.tgz}
@@ -654,11 +639,6 @@ packages:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
 
-  /source-map@0.7.4:
-    resolution: {integrity: sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA==, tarball: https://registry.npmmirror.com/source-map/-/source-map-0.7.4.tgz}
-    engines: {node: '>= 8'}
-    dev: true
-
   /three@0.161.0:
     resolution: {integrity: sha512-LC28VFtjbOyEu5b93K0bNRLw1rQlMJ85lilKsYj6dgTu+7i17W+JCCEbvrpmNHF1F3NAUqDSWq50UD7w9H2xQw==, tarball: https://registry.npmmirror.com/three/-/three-0.161.0.tgz}
     dev: false
@@ -695,19 +675,6 @@ packages:
       escalade: 3.1.2
       picocolors: 1.0.0
     dev: false
-
-  /vite-plugin-comlink@4.0.2(comlink@4.4.1)(vite@5.0.8):
-    resolution: {integrity: sha512-3XZmJ7hqLj4ZdDCfbUSyjnCZVrXpah2wDhHaoJw3gUIfh6bDYzli7ptpPnjnLWG4SptLCxSneGC7ARTP5+u1Wg==, tarball: https://registry.npmmirror.com/vite-plugin-comlink/-/vite-plugin-comlink-4.0.2.tgz}
-    peerDependencies:
-      comlink: ^4.3.1
-      vite: '>=2.9.6'
-    dependencies:
-      comlink: 4.4.1
-      json5: 2.2.3
-      magic-string: 0.30.5
-      source-map: 0.7.4
-      vite: registry.npmmirror.com/vite@5.0.8(@types/node@20.11.28)(sass@1.70.0)
-    dev: true
 
   /zrender@5.5.0:
     resolution: {integrity: sha512-O3MilSi/9mwoovx77m6ROZM7sXShR/O/JIanvzTwjN3FORfLSr81PsUGd7jlaYOeds9d8tw82oP44+3YucVo+w==, tarball: https://registry.npmmirror.com/zrender/-/zrender-5.5.0.tgz}

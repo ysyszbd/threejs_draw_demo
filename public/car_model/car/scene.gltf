@@ -1,0 +1,1977 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 59496,
+      "max": [
+        114.59999084472656,
+        273.55499267578125,
+        189.81997680664063
+      ],
+      "min": [
+        -114.59999084472656,
+        -281.6039733886719,
+        27.96999740600586
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 713952,
+      "componentType": 5126,
+      "count": 59496,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 59496,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 475968,
+      "componentType": 5126,
+      "count": 59496,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 319674,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 1427904,
+      "componentType": 5126,
+      "count": 35044,
+      "max": [
+        96.01815795898438,
+        256.05499267578125,
+        187.1899871826172
+      ],
+      "min": [
+        -96.01998901367188,
+        -127.81499481201172,
+        39.969993591308594
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 1848432,
+      "componentType": 5126,
+      "count": 35044,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 951936,
+      "componentType": 5126,
+      "count": 35044,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 1232288,
+      "componentType": 5126,
+      "count": 35044,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 1278696,
+      "componentType": 5125,
+      "count": 146340,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 2268960,
+      "componentType": 5126,
+      "count": 21045,
+      "max": [
+        104.35736846923828,
+        271.0749816894531,
+        194.79998779296875
+      ],
+      "min": [
+        -104.20856475830078,
+        -279.67498779296875,
+        9.159992218017578
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 2521500,
+      "componentType": 5126,
+      "count": 21045,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 1512640,
+      "componentType": 5126,
+      "count": 21045,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 1681000,
+      "componentType": 5126,
+      "count": 21045,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 1864056,
+      "componentType": 5125,
+      "count": 89766,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 2774040,
+      "componentType": 5126,
+      "count": 11128,
+      "max": [
+        106.68998718261719,
+        271.4048767089844,
+        93.27999114990234
+      ],
+      "min": [
+        -106.68998718261719,
+        -282.04498291015625,
+        26.100008010864258
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 2907576,
+      "componentType": 5126,
+      "count": 11128,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 1849360,
+      "componentType": 5126,
+      "count": 11128,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 1938384,
+      "componentType": 5126,
+      "count": 11128,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 2223120,
+      "componentType": 5125,
+      "count": 40677,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 3041112,
+      "componentType": 5126,
+      "count": 4781,
+      "max": [
+        90.58999633789063,
+        266.44427490234375,
+        123.47998809814453
+      ],
+      "min": [
+        -90.58999633789063,
+        237.44497680664063,
+        57.66999435424805
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 3098484,
+      "componentType": 5126,
+      "count": 4781,
+      "max": [
+        1.0,
+        0.9996317625045776,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -0.9986215829849243,
+        -0.9999953508377075
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 2027408,
+      "componentType": 5126,
+      "count": 4781,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 2065656,
+      "componentType": 5126,
+      "count": 4781,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 2385828,
+      "componentType": 5125,
+      "count": 23544,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 3155856,
+      "componentType": 5126,
+      "count": 2758,
+      "max": [
+        98.53999328613281,
+        -237.25498962402344,
+        110.35999298095703
+      ],
+      "min": [
+        -98.28999328613281,
+        -282.41497802734375,
+        38.93999481201172
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 3188952,
+      "componentType": 5126,
+      "count": 2758,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 2103904,
+      "componentType": 5126,
+      "count": 2758,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 2125968,
+      "componentType": 5126,
+      "count": 2758,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 2480004,
+      "componentType": 5125,
+      "count": 9132,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 3222048,
+      "componentType": 5126,
+      "count": 41713,
+      "max": [
+        104.35736846923828,
+        262.0149841308594,
+        189.33998107910156
+      ],
+      "min": [
+        -104.20856475830078,
+        -279.30499267578125,
+        9.159992218017578
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 3722604,
+      "componentType": 5126,
+      "count": 41713,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 2148032,
+      "componentType": 5126,
+      "count": 41713,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 2481736,
+      "componentType": 5126,
+      "count": 41713,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 2516532,
+      "componentType": 5125,
+      "count": 175443,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 4223160,
+      "componentType": 5126,
+      "count": 6367,
+      "max": [
+        114.59999084472656,
+        242.03500366210938,
+        177.1799774169922
+      ],
+      "min": [
+        -114.59999084472656,
+        -113.77488708496094,
+        125.17008972167969
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 4299564,
+      "componentType": 5126,
+      "count": 6367,
+      "max": [
+        0.998731791973114,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -0.998731791973114,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 2815440,
+      "componentType": 5126,
+      "count": 6367,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 2866376,
+      "componentType": 5126,
+      "count": 6367,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 3218304,
+      "componentType": 5125,
+      "count": 26163,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 4375968,
+      "componentType": 5126,
+      "count": 3321,
+      "max": [
+        114.47998809814453,
+        266.0849914550781,
+        138.03997802734375
+      ],
+      "min": [
+        -114.47988891601563,
+        -279.1949768066406,
+        79.8801498413086
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 4415820,
+      "componentType": 5126,
+      "count": 3321,
+      "max": [
+        1.0,
+        0.9998764991760254,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -0.9998764991760254,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 2917312,
+      "componentType": 5126,
+      "count": 3321,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 2943880,
+      "componentType": 5126,
+      "count": 3321,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 3322956,
+      "componentType": 5125,
+      "count": 12609,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 4455672,
+      "componentType": 5126,
+      "count": 25838,
+      "max": [
+        96.02999114990234,
+        265.5849914550781,
+        124.66999053955078
+      ],
+      "min": [
+        -96.02999114990234,
+        217.95498657226563,
+        109.82999420166016
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 4765728,
+      "componentType": 5126,
+      "count": 25838,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 2970448,
+      "componentType": 5126,
+      "count": 25838,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3177152,
+      "componentType": 5126,
+      "count": 25838,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 3373392,
+      "componentType": 5125,
+      "count": 107508,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5075784,
+      "componentType": 5126,
+      "count": 6933,
+      "max": [
+        103.5099868774414,
+        264.4449768066406,
+        150.76988220214844
+      ],
+      "min": [
+        -101.76998901367188,
+        -115.56499481201172,
+        44.179996490478516
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5158980,
+      "componentType": 5126,
+      "count": 6933,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3383856,
+      "componentType": 5126,
+      "count": 6933,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3439320,
+      "componentType": 5126,
+      "count": 6933,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 3803424,
+      "componentType": 5125,
+      "count": 24432,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5242176,
+      "componentType": 5126,
+      "count": 16470,
+      "max": [
+        104.35736846923828,
+        258.4349670410156,
+        113.40998840332031
+      ],
+      "min": [
+        -104.20856475830078,
+        -258.2349853515625,
+        9.139982223510742
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5439816,
+      "componentType": 5126,
+      "count": 16470,
+      "max": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3494784,
+      "componentType": 5126,
+      "count": 16470,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3626544,
+      "componentType": 5126,
+      "count": 16470,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 3901152,
+      "componentType": 5125,
+      "count": 53568,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5637456,
+      "componentType": 5126,
+      "count": 1108,
+      "max": [
+        90.18999481201172,
+        -235.97499084472656,
+        104.39999389648438
+      ],
+      "min": [
+        -90.18999481201172,
+        -238.4349822998047,
+        95.7199935913086
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5650752,
+      "componentType": 5126,
+      "count": 1108,
+      "max": [
+        0.9999650716781616,
+        1.0,
+        0.9482101798057556
+      ],
+      "min": [
+        -0.9999650716781616,
+        -1.0,
+        -0.9482132196426392
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3758304,
+      "componentType": 5126,
+      "count": 1108,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3767168,
+      "componentType": 5126,
+      "count": 1108,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 4115424,
+      "componentType": 5125,
+      "count": 6432,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5664048,
+      "componentType": 5126,
+      "count": 2444,
+      "max": [
+        87.81999206542969,
+        -229.1849822998047,
+        109.30998992919922
+      ],
+      "min": [
+        -87.81999206542969,
+        -263.2749938964844,
+        95.94999694824219
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5693376,
+      "componentType": 5126,
+      "count": 2444,
+      "max": [
+        1.0,
+        0.999573826789856,
+        0.9988484978675842
+      ],
+      "min": [
+        -1.0,
+        -0.999573826789856,
+        -0.9988484978675842
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3776032,
+      "componentType": 5126,
+      "count": 2444,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3795584,
+      "componentType": 5126,
+      "count": 2444,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 4141152,
+      "componentType": 5125,
+      "count": 12546,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5722704,
+      "componentType": 5126,
+      "count": 2986,
+      "max": [
+        88.77999114990234,
+        259.3249816894531,
+        190.23997497558594
+      ],
+      "min": [
+        -88.77999114990234,
+        -159.38499450683594,
+        110.51998901367188
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5758536,
+      "componentType": 5126,
+      "count": 2986,
+      "max": [
+        0.9987837672233582,
+        0.9238987565040588,
+        1.0
+      ],
+      "min": [
+        -0.9987826943397522,
+        -0.9239001870155334,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3815136,
+      "componentType": 5126,
+      "count": 2986,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3839024,
+      "componentType": 5126,
+      "count": 2986,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 4191336,
+      "componentType": 5125,
+      "count": 14538,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5794368,
+      "componentType": 5126,
+      "count": 4062,
+      "max": [
+        105.74736785888672,
+        191.0908966064453,
+        82.7199935913086
+      ],
+      "min": [
+        -105.59856414794922,
+        -225.9250030517578,
+        -1.5962961697368883e-05
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5843112,
+      "componentType": 5126,
+      "count": 4062,
+      "max": [
+        1.0,
+        0.9939961433410645,
+        0.9930670857429504
+      ],
+      "min": [
+        -1.0,
+        -0.9939961433410645,
+        -0.9930670857429504
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3862912,
+      "componentType": 5126,
+      "count": 4062,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3895408,
+      "componentType": 5126,
+      "count": 4062,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 4249488,
+      "componentType": 5125,
+      "count": 21312,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5891856,
+      "componentType": 5126,
+      "count": 20,
+      "max": [
+        19.315948486328125,
+        265.189208984375,
+        119.13247680664063
+      ],
+      "min": [
+        -19.346649169921875,
+        -283.31951904296875,
+        50.67349624633789
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 5892096,
+      "componentType": 5126,
+      "count": 20,
+      "max": [
+        0.0,
+        1.0,
+        0.25882041454315186
+      ],
+      "min": [
+        0.0,
+        -1.0,
+        -0.25882041454315186
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3927904,
+      "componentType": 5126,
+      "count": 20,
+      "max": [
+        1.0,
+        1.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 3928064,
+      "componentType": 5126,
+      "count": 20,
+      "max": [
+        1.0,
+        1.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 4334736,
+      "componentType": 5125,
+      "count": 24,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "BadKarma™ (https://sketchfab.com/890244234)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/mercedes-benz-gls-580-4matic-dbcfc05231fb45e99134bfb03c14efa3",
+      "title": "Mercedes Benz GLS 580 4Matic"
+    },
+    "generator": "Sketchfab-15.55.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 4334832,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3928224,
+      "byteOffset": 4334832,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 5892336,
+      "byteOffset": 8263056,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 14155392,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/material_baseColor.jpeg"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "Polar_White",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.8928293248917687,
+          0.8928293248917687,
+          0.8928293248917687,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.8706302582431096
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Interior",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.0508761,
+          0.0508761,
+          0.0508761,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9886237581969923
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Color_M02",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.8263758061442761
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "UnderCarriage",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9886237581969923
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Color_A07",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.587016,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9720939607257508
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Grille",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.019837,
+          0.019837,
+          0.019837,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9955643119530336
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Color_M08",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.11928,
+          0.11928,
+          0.11928,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9733281811643825
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "ChromeBlack_Windows",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.019837,
+          0.019837,
+          0.019837,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9955643119530336
+      }
+    },
+    {
+      "alphaMode": "BLEND",
+      "doubleSided": true,
+      "name": "Lights_Glass",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9508941583597226
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Color_A08",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.393123,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9813114022827135
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "2020_Mercedes_Benz_GLS450_wire_088144225",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.214041,
+          0.214041,
+          0.214041,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9521389774027967
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Color_M03",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.66486,
+          0.66486,
+          0.66486,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.851332784447949
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Color_M04",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.522522,
+          0.522522,
+          0.522522,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.8831605288260854
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Color_M01",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.890005,
+          0.890005,
+          0.890005,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.8009888319685299
+      }
+    },
+    {
+      "alphaMode": "BLEND",
+      "doubleSided": true,
+      "name": "WindowsTint",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.0,
+          0.0,
+          0.0,
+          0.8761931464933987
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9824622058029523
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Tyres",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.9894984856291105
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "material",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.8211145618000169
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Mercedes Benz GLS 580_Polar_White_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2,
+            "TEXCOORD_1": 3
+          },
+          "indices": 4,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_Interior_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 6,
+            "POSITION": 5,
+            "TEXCOORD_0": 7,
+            "TEXCOORD_1": 8
+          },
+          "indices": 9,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_Color_M02_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 11,
+            "POSITION": 10,
+            "TEXCOORD_0": 12,
+            "TEXCOORD_1": 13
+          },
+          "indices": 14,
+          "material": 2,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_UnderCarriage_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 16,
+            "POSITION": 15,
+            "TEXCOORD_0": 17,
+            "TEXCOORD_1": 18
+          },
+          "indices": 19,
+          "material": 3,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_Color_A07_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 21,
+            "POSITION": 20,
+            "TEXCOORD_0": 22,
+            "TEXCOORD_1": 23
+          },
+          "indices": 24,
+          "material": 4,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_Grille_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 26,
+            "POSITION": 25,
+            "TEXCOORD_0": 27,
+            "TEXCOORD_1": 28
+          },
+          "indices": 29,
+          "material": 5,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_Color_M08_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 31,
+            "POSITION": 30,
+            "TEXCOORD_0": 32,
+            "TEXCOORD_1": 33
+          },
+          "indices": 34,
+          "material": 6,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_ChromeBlack_Windows_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 36,
+            "POSITION": 35,
+            "TEXCOORD_0": 37,
+            "TEXCOORD_1": 38
+          },
+          "indices": 39,
+          "material": 7,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_Lights_Glass_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 41,
+            "POSITION": 40,
+            "TEXCOORD_0": 42,
+            "TEXCOORD_1": 43
+          },
+          "indices": 44,
+          "material": 8,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_Color_A08_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 46,
+            "POSITION": 45,
+            "TEXCOORD_0": 47,
+            "TEXCOORD_1": 48
+          },
+          "indices": 49,
+          "material": 9,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580__2020_Mercedes_Benz_GLS450_wire_088144225_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 51,
+            "POSITION": 50,
+            "TEXCOORD_0": 52,
+            "TEXCOORD_1": 53
+          },
+          "indices": 54,
+          "material": 10,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_Color_M03_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 56,
+            "POSITION": 55,
+            "TEXCOORD_0": 57,
+            "TEXCOORD_1": 58
+          },
+          "indices": 59,
+          "material": 11,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_Color_M04_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 61,
+            "POSITION": 60,
+            "TEXCOORD_0": 62,
+            "TEXCOORD_1": 63
+          },
+          "indices": 64,
+          "material": 12,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_Color_M01_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 66,
+            "POSITION": 65,
+            "TEXCOORD_0": 67,
+            "TEXCOORD_1": 68
+          },
+          "indices": 69,
+          "material": 13,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_WindowsTint_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 71,
+            "POSITION": 70,
+            "TEXCOORD_0": 72,
+            "TEXCOORD_1": 73
+          },
+          "indices": 74,
+          "material": 14,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_Tyres_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 76,
+            "POSITION": 75,
+            "TEXCOORD_0": 77,
+            "TEXCOORD_1": 78
+          },
+          "indices": 79,
+          "material": 15,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Mercedes Benz GLS 580_material_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 81,
+            "POSITION": 80,
+            "TEXCOORD_0": 82,
+            "TEXCOORD_1": 83
+          },
+          "indices": 84,
+          "material": 16,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        0.9807640910148621,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.177733751140525e-16,
+        -0.9807640910148621,
+        0.0,
+        0.0,
+        0.9807640910148621,
+        2.177733751140525e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.009999999776482582,
+        0.0,
+        0.0,
+        -0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Mercedes+Benz+GLS+580.fbx"
+    },
+    {
+      "children": [
+        3
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "matrix": [
+        2.5399999618530273,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        -4.138185194403211e-07,
+        -2.5399999618529936,
+        0.0,
+        0.0,
+        2.5399999618529936,
+        -4.138185194403211e-07,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Mercedes"
+    },
+    {
+      "children": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "matrix": [
+        0.42000001668930054,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.42000001668930054,
+        -1.3234889800848441e-23,
+        0.0,
+        0.0,
+        1.3234889800848441e-23,
+        0.42000001668930054,
+        0.0,
+        70.33719635009766,
+        156.4317169189453,
+        -7.107223067449181e-15,
+        1.0
+      ],
+      "name": "Mercedes Benz GLS 580"
+    },
+    {
+      "mesh": 0,
+      "name": "Mercedes Benz GLS 580_Polar_White_0"
+    },
+    {
+      "mesh": 1,
+      "name": "Mercedes Benz GLS 580_Interior_0"
+    },
+    {
+      "mesh": 2,
+      "name": "Mercedes Benz GLS 580_Color_M02_0"
+    },
+    {
+      "mesh": 3,
+      "name": "Mercedes Benz GLS 580_UnderCarriage_0"
+    },
+    {
+      "mesh": 4,
+      "name": "Mercedes Benz GLS 580_Color_A07_0"
+    },
+    {
+      "mesh": 5,
+      "name": "Mercedes Benz GLS 580_Grille_0"
+    },
+    {
+      "mesh": 6,
+      "name": "Mercedes Benz GLS 580_Color_M08_0"
+    },
+    {
+      "mesh": 7,
+      "name": "Mercedes Benz GLS 580_ChromeBlack_Windows_0"
+    },
+    {
+      "mesh": 8,
+      "name": "Mercedes Benz GLS 580_Lights_Glass_0"
+    },
+    {
+      "mesh": 9,
+      "name": "Mercedes Benz GLS 580_Color_A08_0"
+    },
+    {
+      "mesh": 10,
+      "name": "Mercedes Benz GLS 580__2020_Mercedes_Benz_GLS450_wire_088144225_0"
+    },
+    {
+      "mesh": 11,
+      "name": "Mercedes Benz GLS 580_Color_M03_0"
+    },
+    {
+      "mesh": 12,
+      "name": "Mercedes Benz GLS 580_Color_M04_0"
+    },
+    {
+      "mesh": 13,
+      "name": "Mercedes Benz GLS 580_Color_M01_0"
+    },
+    {
+      "mesh": 14,
+      "name": "Mercedes Benz GLS 580_WindowsTint_0"
+    },
+    {
+      "mesh": 15,
+      "name": "Mercedes Benz GLS 580_Tyres_0"
+    },
+    {
+      "mesh": 16,
+      "name": "Mercedes Benz GLS 580_material_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    }
+  ]
+}

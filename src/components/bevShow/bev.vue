@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-26 14:27:33
+ * @LastEditTime: 2024-03-27 18:06:14
  * @Description: 
 -->
 <template>
@@ -8,15 +8,24 @@
 
 <script setup>
 import bevImgControl from "@/controls/bev/bevImgContorl.js";
-import { onMounted, ref, onUnmounted } from "vue";
+import { onMounted, ref, onUnmounted, defineExpose } from "vue";
 let Bev = ref(null);
+function drawBev(data) {
+  return new Promise(async (resolve, reject) => {
+    await Bev.value.getData(data);
+    resolve(`渲染bev完毕`);
+  })
+}
 onMounted(() => {
   Bev.value = new bevImgControl();
 });
 onUnmounted(() => {
   Bev.value.ObserverInstance.removeAll();
-  // Bev.value.clearFun();
-  // Bev.value = null;
+  Bev.value.clearFun();
+  Bev.value = null;
+});
+defineExpose({
+  drawBev
 });
 </script>
 

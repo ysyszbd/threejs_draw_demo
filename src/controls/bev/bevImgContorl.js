@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-27 15:06:56
+ * @LastEditTime: 2024-03-27 18:07:12
  * @Description:
  */
 import * as THREE from "three";
@@ -28,12 +28,6 @@ export default class bevImgContorl {
   renderer;
   particleSystem;
   scale = 51.2 / 30;
-  observerListenerList = [
-    {
-      eventName: "DRAW_BEV",
-      fn: this.getData.bind(this),
-    },
-  ];
   objs = {
     start: false,
     main_car: null,
@@ -70,7 +64,6 @@ export default class bevImgContorl {
     this.map.set(1, [255, 255, 255, 1]);
     this.map.set(2, [0, 255, 0, 1]);
     this.map.set(3, [255, 0, 0, 1]);
-    ObserverInstance.selfAddListenerList(this.observerListenerList, "yh_init");
     this.rgb_data.dom = document.getElementById("bev_box");
     // 初始化three
     this.init();
@@ -81,15 +74,18 @@ export default class bevImgContorl {
   // 更新bev
   async getData(data) {
     try {
-      if (this.bev.dom.width != data.info.width)
-        this.bev.dom.width = data.info.width;
-
-      if (this.bev.dom.height != data.info.height)
-        this.bev.dom.height = data.info.height;
-
-      this.bev.ctx.drawImage(data.info, 0, 0);
-      this.mapBg.needsUpdate = true;
-      await this.handleObjs(data.objs);
+      return new Promise(async (resolve, reject) => {
+        if (this.bev.dom.width != data.info.width)
+          this.bev.dom.width = data.info.width;
+  
+        if (this.bev.dom.height != data.info.height)
+          this.bev.dom.height = data.info.height;
+  
+        this.bev.ctx.drawImage(data.info, 0, 0);
+        this.mapBg.needsUpdate = true;
+        await this.handleObjs(data.objs);
+        resolve("ppp")
+      })
     } catch (err) {
       console.log(err, "err---getData");
     }
@@ -252,8 +248,8 @@ export default class bevImgContorl {
     this.bev.ctx = this.bev.dom.getContext("2d", {
       willReadFrequently: true,
     });
-    this.bev.dom.height = 400;
-    this.bev.dom.width = 400;
+    this.bev.dom.height = 200;
+    this.bev.dom.width = 200;
 
     const devicePixelRatio = window.devicePixelRatio || 1;
     this.bev.ctx.scale(devicePixelRatio, devicePixelRatio);
@@ -392,7 +388,7 @@ export default class bevImgContorl {
   loadFile(url) {
     return new Promise((resolve, reject) => {
       new GLTFLoader().load(
-        `src/assets/car_model/${url}/scene.gltf`,
+        `/car_model/${url}/scene.gltf`,
         (gltf) => {
           resolve({ gltf: gltf, id: url });
         },

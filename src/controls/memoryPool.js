@@ -8,25 +8,16 @@ export default class MemoryPool {
       fn: this.setData.bind(this),
     },
   ];
-  objects = new Map();
   constructor() {
     ObserverInstance.selfAddListenerList(this.observerListenerList, "yh_init");
     // 视频的障碍物canvas
     this.video_objs = {
-      foresight: new Map(),
-      rearview: new Map(),
-      right_front: new Map(),
-      right_back: new Map(),
-      left_back: new Map(),
-      left_front: new Map(),
-    };
-    this.video_bgs = {
-      foresight: new Map(),
-      rearview: new Map(),
-      right_front: new Map(),
-      right_back: new Map(),
-      left_back: new Map(),
-      left_front: new Map(),
+      foresight: new WeakMap(),
+      rearview: new WeakMap(),
+      right_front: new WeakMap(),
+      right_back: new WeakMap(),
+      left_back: new WeakMap(),
+      left_front: new WeakMap(),
     };
     this.v_bgs = {
       foresight: new WeakMap(),
@@ -36,8 +27,9 @@ export default class MemoryPool {
       left_back: new WeakMap(),
       left_front: new WeakMap(),
     };
-    this.objs = new Map(); // 给分割图使用的障碍物数据
-    this.bevs = new Map();
+    this.objs = new WeakMap(); // 给分割图使用的障碍物数据
+    this.bevs = new WeakMap();
+    this.bevs_point = new WeakMap();
     this.keyArr = [];
     this.weakKeys = [];
   }
@@ -56,9 +48,9 @@ export default class MemoryPool {
     } else if (sign === "v_bgs") {
       res = this.v_bgs[view].get(key);
       this.v_bgs[view].delete(key);
-    } else if (sign === "video_bgs") {
-      res = this.video_bgs[view].get(key);
-      this.video_bgs[view].delete(key);
+    } else if (sign === "bevs_point") {
+      res = this.bevs_point.get(key);
+      this.bevs_point.delete(key);
     }
     return res;
   }
@@ -72,12 +64,14 @@ export default class MemoryPool {
       this.objs.set(key, block);
     } else if (sign === "bev") {
       this.bevs.set(key, block);
+      // console.log(this.bevs, "this.bevs==");
     } else if (sign === "video_objs") {
       this.video_objs[view].set(key, block);
     } else if (sign === "v_bgs") {
       this.v_bgs[view].set(key, block);
-    } else if (sign === "video_bgs") {
-      this.video_bgs[view].set(key, block);
+    } else if (sign === "bevs_point") {
+      console.log(key, block, "key, block");
+      this.bevs_point.set(key, block);
     }
   }
   setKey(key) {
@@ -95,12 +89,6 @@ export default class MemoryPool {
   // 判断video对应视角中是否已有解码后的视频数据了
   hasVideo(key) {
     return (
-      // this.video_bgs["foresight"].has(key) &&
-      // this.video_bgs["rearview"].has(key) &&
-      // this.video_bgs["right_front"].has(key) &&
-      // this.video_bgs["right_back"].has(key) &&
-      // this.video_bgs["left_back"].has(key) &&
-      // this.video_bgs["left_front"].has(key)
       this.v_bgs["foresight"].has(key) &&
       this.v_bgs["rearview"].has(key) &&
       this.v_bgs["right_front"].has(key) &&

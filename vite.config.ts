@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-27 14:52:08
+ * @LastEditTime: 2024-03-27 15:28:05
  * @Description:
  */
 import { defineConfig } from "vite";
@@ -37,6 +37,24 @@ export default defineConfig({
           propList: ["*"],
         }),
       ],
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        chunkFileNames: "static/js/[name]-[hash].js",
+        entryFileNames: "static/js/[name]-[hash].js",
+        assetFileNames: "static/[ext]/[name]-[hash].[ext]",
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            return id
+              .toString()
+              .split("node_modules/")[1]
+              .split("/")[0]
+              .toString();
+          }
+        },
+      },
     },
   },
 });

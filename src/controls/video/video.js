@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-26 14:18:01
+ * @LastEditTime: 2024-03-27 19:30:53
  * @Description:./
  */
 export default class Video {
@@ -34,10 +34,7 @@ export default class Video {
   }
   async drawVideo(data) {
     // 使用canvas外部的元素来控制canvas的大小
-    if (
-      data.bg.width != this.old_wh.w ||
-      data.bg.height != this.old_wh.h
-    ) {
+    if (data.bg.width != this.old_wh.w || data.bg.height != this.old_wh.h) {
       let wh_obj = this.handleWH(
         data.bg.width,
         data.bg.height,
@@ -57,15 +54,12 @@ export default class Video {
       this.helper_dom.height = data.bg.height;
     }
     this.helper_ctx.clearRect(0, 0, data.bg.width, data.bg.height);
-    this.helper_ctx.drawImage(
-      data.bg,
-      0,
-      0,
-      data.bg.width,
-      data.bg.height
-    );
+    this.helper_ctx.drawImage(data.bg, 0, 0, data.bg.width, data.bg.height);
     data.bg.close();
-    // if (data.video_objs) this.helper_ctx.drawImage(data.video_objs, 0, 0, w, h);
+    if (data.obj) {
+      this.helper_ctx.drawImage(data.obj, 0, 0, data.bg.width, data.bg.height);
+      data.obj.close();
+    }
   }
   // 计算视频要放置在dom元素中的宽高--按照视频帧的比例来
   handleWH(imgW, imgH, domW, domH) {
