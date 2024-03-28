@@ -169,31 +169,30 @@ const ws = new Ws("ws://192.168.1.160:1234", true, async (e) => {
     if (e.data instanceof ArrayBuffer) {
       object = decode(e.data);
       let key = object[0];
-      console.log(object, "object", Date.now());
       if (video_ok_key.value > 0 && key > video_ok_key.value) {
-        let weak_id = { id: key, sign: 0 }; // sign 0:只有视频、没有障碍物;1:障碍物和视频都有;2：只有障碍物没有视频
-        let weak_key_res = MemoryPool.weakKeys.findIndex((item) => {
+        console.log(object, "object", Date.now());
+        let weak_id = { id: key }; // sign 0:只有视频、没有障碍物;1:障碍物和视频都有;2：只有障碍物没有视频
+        let weak_key_res = MemoryPool.weakKeys.find((item) => {
           return item.id === key;
         });
         // 这里要确保键对象地址一致
         if (!weak_key_res) {
-          MemoryPool.setWeakKeys(weak_id);
+          MemoryPool.weakKeys.push(weak_id);
         } else {
-          weak_id = MemoryPool.weakKeys[weak_key_res];
-          MemoryPool.weakKeys[weak_key_res].sign = 1;
+          weak_id = weak_key_res
         }
-        // if (object[2][1] != 0 && object[2][2] != 0 && !MemoryPool.bevs.has()) {
-        //   drawWorker.postMessage({
-        //     sign: "draw_bev&objs",
-        //     key: { id: key },
-        //     bev_w: object[2][1],
-        //     bev_h: object[2][2],
-        //     bev: object[3],
-        //     objs: object[4],
-        //     basic_data: object[2],
-        //     bevs_point: object[5],
-        //   });
-        // }
+        if (object[2][1] !== 0 && object[2][2] !== 0) {
+          drawWorker.postMessage({
+            sign: "draw_bev&objs",
+            key: { id: key },
+            bev_w: object[2][1],
+            bev_h: object[2][2],
+            bev: object[3],
+            objs: object[4],
+            basic_data: object[2],
+            bevs_point: object[5],
+          });
+        }
       }
       if (object[1].length > 0) {
         await foresight.value.postVideo(object[1][0], key, "foresight");
@@ -218,15 +217,13 @@ function animate() {
 async function updateVideo() {
   if (MemoryPool.weakKeys[0]?.id > video_ok_key.value) {
     let key = MemoryPool.weakKeys[0];
-    if (key.sign) {
-    }
     // 判断6路视频是否都已经离屏渲染并存放完毕
-    // if (
-    //   (MemoryPool.objs.has(key) &&
-    //     MemoryPool.bevs.has(key) &&
-    //     MemoryPool.hasVideoObjs(key)) ||
-    //   MemoryPool.hasVideo(key)
-    // ) {
+    if (
+      (MemoryPool.objs.has(key) &&
+        MemoryPool.bevs.has(key) &&
+        MemoryPool.hasVideoObjs(key)) &&
+      MemoryPool.hasVideo(key)
+    ) {
     key = MemoryPool.getWeakKeys();
     let objs = MemoryPool.allocate(key, "obj"),
       info = MemoryPool.allocate(key, "bev"),
@@ -264,11 +261,12 @@ async function updateVideo() {
     ]).then((res) => {
       key = null;
     });
-    // }
+    }
   }
 }
 // 接受视频解码的数据，通知去离屏渲染
 async function updataVideoStatus(message) {
+  console.log(video_ok_key.value, "video_ok_key.value");
   if (video_ok_key.value < 0) {
     let res = 0;
     for (const [key, value] of Object.entries(video_status_ok.value)) {
@@ -278,20 +276,22 @@ async function updataVideoStatus(message) {
       console.log(message.view, "=====", message.key);
       video_status_ok.value[message.view] = true;
     }
+    console.log(res, "res");
     if (res > 1) return;
     // 最后一个video也准备完毕了
     if (res === 1) {
       video_ok_key.value = message.key;
     }
     return;
-  } else {
-    let weak_key_res = MemoryPool.weakKeys.find((item) => {
-      return item.id === message.key;
-    });
-    // 这里要确保键对象地址一致
-    if (!weak_key_res) return;
-    MemoryPool.setData(weak_key_res, message.info, "v_bgs", message.view);
   }
+
+  let weak_key_res = MemoryPool.weakKeys.find((item) => {
+    return item.id === message.key;
+  });
+  console.log(weak_key_res, "weak_key_res", message.key, MemoryPool.weakKeys);
+  // 这里要确保键对象地址一致
+  if (!weak_key_res) return;
+  MemoryPool.setData(weak_key_res, message.info, "v_bgs", message.view);
 }
 // 通知bev分割图渲染
 function noticeDraw(key) {

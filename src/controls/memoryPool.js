@@ -63,8 +63,8 @@ export default class MemoryPool {
     if (sign === "obj") {
       this.objs.set(key, block);
     } else if (sign === "bev") {
+      console.log(key, block, "this.bevs==");
       this.bevs.set(key, block);
-      // console.log(this.bevs, "this.bevs==");
     } else if (sign === "video_objs") {
       this.video_objs[view].set(key, block);
     } else if (sign === "v_bgs") {

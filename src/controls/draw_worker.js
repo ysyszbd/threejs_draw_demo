@@ -21,7 +21,7 @@ onmessage = async (e) => {
       imageBitmap: bev_imageBitmap,
       objs_imageBitmap: view,
       objs: await handleObjs(e.data.objs),
-      bev: e.data.bevs_point ? await drawBevPoint(e.data.bevs_point, e.data.key) : null
+      bev: e.data?.bevs_point ? await drawBevPoint(e.data?.bevs_point) : null
     });
   }
 };
@@ -32,7 +32,7 @@ map.set(2, [0, 255, 0, 1]);
 map.set(3, [255, 0, 0, 1]);
 let bev_can = new OffscreenCanvas(200, 200),
   bev_ctx = bev_can.getContext("2d");
-function drawBevPoint(points, key) {
+function drawBevPoint(points) {
   return new Promise((resolve, reject) => {
     points.filter(item => {
       bev_ctx.beginPath();
@@ -44,7 +44,7 @@ function drawBevPoint(points, key) {
       }
       bev_ctx.closePath();
     })
-    return bev_can.transferToImageBitmap()
+    resolve(bev_can.transferToImageBitmap())
   })
 }
 let bev_canvas = new OffscreenCanvas(200, 200),
@@ -86,6 +86,7 @@ let v_objs_canvas = new OffscreenCanvas(960, 480),
   v_objs_cxt = v_objs_canvas.getContext("2d");
 // 各view渲染障碍物
 function drawVideoObjs(objs, view, key) {
+  console.log(objs, view, key, "objs, view, key");
   return new Promise((resolve, reject) => {
     objs.filter((item) => {
       let color = box_color[`${item[7]}-${item[8]}`];
@@ -140,8 +141,6 @@ async function handleObjsPoints(base, objs) {
     for (let i = 0; i < 6; i++) {
       K[view_i[i]] = mat3.fromValues(...base[4][i]);
       ext_lidar2cam[view_i[i]] = mat4.fromValues(...base[3][i]);
-      // K[view_i[i]] = construct2DArray(base[4][i], 3, 3);
-      // ext_lidar2cam[view_i[i]] = construct2DArray(base[3][i], 4, 4);
     }
     for (let j = 0; j < objs.length; j++) {
       let data = {
@@ -170,7 +169,7 @@ async function handleObjsPoints(base, objs) {
           const inverseMatrix = mat4.create();
           mat4.invert(inverseMatrix, ext_lidar2cam[e]);
 
-          const transposeMatrix = inverseMatrix;
+          const transposeMatrix = construct2DArray(inverseMatrix, 4, 4);
           pt_cam_z =
             item[0] * transposeMatrix[2][0] +
             item[1] * transposeMatrix[2][1] +
@@ -181,7 +180,7 @@ async function handleObjsPoints(base, objs) {
           }
         }
       });
-
+      console.log(data.points_eight, "data.points_eight");
       data.points_eight.filter((item) => {
         for (let e in view_sign) {
           if (view_sign[e] === 8) {
@@ -204,9 +203,8 @@ function project_lidar2img(pts, ext_lidar2cam, K, scale, crop) {
   // 逆转矩阵
   const inverseMatrix = mat4.create();
   mat4.invert(inverseMatrix, ext_lidar2cam);
-  const transposeMatrix = inverseMatrix;
-  ext_lidar2cam = transposeMatrix;
-
+  ext_lidar2cam = construct2DArray(inverseMatrix, 4, 4);
+  K = construct2DArray(K, 3, 3);
   const pt_cam_x =
     pts[0] * ext_lidar2cam[0][0] +
     pts[1] * ext_lidar2cam[0][1] +
