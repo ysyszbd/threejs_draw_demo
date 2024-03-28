@@ -1,5 +1,5 @@
 <!--
- * @LastEditTime: 2024-03-27 18:05:48
+ * @LastEditTime: 2024-03-28 10:15:49
  * @Description: 
 -->
 <template>
@@ -44,12 +44,15 @@ function drawVideo(data) {
   });
 }
 function postVideo(u8Array, key, view) {
-  if (view != props.video_id) return;
-  video_work.postMessage({
-    video_data: u8Array,
-    view: props.video_id,
-    key: key,
-  });
+  return new Promise((resolve, reject) => {
+    if (view != props.video_id) return;
+    video_work.postMessage({
+      video_data: u8Array,
+      view: props.video_id,
+      key: key,
+    });
+    resolve(`通知${view}解码~`)
+  })
 }
 function initVideoWork() {
   video_work.onmessage = (event) => {

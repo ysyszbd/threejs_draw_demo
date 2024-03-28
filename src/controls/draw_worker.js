@@ -6,6 +6,7 @@ onmessage = async (e) => {
     // console.log(e.data, "e.data");
     let bev_imageBitmap = await drawBev(e.data.bev, e.data.key);
     let v_obj = await handleObjsPoints(e.data.basic_data, e.data.objs);
+    let bev = await drawBevPoint(e.data.bevs_point, e.data.key);
     let view = {
       foresight: await drawVideoObjs(v_obj, "foresight", e.data.key),
       rearview: await drawVideoObjs(v_obj, "rearview", e.data.key),
@@ -20,6 +21,7 @@ onmessage = async (e) => {
       imageBitmap: bev_imageBitmap,
       objs_imageBitmap: view,
       objs: await handleObjs(e.data.objs),
+      bev: e.data.bevs_point ? await drawBevPoint(e.data.bevs_point, e.data.key) : null
     });
   }
 };
@@ -28,6 +30,23 @@ map.set(0, [80, 82, 79, 1]);
 map.set(1, [255, 255, 255, 1]);
 map.set(2, [0, 255, 0, 1]);
 map.set(3, [255, 0, 0, 1]);
+let bev_can = new OffscreenCanvas(200, 200),
+  bev_ctx = bev_can.getContext("2d");
+function drawBevPoint(points, key) {
+  return new Promise((resolve, reject) => {
+    points.filter(item => {
+      bev_ctx.beginPath();
+      bev_ctx.lineWidth = "1.4"; //线条 宽度
+      bev_ctx.strokeStyle = map.get(item[0]);
+      bev_ctx.moveTo(item[0][0], item[0][1]);
+      for (let i = 1; i < item.length; i++) {
+        bev_ctx.lineTo(item[i][0], item[i][1]);
+      }
+      bev_ctx.closePath();
+    })
+    return bev_can.transferToImageBitmap()
+  })
+}
 let bev_canvas = new OffscreenCanvas(200, 200),
   bev_context = bev_canvas.getContext("2d");
 // 渲染bev

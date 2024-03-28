@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-27 18:07:12
+ * @LastEditTime: 2024-03-28 11:05:04
  * @Description:
  */
 import * as THREE from "three";
@@ -8,9 +8,9 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { ObserverInstance } from "@/controls/event/observer";
 import ResourceTracker from "@/controls/resourceTracker";
 import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
-import skyVertexShader from '@/assets/shader/skyVertexShader.vs?raw'
-import skyFragmentShader from '@/assets/shader/skyFragmentShader.fs?raw'
-import roadFragmentShader from '@/assets/shader/roadFragmentShader.fs?raw'
+import skyVertexShader from "@/assets/shader/skyVertexShader.vs?raw";
+import skyFragmentShader from "@/assets/shader/skyFragmentShader.fs?raw";
+import roadFragmentShader from "@/assets/shader/roadFragmentShader.fs?raw";
 
 export default class bevImgContorl {
   resTracker = new ResourceTracker();
@@ -74,18 +74,20 @@ export default class bevImgContorl {
   // 更新bev
   async getData(data) {
     try {
+      if (!data.info) return;
+      console.log(data, "data]]]");
       return new Promise(async (resolve, reject) => {
         if (this.bev.dom.width != data.info.width)
           this.bev.dom.width = data.info.width;
-  
+
         if (this.bev.dom.height != data.info.height)
           this.bev.dom.height = data.info.height;
-  
+
         this.bev.ctx.drawImage(data.info, 0, 0);
         this.mapBg.needsUpdate = true;
         await this.handleObjs(data.objs);
-        resolve("ppp")
-      })
+        resolve("ppp");
+      });
     } catch (err) {
       console.log(err, "err---getData");
     }
@@ -121,11 +123,12 @@ export default class bevImgContorl {
           if (point[0] !== -1 && point[1] !== -1) {
             let c_model = model.scene.clone();
             c_model.matrixAutoUpdate = true;
-            c_model.position.x = -point[1] * this.scale;
-            c_model.position.y = point[0] * this.scale;
-            c_model.position.z = point[2] * this.scale;
+            c_model.position.set(
+              -point[1] * this.scale,
+              point[0] * this.scale,
+              point[2] * this.scale
+            );
             c_model.rotation.y = -point[9];
-
             group.add(c_model);
           }
         }
@@ -133,9 +136,11 @@ export default class bevImgContorl {
       } else {
         if (group.children.length >= data.length) {
           for (let i = 0; i < data.length; i++) {
-            group.children[i].position.x = -data[i][1] * this.scale;
-            group.children[i].position.y = data[i][0] * this.scale;
-            group.children[i].position.z = data[i][2] * this.scale;
+            group.children[i].position.set(
+              -data[i][1] * this.scale,
+              data[i][0] * this.scale,
+              data[i][2] * this.scale
+            );
             group.children[i].rotation.y = -data[i][9];
           }
           for (let j = data.length; j < group.children.length; j++) {
@@ -144,18 +149,22 @@ export default class bevImgContorl {
           }
         } else {
           for (let i = 0; i < group.children.length; i++) {
-            group.children[i].position.x = -data[i][1] * this.scale;
-            group.children[i].position.y = data[i][0] * this.scale;
-            group.children[i].position.z = data[i][2] * this.scale;
+            group.children[i].position.set(
+              -data[i][1] * this.scale,
+              data[i][0] * this.scale,
+              data[i][2] * this.scale
+            );
             group.children[i].rotation.y = -data[i][9];
           }
 
           for (let j = group.children.length; j < data.length; j++) {
             let l_c_model = model.scene.clone();
             l_c_model.matrixAutoUpdate = true;
-            l_c_model.position.x = -data[j][1] * this.scale;
-            l_c_model.position.y = data[j][0] * this.scale;
-            l_c_model.position.z = data[j][2] * this.scale;
+            l_c_model.position.set(
+              -data[j][1] * this.scale,
+              data[j][0] * this.scale,
+              data[j][2] * this.scale
+            );
             l_c_model.rotation.y = -data[j][9];
             group.add(l_c_model);
           }
@@ -215,7 +224,6 @@ export default class bevImgContorl {
   // 初始化threejs
   init() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xf0f0f0);
     this.scene.background = new THREE.Color().setHSL(0.6, 0, 1);
     this.scene.fog = new THREE.Fog(this.scene.background, 1, 5000);
     let rect = this.rgb_data.dom.getBoundingClientRect();
@@ -225,6 +233,7 @@ export default class bevImgContorl {
       40 -
       document.getElementById("page_title").getBoundingClientRect().height;
     this.camera = new THREE.PerspectiveCamera(80, width / height, 1, 10000);
+    // this.camera.position.set(0, 0, 6);
     this.camera.position.set(0, -15, 6);
     this.camera.lookAt(0, 0, 0);
     this.camera.updateMatrix();
@@ -236,7 +245,7 @@ export default class bevImgContorl {
     this.rgb_data.dom.appendChild(this.renderer.domElement);
     this.renderer.toneMapping = THREE.ReinhardToneMapping;
     this.renderer.toneMappingExposure = 2.0;
-    // this.setMesh();
+    this.setMesh();
     this.setAmbientLight();
     this.setControls();
     this.addSky();

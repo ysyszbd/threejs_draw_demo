@@ -30,8 +30,8 @@ export default class MemoryPool {
     this.objs = new WeakMap(); // 给分割图使用的障碍物数据
     this.bevs = new WeakMap();
     this.bevs_point = new WeakMap();
-    this.keyArr = [];
     this.weakKeys = [];
+    this.objects = new WeakMap();
   }
   // 从内存池中获取内存块
   allocate(key, sign, view) {
@@ -74,12 +74,6 @@ export default class MemoryPool {
       this.bevs_point.set(key, block);
     }
   }
-  setKey(key) {
-    this.keyArr.push(key);
-  }
-  getKey() {
-    return this.keyArr.shift();
-  }
   setWeakKeys(key) {
     this.weakKeys.push(key);
   }
@@ -120,6 +114,5 @@ export default class MemoryPool {
     };
     this.objs.clear();
     this.bevs.clear();
-    this.keyArr = [];
   }
 }

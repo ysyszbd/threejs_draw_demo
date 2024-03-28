@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-27 19:30:53
+ * @LastEditTime: 2024-03-28 13:39:58
  * @Description:./
  */
 export default class Video {
@@ -34,10 +34,12 @@ export default class Video {
   }
   async drawVideo(data) {
     // 使用canvas外部的元素来控制canvas的大小
-    if (data.bg.width != this.old_wh.w || data.bg.height != this.old_wh.h) {
+    let w = 940;
+    let h = 480;
+    if (w != this.old_wh.w || h != this.old_wh.h) {
       let wh_obj = this.handleWH(
-        data.bg.width,
-        data.bg.height,
+        w,
+        h,
         this.dom_w,
         this.dom_h
       );
@@ -45,19 +47,20 @@ export default class Video {
       this.handle_box.style.width = wh_obj.w + "px";
       this.handle_box.style.height = wh_obj.h + "px";
     }
-
     if (
-      this.helper_dom.width != data.bg.width ||
-      this.helper_dom.height != data.bg.height
+      this.helper_dom.width != w ||
+      this.helper_dom.height != h
     ) {
-      this.helper_dom.width = data.bg.width;
-      this.helper_dom.height = data.bg.height;
+      this.helper_dom.width = w;
+      this.helper_dom.height = h;
     }
-    this.helper_ctx.clearRect(0, 0, data.bg.width, data.bg.height);
-    this.helper_ctx.drawImage(data.bg, 0, 0, data.bg.width, data.bg.height);
-    data.bg.close();
+    // this.helper_ctx.clearRect(0, 0, w, h);
+    if (data.bg) {
+      this.helper_ctx.drawImage(data.bg, 0, 0, w, h);
+      data.bg.close();
+    }
     if (data.obj) {
-      this.helper_ctx.drawImage(data.obj, 0, 0, data.bg.width, data.bg.height);
+      this.helper_ctx.drawImage(data.obj, 0, 0, w, h);
       data.obj.close();
     }
   }

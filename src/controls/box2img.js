@@ -3,13 +3,13 @@
  * @Description:
  */
 // import { K, D, ext_lidar2cam } from "../assets/demo_data/data";
-import { create, all } from "mathjs";
-// 创建mathjs实例
-const mathjs = create(all, {
-  number: "BigNumber",
-  precision: 20,
-});
-export const math = create(all, mathjs);
+// import { create, all } from "mathjs";
+// // 创建mathjs实例
+// const mathjs = create(all, {
+//   number: "BigNumber",
+//   precision: 20,
+// });
+// export const math = create(all, mathjs);
 
 export function construct2DArray(original, m, n) {
   return original.length === m * n
@@ -20,7 +20,7 @@ export function construct2DArray(original, m, n) {
 // ext转为4*4，k转为3*3
 export function project_lidar2img(pts, ext_lidar2cam, K, scale, crop) {
   // 逆转矩阵
-  const transposeMatrix = math.inv(ext_lidar2cam);
+  // const transposeMatrix = math.inv(ext_lidar2cam);
   ext_lidar2cam = transposeMatrix;
 
   const pt_cam_x =
@@ -152,7 +152,7 @@ export async function handleObjsPoints(base, objs) {
       data.points_eight.filter((item) => {
         let pt_cam_z;
         for (let e in view_sign) {
-          const transposeMatrix = math.inv(ext_lidar2cam[e]);
+          // const transposeMatrix = math.inv(ext_lidar2cam[e]);
           pt_cam_z =
             item[0] * transposeMatrix[2][0] +
             item[1] * transposeMatrix[2][1] +
