@@ -115,11 +115,11 @@ let foresight = ref(),
   animationFrameId = ref(null);
 drawWorker.onmessage = (e) => {
   if (e.data.sign === "draw_bev&objs") {
+    console.log(e.data, "--------------------");
     // 这里要拿取原始地址的键对象
     let weak_key_res = MemoryPool.weakKeys.find((item) => {
       return item.id === e.data.key.id;
     });
-    console.log(weak_key_res, "weak_key_res", e.data.key);
     MemoryPool.setData(weak_key_res, e.data.imageBitmap, "bev");
     MemoryPool.setData(weak_key_res, e.data.bev, "bevs_point");
     MemoryPool.setData(weak_key_res, e.data.objs, "obj");
@@ -266,7 +266,6 @@ async function updateVideo() {
 }
 // 接受视频解码的数据，通知去离屏渲染
 async function updataVideoStatus(message) {
-  console.log(video_ok_key.value, "video_ok_key.value");
   if (video_ok_key.value < 0) {
     let res = 0;
     for (const [key, value] of Object.entries(video_status_ok.value)) {
@@ -276,7 +275,6 @@ async function updataVideoStatus(message) {
       console.log(message.view, "=====", message.key);
       video_status_ok.value[message.view] = true;
     }
-    console.log(res, "res");
     if (res > 1) return;
     // 最后一个video也准备完毕了
     if (res === 1) {

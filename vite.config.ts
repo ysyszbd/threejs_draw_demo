@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-27 15:28:05
+ * @LastEditTime: 2024-03-28 16:54:12
  * @Description:
  */
 import { defineConfig } from "vite";
@@ -9,7 +9,7 @@ import postcssPx2Rem from "postcss-pxtorem";
 import autoprefixer from "autoprefixer";
 
 export default defineConfig({
-  base: "/",
+  base: "./",
   plugins: [vue()],
   resolve: {
     alias: {

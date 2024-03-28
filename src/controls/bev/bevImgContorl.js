@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-03-28 11:05:04
+ * @LastEditTime: 2024-03-28 17:41:58
  * @Description:
  */
 import * as THREE from "three";
@@ -11,6 +11,9 @@ import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
 import skyVertexShader from "@/assets/shader/skyVertexShader.vs?raw";
 import skyFragmentShader from "@/assets/shader/skyFragmentShader.fs?raw";
 import roadFragmentShader from "@/assets/shader/roadFragmentShader.fs?raw";
+import { Line2 } from "three/examples/jsm/lines/Line2.js";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 
 export default class bevImgContorl {
   resTracker = new ResourceTracker();
@@ -28,6 +31,7 @@ export default class bevImgContorl {
   renderer;
   particleSystem;
   scale = 51.2 / 30;
+  lines = null;
   objs = {
     start: false,
     main_car: null,
@@ -77,20 +81,77 @@ export default class bevImgContorl {
       if (!data.info) return;
       console.log(data, "data]]]");
       return new Promise(async (resolve, reject) => {
+        this.initLanesGroup();
         if (this.bev.dom.width != data.info.width)
           this.bev.dom.width = data.info.width;
 
         if (this.bev.dom.height != data.info.height)
           this.bev.dom.height = data.info.height;
 
+        // this.bev.ctx.drawImage(data.bevs_point, 0, 0);
         this.bev.ctx.drawImage(data.info, 0, 0);
+        this.lines = new THREE.Group();
         this.mapBg.needsUpdate = true;
+        for (let i = 0; i < data.bevs_point.length; i++) {
+          this.lines.add(this.setWidthLine(data.bevs_point[i][1]));
+        }
+        this.scene.add(this.lines);
         await this.handleObjs(data.objs);
         resolve("ppp");
       });
     } catch (err) {
       console.log(err, "err---getData");
     }
+  }
+  // 释放线内存
+  initLanesGroup() {
+    // 释放资源
+    // 车道线是一堆线，把之前的线清除掉后再生成新的线
+    if (this.lines) {
+      this.lines.children.forEach((item) => {
+        this.scene.remove(item);
+        item.geometry.dispose();
+        item.material.dispose();
+      });
+      this.scene.remove(this.lines);
+    }
+    this.resTracker.dispose();
+    this.lines = null;
+  }
+  // 绘制可以改变宽度的线条   dashed：true虚线、false实线
+  setWidthLine(pointsArr, color = "rgb(80,190,225)") {
+    try {
+      // 处理坐标数据
+      let points = this.handlePoints(pointsArr);
+      const geometry = this.track(new LineGeometry());
+      geometry.setPositions(points);
+      const matLine = this.track(
+        new LineMaterial({
+          color: color,
+          linewidth: 20,
+          dashed: false,
+          vertexColors: false,
+        })
+      );
+      matLine.resolution.set(window.innerWidth, window.innerHeight);
+      let line = new Line2(geometry, matLine);
+      line.computeLineDistances();
+      return line;
+    } catch (err) {
+      console.log(err, "err---setWidthLine");
+    }
+  }
+  // 处理带宽度的线条坐标数据
+  handlePoints(pointsArr) {
+    // 处理坐标数据
+    const points = [];
+    pointsArr.forEach((item) => {
+      points.push(-item[1]/2, item[0]/2, 0);
+      // points.push(-item[1] * 60 / 200, item[0]* 60 / 200, 0);
+      // points.push((30-item[1])*200/60, (30-item[0])*200/60, 0);
+
+    });
+    return points;
   }
   // 更新障碍物
   async handleObjs(objs_data) {
@@ -461,15 +522,15 @@ export default class bevImgContorl {
   setMesh() {
     // 一格5单位
     let gridHelper = new THREE.GridHelper(
-      200,
-      200,
+      60,
+      60,
       "rgb(238, 14, 14)",
       "rgb(158, 156, 153)"
     );
     gridHelper.rotation.x = -(Math.PI / 2);
     const axesHelper = new THREE.AxesHelper(15);
     this.scene.add(axesHelper);
-    // this.scene.add(gridHelper);
+    this.scene.add(gridHelper);
   }
   // 清除掉所有内存
   clearFun() {

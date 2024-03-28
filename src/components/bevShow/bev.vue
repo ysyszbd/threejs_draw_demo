@@ -22,7 +22,7 @@ onMounted(() => {
 onUnmounted(() => {
   Bev.value.ObserverInstance.removeAll();
   Bev.value.clearFun();
-  Bev.value = null;
+  // Bev.value = null;
 });
 defineExpose({
   drawBev

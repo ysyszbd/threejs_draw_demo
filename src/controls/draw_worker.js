@@ -6,7 +6,7 @@ onmessage = async (e) => {
     // console.log(e.data, "e.data");
     let bev_imageBitmap = await drawBev(e.data.bev, e.data.key);
     let v_obj = await handleObjsPoints(e.data.basic_data, e.data.objs);
-    let bev = await drawBevPoint(e.data.bevs_point, e.data.key);
+    // let bev = await drawBevPoint(e.data.bevs_point, e.data.key);
     let view = {
       foresight: await drawVideoObjs(v_obj, "foresight", e.data.key),
       rearview: await drawVideoObjs(v_obj, "rearview", e.data.key),
@@ -21,7 +21,8 @@ onmessage = async (e) => {
       imageBitmap: bev_imageBitmap,
       objs_imageBitmap: view,
       objs: await handleObjs(e.data.objs),
-      bev: e.data?.bevs_point ? await drawBevPoint(e.data?.bevs_point) : null
+      bev: e.data?.bevs_point
+      // bev: e.data?.bevs_point ? await drawBevPoint(e.data?.bevs_point) : null
     });
   }
 };
@@ -36,13 +37,15 @@ function drawBevPoint(points) {
   return new Promise((resolve, reject) => {
     points.filter(item => {
       bev_ctx.beginPath();
-      bev_ctx.lineWidth = "1.4"; //线条 宽度
-      bev_ctx.strokeStyle = map.get(item[0]);
-      bev_ctx.moveTo(item[0][0], item[0][1]);
-      for (let i = 1; i < item.length; i++) {
-        bev_ctx.lineTo(item[i][0], item[i][1]);
+      bev_ctx.lineWidth = "1"; //线条 宽度
+      bev_ctx.strokeStyle = "red";
+      bev_ctx.moveTo(item[1][0], item[1][1]);
+      for (let i = 1; i < item[1].length; i++) {
+        // console.log(item[1][i], "item", i);
+        bev_ctx.lineTo(item[1][i][0], item[1][i][1]);
       }
-      bev_ctx.closePath();
+      bev_ctx.stroke();
+      // bev_ctx.closePath();
     })
     resolve(bev_can.transferToImageBitmap())
   })
@@ -86,7 +89,6 @@ let v_objs_canvas = new OffscreenCanvas(960, 480),
   v_objs_cxt = v_objs_canvas.getContext("2d");
 // 各view渲染障碍物
 function drawVideoObjs(objs, view, key) {
-  console.log(objs, view, key, "objs, view, key");
   return new Promise((resolve, reject) => {
     objs.filter((item) => {
       let color = box_color[`${item[7]}-${item[8]}`];
@@ -180,7 +182,6 @@ async function handleObjsPoints(base, objs) {
           }
         }
       });
-      console.log(data.points_eight, "data.points_eight");
       data.points_eight.filter((item) => {
         for (let e in view_sign) {
           if (view_sign[e] === 8) {
